@@ -1,0 +1,169 @@
+- Building...
+
+Prerendered 0 static routes.
+Application bundle generation failed. [7.153 seconds]
+
+X [ERROR] TS2307: Cannot find module 'primeng/button' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/auth/login/login.component.ts:5:29:
+      5 │ import { ButtonModule } from 'primeng/button';
+        ╵                              ~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module 'primeng/inputtext' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/auth/login/login.component.ts:6:32:
+      6 │ import { InputTextModule } from 'primeng/inputtext';
+        ╵                                 ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module 'primeng/password' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/auth/login/login.component.ts:7:31:
+      7 │ import { PasswordModule } from 'primeng/password';
+        ╵                                ~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module 'primeng/card' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/auth/login/login.component.ts:8:27:
+      8 │ import { CardModule } from 'primeng/card';
+        ╵                            ~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-991010: 'imports' must be an array of components, directives, pipes, or NgModules.
+  Value is of type '[CommonModule, ReactiveFormsModule, (not statically analyzable), (not statically analyzable), (not statically analyzable), (not statically analyzable), RouterLink]'. [plugin angular-compiler]
+
+    src/app/auth/login/login.component.ts:14:11:
+      14 │   imports: [
+         ╵            ^
+
+
+X [ERROR] TS-991010: 'imports' must be an array of components, directives, pipes, or NgModules.
+  Value is of type '[CommonModule, ReactiveFormsModule, (not statically analyzable), (not statically analyzable), (not statically analyzable), (not statically analyzable), RouterLink]'. [plugin angular-compiler]
+
+    src/app/auth/login/login.component.ts:14:11:
+      14 │   imports: [
+         ╵            ^
+
+
+X [ERROR] TS-991010: 'imports' must be an array of components, directives, pipes, or NgModules.
+  Value is of type '[CommonModule, ReactiveFormsModule, (not statically analyzable), (not statically analyzable), (not statically analyzable), (not statically analyzable), RouterLink]'. [plugin angular-compiler]
+
+    src/app/auth/login/login.component.ts:14:11:
+      14 │   imports: [
+         ╵            ^
+
+
+X [ERROR] TS-991010: 'imports' must be an array of components, directives, pipes, or NgModules.
+  Value is of type '[CommonModule, ReactiveFormsModule, (not statically analyzable), (not statically analyzable), (not statically analyzable), (not statically analyzable), RouterLink]'. [plugin angular-compiler]
+
+    src/app/auth/login/login.component.ts:14:11:
+      14 │   imports: [
+         ╵            ^
+
+
+X [ERROR] TS2307: Cannot find module 'primeng/button' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/auth/register/register.component.ts:5:29:
+      5 │ import { ButtonModule } from 'primeng/button';
+        ╵                              ~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module 'primeng/inputtext' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/auth/register/register.component.ts:6:32:
+      6 │ import { InputTextModule } from 'primeng/inputtext';
+        ╵                                 ~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module 'primeng/password' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/auth/register/register.component.ts:7:31:
+      7 │ import { PasswordModule } from 'primeng/password';
+        ╵                                ~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] TS2307: Cannot find module 'primeng/card' or its corresponding type declarations. [plugin angular-compiler]
+
+    src/app/auth/register/register.component.ts:8:27:
+      8 │ import { CardModule } from 'primeng/card';
+        ╵                            ~~~~~~~~~~~~~~
+
+
+X [ERROR] TS-991010: 'imports' must be an array of components, directives, pipes, or NgModules.
+  Value is of type '[CommonModule, ReactiveFormsModule, (not statically analyzable), (not statically analyzable), (not statically analyzable), (not statically analyzable), RouterLink]'. [plugin angular-compiler]
+
+    src/app/auth/register/register.component.ts:14:11:
+      14 │   imports: [
+         ╵            ^
+
+
+X [ERROR] TS-991010: 'imports' must be an array of components, directives, pipes, or NgModules.
+  Value is of type '[CommonModule, ReactiveFormsModule, (not statically analyzable), (not statically analyzable), (not statically analyzable), (not statically analyzable), RouterLink]'. [plugin angular-compiler]
+
+    src/app/auth/register/register.component.ts:14:11:
+      14 │   imports: [
+         ╵            ^
+
+
+X [ERROR] TS-991010: 'imports' must be an array of components, directives, pipes, or NgModules.
+  Value is of type '[CommonModule, ReactiveFormsModule, (not statically analyzable), (not statically analyzable), (not statically analyzable), (not statically analyzable), RouterLink]'. [plugin angular-compiler]
+
+    src/app/auth/register/register.component.ts:14:11:
+      14 │   imports: [
+         ╵            ^
+
+
+X [ERROR] TS-991010: 'imports' must be an array of components, directives, pipes, or NgModules.
+  Value is of type '[CommonModule, ReactiveFormsModule, (not statically analyzable), (not statically analyzable), (not statically analyzable), (not statically analyzable), RouterLink]'. [plugin angular-compiler]
+
+    src/app/auth/register/register.component.ts:14:11:
+      14 │   imports: [
+         ╵            ^
+
+
+X [ERROR] Could not resolve "primeng/resources/themes/lara-light-green/theme.css"
+
+    src/styles.scss:2:8:
+      2 │ @import "primeng/resources/themes/lara-light-green/theme.css";
+        ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  The path "./resources/themes/lara-light-green/theme.css" is not exported by package "primeng":
+
+    node_modules/primeng/package.json:47:13:
+      47 │   "exports": {
+         ╵              ^
+
+  You can mark the path "primeng/resources/themes/lara-light-green/theme.css" as external to exclude it from the bundle, which will remove this error and leave the unresolved path in the bundle.
+
+
+X [ERROR] Could not resolve "primeng/resources/primeng.css"
+
+    src/styles.scss:3:8:
+      3 │ @import "primeng/resources/primeng.css";
+        ╵         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  The path "./resources/primeng.css" is not exported by package "primeng":
+
+    node_modules/primeng/package.json:47:13:
+      47 │   "exports": {
+         ╵              ^
+
+  You can mark the path "primeng/resources/primeng.css" as external to exclude it from the bundle, which will remove this error and leave the unresolved path in the bundle.
+
+
+X [ERROR] No matching export in "node_modules/@angular/core/fesm2022/core.mjs" for import "provideAppInitializer"
+
+    node_modules/primeng/fesm2022/primeng-config.mjs:2:85:
+      2 │ ...M_ID, InjectionToken, provideAppInitializer, makeEnvironmentProv...
+        ╵                          ~~~~~~~~~~~~~~~~~~~~~
+
+
+X [ERROR] No matching export in "node_modules/@angular/core/fesm2022/core.mjs" for import "afterRenderEffect"
+
+    node_modules/primeng/fesm2022/primeng-motion.mjs:2:86:
+      2 │ ...mputed, signal, effect, afterRenderEffect, Component, Directive,...
+        ╵                            ~~~~~~~~~~~~~~~~~
+
+

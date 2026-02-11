@@ -1,0 +1,17 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< com.plantsocial:backend >-----------------------
+[INFO] Building backend 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[WARNING] The POM for org.springframework.boot:spring-boot-starter-security-test:jar:3.4.2 is missing, no dependency information available
+[INFO] 
+[INFO] --- dependency:3.8.1:tree (default-cli) @ backend ---
+[INFO] com.plantsocial:backend:jar:0.0.1-SNAPSHOT
+[INFO] \- org.projectlombok:lombok:jar:1.18.36:compile (optional)
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  2.057 s
+[INFO] Finished at: 2026-02-10T15:33:02+01:00
+[INFO] ------------------------------------------------------------------------

@@ -1,0 +1,32 @@
+- Building...
+
+Browser bundles        
+Initial chunk files     | Names               |  Raw size | Estimated transfer size
+styles-DCV6ASIE.css     | styles              | 510.79 kB |                34.45 kB
+main-JU7PIPNG.js        | main                | 423.97 kB |               107.48 kB
+polyfills-FFHMD2TL.js   | polyfills           |  33.71 kB |                11.02 kB
+
+                        | Initial total       | 968.46 kB |               152.95 kB
+
+
+Server bundles         
+Initial chunk files     | Names               |  Raw size
+server.mjs              | server              |   1.06 MB |                        
+chunk-PGCG7P7I.mjs      | -                   | 561.03 kB |                        
+polyfills.server.mjs    | polyfills.server    | 262.30 kB |                        
+chunk-PDOUWY3M.mjs      | -                   | 118.29 kB |                        
+chunk-VVCT4QZE.mjs      | -                   |   2.48 kB |                        
+render-utils.server.mjs | render-utils.server |   1.44 kB |                        
+main.server.mjs         | main.server         | 149 bytes |                        
+
+Lazy chunk files        | Names               |  Raw size
+chunk-QZP2S7SI.mjs      | xhr2                |  11.79 kB |                        
+
+Prerendered 2 static routes.
+Output location: C:\Users\amine\Desktop\PlantSocial\frontend\dist\frontend
+
+Application bundle generation complete. [9.485 seconds]
+
+▲ [WARNING] bundle initial exceeded maximum budget. Budget 500.00 kB was not met by 468.46 kB with a total of 968.46 kB.
+
+

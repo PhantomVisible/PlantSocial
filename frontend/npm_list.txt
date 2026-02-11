@@ -1,0 +1,27 @@
+npm ERR! code ELSPROBLEMS
+npm ERR! invalid: @angular/core@17.3.12 C:\Users\amine\Desktop\PlantSocial\frontend\node_modules\@angular\core
+frontend@0.0.0 C:\Users\amine\Desktop\PlantSocial\frontend
+├─┬ @angular/animations@17.3.12
+│ └── @angular/core@17.3.12 deduped
+├─┬ @angular/common@17.3.12
+│ └── @angular/core@17.3.12 deduped
+├─┬ @angular/compiler@17.3.12
+│ └── @angular/core@17.3.12 deduped
+├── @angular/core@17.3.12
+├─┬ @angular/forms@17.3.12
+│ └── @angular/core@17.3.12 deduped
+├─┬ @angular/platform-browser-dynamic@17.3.12
+│ └── @angular/core@17.3.12 deduped
+├─┬ @angular/platform-browser@17.3.12
+│ └── @angular/core@17.3.12 deduped
+├─┬ @angular/platform-server@17.3.12
+│ └── @angular/core@17.3.12 deduped
+├─┬ @angular/router@17.3.12
+│ └── @angular/core@17.3.12 deduped
+├─┬ @angular/ssr@17.3.17
+│ └── @angular/core@17.3.12 deduped
+└─┬ primeng@21.1.1
+  └── @angular/core@17.3.12 deduped invalid: "^21.0.7" from node_modules/primeng
+
+
+npm ERR! A complete log of this run can be found in: C:\Users\amine\AppData\Local\npm-cache\_logs\2026-02-10T14_40_00_665Z-debug-0.log

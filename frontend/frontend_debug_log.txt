@@ -1,0 +1,65 @@
+- Building...
+
+ERROR ReferenceError: localStorage is not defined
+    at new n (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/efbec76c-99b0-4b9d-a927-a9030b384e30/chunk-OVZJUF7G.mjs:182:331)
+    at wt.ɵfac [as factory] (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/efbec76c-99b0-4b9d-a927-a9030b384e30/chunk-OVZJUF7G.mjs:182:847)
+    at Ps.hydrate (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/efbec76c-99b0-4b9d-a927-a9030b384e30/chunk-BNQKDZJI.mjs:8:11532)
+    at Ps.get (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/efbec76c-99b0-4b9d-a927-a9030b384e30/chunk-BNQKDZJI.mjs:8:10646)
+    at Ps.get (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/efbec76c-99b0-4b9d-a927-a9030b384e30/chunk-BNQKDZJI.mjs:8:10732)
+    at Ad.get (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/efbec76c-99b0-4b9d-a927-a9030b384e30/chunk-BNQKDZJI.mjs:34:6989)
+    at uv (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/efbec76c-99b0-4b9d-a927-a9030b384e30/chunk-BNQKDZJI.mjs:8:22523)
+    at dv (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/efbec76c-99b0-4b9d-a927-a9030b384e30/chunk-BNQKDZJI.mjs:8:22763)
+    at ot (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/efbec76c-99b0-4b9d-a927-a9030b384e30/chunk-BNQKDZJI.mjs:8:37959)
+    at mn.ɵfac [as factory] (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/efbec76c-99b0-4b9d-a927-a9030b384e30/chunk-OVZJUF7G.mjs:182:1582)
+ERROR ReferenceError: localStorage is not defined
+    at new n (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/b224459c-5c62-4354-906a-7f0e11178fb9/chunk-OVZJUF7G.mjs:182:331)
+    at wt.ɵfac [as factory] (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/b224459c-5c62-4354-906a-7f0e11178fb9/chunk-OVZJUF7G.mjs:182:847)
+    at Ps.hydrate (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/b224459c-5c62-4354-906a-7f0e11178fb9/chunk-BNQKDZJI.mjs:8:11532)
+    at Ps.get (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/b224459c-5c62-4354-906a-7f0e11178fb9/chunk-BNQKDZJI.mjs:8:10646)
+    at Ps.get (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/b224459c-5c62-4354-906a-7f0e11178fb9/chunk-BNQKDZJI.mjs:8:10732)
+    at Ad.get (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/b224459c-5c62-4354-906a-7f0e11178fb9/chunk-BNQKDZJI.mjs:34:6989)
+    at uv (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/b224459c-5c62-4354-906a-7f0e11178fb9/chunk-BNQKDZJI.mjs:8:22523)
+    at dv (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/b224459c-5c62-4354-906a-7f0e11178fb9/chunk-BNQKDZJI.mjs:8:22763)
+    at ot (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/b224459c-5c62-4354-906a-7f0e11178fb9/chunk-BNQKDZJI.mjs:8:37959)
+    at gn.ɵfac [as factory] (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/b224459c-5c62-4354-906a-7f0e11178fb9/chunk-OVZJUF7G.mjs:182:4074)
+ERROR ReferenceError: localStorage is not defined
+    at new n (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/4732f596-36e1-4fc7-8323-b95b0e831b3e/chunk-OVZJUF7G.mjs:182:331)
+    at wt.ɵfac [as factory] (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/4732f596-36e1-4fc7-8323-b95b0e831b3e/chunk-OVZJUF7G.mjs:182:847)
+    at Ps.hydrate (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/4732f596-36e1-4fc7-8323-b95b0e831b3e/chunk-BNQKDZJI.mjs:8:11532)
+    at Ps.get (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/4732f596-36e1-4fc7-8323-b95b0e831b3e/chunk-BNQKDZJI.mjs:8:10646)
+    at Ps.get (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/4732f596-36e1-4fc7-8323-b95b0e831b3e/chunk-BNQKDZJI.mjs:8:10732)
+    at Ad.get (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/4732f596-36e1-4fc7-8323-b95b0e831b3e/chunk-BNQKDZJI.mjs:34:6989)
+    at uv (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/4732f596-36e1-4fc7-8323-b95b0e831b3e/chunk-BNQKDZJI.mjs:8:22523)
+    at dv (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/4732f596-36e1-4fc7-8323-b95b0e831b3e/chunk-BNQKDZJI.mjs:8:22763)
+    at ot (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/4732f596-36e1-4fc7-8323-b95b0e831b3e/chunk-BNQKDZJI.mjs:8:37959)
+    at mn.ɵfac [as factory] (file:///C:/Users/amine/Desktop/PlantSocial/frontend/.angular/prerender-root/4732f596-36e1-4fc7-8323-b95b0e831b3e/chunk-OVZJUF7G.mjs:182:1582)
+Browser bundles        
+Initial chunk files     | Names               |  Raw size | Estimated transfer size
+main-M4YUVL6I.js        | main                | 415.10 kB |               106.11 kB
+styles-JCJYIXO7.css     | styles              | 172.30 kB |                17.86 kB
+polyfills-FFHMD2TL.js   | polyfills           |  33.71 kB |                11.02 kB
+
+                        | Initial total       | 621.11 kB |               134.99 kB
+
+
+Server bundles         
+Initial chunk files     | Names               |  Raw size
+server.mjs              | server              |   1.06 MB |                        
+chunk-BNQKDZJI.mjs      | -                   | 549.89 kB |                        
+polyfills.server.mjs    | polyfills.server    | 262.30 kB |                        
+chunk-OVZJUF7G.mjs      | -                   | 120.63 kB |                        
+chunk-VVCT4QZE.mjs      | -                   |   2.48 kB |                        
+render-utils.server.mjs | render-utils.server |   1.44 kB |                        
+main.server.mjs         | main.server         | 149 bytes |                        
+
+Lazy chunk files        | Names               |  Raw size
+chunk-QZP2S7SI.mjs      | xhr2                |  11.79 kB |                        
+
+Prerendered 2 static routes.
+Output location: C:\Users\amine\Desktop\PlantSocial\frontend\dist\frontend
+
+Application bundle generation complete. [9.011 seconds]
+
+▲ [WARNING] bundle initial exceeded maximum budget. Budget 500.00 kB was not met by 121.11 kB with a total of 621.11 kB.
+
+
