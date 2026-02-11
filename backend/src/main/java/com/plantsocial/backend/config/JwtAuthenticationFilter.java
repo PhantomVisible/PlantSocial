@@ -1,4 +1,4 @@
-package com.plantsocial.backend.security;
+package com.plantsocial.backend.config;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

@@ -1,6 +1,6 @@
 package com.plantsocial.backend.auth;
 
-import com.plantsocial.backend.security.JwtService;
+import com.plantsocial.backend.config.JwtService;
 import com.plantsocial.backend.user.Role;
 import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.user.UserRepository;
@@ -14,14 +14,14 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final UserRepository userRepository;
+    private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthDTO.AuthResponse register(AuthDTO.RegisterRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
-            throw new RuntimeException("Email already exists");
+    public AuthenticationResponse register(RegisterRequest request) {
+        if (repository.existsByEmail(request.email())) {
+            throw new IllegalArgumentException("Email already in use");
         }
 
         var user = User.builder()
@@ -30,20 +30,19 @@ public class AuthService {
                 .password(passwordEncoder.encode(request.password()))
                 .role(Role.USER)
                 .build();
-
-        userRepository.save(user);
+        repository.save(user);
         var jwtToken = jwtService.generateToken(user);
-        return new AuthDTO.AuthResponse(jwtToken);
+        return new AuthenticationResponse(jwtToken);
     }
 
-    public AuthDTO.AuthResponse login(AuthDTO.LoginRequest request) {
+    public AuthenticationResponse authenticate(AuthenticationRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.email(),
                         request.password()));
-        var user = userRepository.findByEmail(request.email())
+        var user = repository.findByEmail(request.email())
                 .orElseThrow();
         var jwtToken = jwtService.generateToken(user);
-        return new AuthDTO.AuthResponse(jwtToken);
+        return new AuthenticationResponse(jwtToken);
     }
 }

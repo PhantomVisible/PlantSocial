@@ -9,21 +9,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthService service;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthDTO.AuthResponse> register(
-            @RequestBody @Valid AuthDTO.RegisterRequest request) {
-        return ResponseEntity.ok(authService.register(request));
+    public ResponseEntity<AuthenticationResponse> register(
+            @Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(service.register(request));
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<AuthDTO.AuthResponse> login(
-            @RequestBody @Valid AuthDTO.LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    @PostMapping("/authenticate")
+    public ResponseEntity<AuthenticationResponse> authenticate(
+            @RequestBody AuthenticationRequest request) {
+        return ResponseEntity.ok(service.authenticate(request));
     }
 }

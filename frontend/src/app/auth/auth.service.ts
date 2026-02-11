@@ -24,7 +24,7 @@ export interface RegisterRequest {
     providedIn: 'root'
 })
 export class AuthService {
-    private apiUrl = 'http://localhost:8080/api/auth';
+    private apiUrl = 'http://localhost:8080/api/v1/auth'; // Updated to match backend Controller
 
     // Signal to track auth state
     isAuthenticated = signal<boolean>(false);
@@ -46,19 +46,19 @@ export class AuthService {
                     localStorage.setItem('token', response.token);
                     this.isAuthenticated.set(true);
                 }
-                this.router.navigate(['/']);
+                this.router.navigate(['/feed']);
             })
         );
     }
 
     login(request: LoginRequest): Observable<AuthResponse> {
-        return this.http.post<AuthResponse>(`${this.apiUrl}/login`, request).pipe(
+        return this.http.post<AuthResponse>(`${this.apiUrl}/authenticate`, request).pipe( // Updated endpoint
             tap(response => {
                 if (isPlatformBrowser(this.platformId)) {
                     localStorage.setItem('token', response.token);
                     this.isAuthenticated.set(true);
                 }
-                this.router.navigate(['/']);
+                this.router.navigate(['/feed']);
             })
         );
     }
@@ -68,6 +68,6 @@ export class AuthService {
             localStorage.removeItem('token');
             this.isAuthenticated.set(false);
         }
-        this.router.navigate(['/login']);
+        this.router.navigate(['/auth/login']); // Redirect to login
     }
 }
