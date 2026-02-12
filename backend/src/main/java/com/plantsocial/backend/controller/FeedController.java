@@ -1,9 +1,7 @@
 package com.plantsocial.backend.controller;
 
-import com.plantsocial.backend.dto.CommentRequest;
 import com.plantsocial.backend.dto.PostResponse;
 import com.plantsocial.backend.service.FeedService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,8 +28,9 @@ public class FeedController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PostResponse> createPost(
             @RequestParam("caption") String caption,
-            @RequestParam(value = "file", required = false) MultipartFile file) {
-        return ResponseEntity.ok(feedService.createPost(caption, file));
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "plantId", required = false) UUID plantId) {
+        return ResponseEntity.ok(feedService.createPost(caption, file, plantId));
     }
 
     @PutMapping("/{postId}")
@@ -52,14 +51,6 @@ public class FeedController {
     @PostMapping("/{postId}/like")
     public ResponseEntity<Void> likePost(@PathVariable UUID postId) {
         feedService.likePost(postId);
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/{postId}/comment")
-    public ResponseEntity<Void> commentOnPost(
-            @PathVariable UUID postId,
-            @Valid @RequestBody CommentRequest request) {
-        feedService.commentOnPost(postId, request);
         return ResponseEntity.ok().build();
     }
 }

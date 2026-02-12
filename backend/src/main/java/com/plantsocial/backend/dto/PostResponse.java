@@ -11,5 +11,8 @@ public record PostResponse(
                 UUID authorId,
                 LocalDateTime createdAt,
                 long likesCount,
-                boolean likedByCurrentUser) {
+                long commentCount,
+                boolean likedByCurrentUser,
+                UUID plantId,
+                String plantNickname) {
 }

@@ -10,7 +10,10 @@ export interface Post {
   authorId: string;
   createdAt: string;
   likesCount: number;
+  commentCount: number;
   likedByCurrentUser: boolean;
+  plantId?: string;
+  plantNickname?: string;
 }
 
 export interface CommentRequest {
@@ -28,11 +31,14 @@ export class FeedService {
     return this.http.get<{ content: Post[] }>(`${this.apiUrl}?page=${page}&size=${size}`);
   }
 
-  createPost(caption: string, file?: File): Observable<Post> {
+  createPost(caption: string, file?: File, plantId?: string): Observable<Post> {
     const formData = new FormData();
     formData.append('caption', caption);
     if (file) {
       formData.append('file', file);
+    }
+    if (plantId) {
+      formData.append('plantId', plantId);
     }
     return this.http.post<Post>(this.apiUrl, formData);
   }

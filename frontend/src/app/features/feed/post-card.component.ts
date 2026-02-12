@@ -1,7 +1,11 @@
 import { Component, Input, Output, EventEmitter, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
+import { CommentThreadComponent } from './comment-thread.component';
+import { AuthPromptDialogComponent } from '../../auth/auth-prompt-dialog.component';
+import { AuthGatekeeperService } from '../../auth/auth-gatekeeper.service';
 
 export interface PostCardData {
   id: string;
@@ -11,27 +15,35 @@ export interface PostCardData {
   imageUrl?: string;
   createdAt: string;
   likesCount: number;
+  commentCount: number;
   likedByCurrentUser: boolean;
+  plantId?: string;
+  plantNickname?: string;
 }
 
 @Component({
   selector: 'app-post-card',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule, CommentThreadComponent],
   template: `
     <article class="post-card">
       <!-- Header -->
       <div class="post-card__header">
-        <div class="post-card__avatar">
+        <a (click)="visitProfile(post.authorId)" class="post-card__avatar">
           {{ getInitials(post.authorName) }}
-        </div>
+        </a>
         <div class="post-card__meta">
-          <span class="post-card__author">{{ post.authorName }}</span>
+          <a (click)="visitProfile(post.authorId)" class="post-card__author">{{ post.authorName }}</a>
           <span class="post-card__dot">·</span>
           <span class="post-card__time">{{ formatTime(post.createdAt) }}</span>
+          
+          <!-- Plant Badge -->
+          <span *ngIf="post.plantNickname" class="post-card__plant-badge">
+            🌿 {{ post.plantNickname }}
+          </span>
         </div>
 
-        <!-- Owner Menu (only for post author) -->
+        <!-- Owner Menu -->
         <div *ngIf="isOwner()" class="post-card__menu-wrap">
           <button class="menu-trigger" (click)="toggleMenu($event)" title="Post options">
             <i class="pi pi-ellipsis-v"></i>
@@ -47,7 +59,7 @@ export interface PostCardData {
         </div>
       </div>
 
-      <!-- Content: Normal view -->
+      <!-- Content: Normal -->
       <div class="post-card__content" *ngIf="!isEditing()">
         <p>{{ post.content }}</p>
       </div>
@@ -71,34 +83,32 @@ export interface PostCardData {
         <img [src]="resolveImageUrl(post.imageUrl)" alt="Plant photo" loading="lazy" />
       </div>
 
-      <!-- Actions Row -->
+      <!-- Actions -->
       <div class="post-card__actions">
-        <button
-          class="action-btn"
-          [class.liked]="post.likedByCurrentUser"
-          (click)="onLike.emit(post)"
-        >
+        <button class="action-btn" [class.liked]="post.likedByCurrentUser" (click)="toggleLike()">
           <i class="pi" [ngClass]="post.likedByCurrentUser ? 'pi-heart-fill' : 'pi-heart'"></i>
           <span *ngIf="post.likesCount > 0">{{ post.likesCount }}</span>
         </button>
-        <button class="action-btn" (click)="onComment.emit(post)">
+        <button class="action-btn" [class.active-comments]="isCommentsOpen()" (click)="toggleComments()">
           <i class="pi pi-comment"></i>
+          <span *ngIf="post.commentCount > 0">{{ post.commentCount }}</span>
         </button>
         <button class="action-btn">
           <i class="pi pi-share-alt"></i>
         </button>
       </div>
+
+      <!-- Comment Thread (lazy loaded) -->
+      <app-comment-thread
+        *ngIf="isCommentsOpen()"
+        [postId]="post.id"
+      ></app-comment-thread>
     </article>
 
-    <!-- ===== IMAGE LIGHTBOX ===== -->
+    <!-- ===== LIGHTBOX ===== -->
     <div *ngIf="lightboxOpen()" class="lightbox-overlay" (click)="closeLightbox()">
       <button class="lightbox-close" (click)="closeLightbox()">&times;</button>
-      <img
-        class="lightbox-image"
-        [src]="resolveImageUrl(post.imageUrl!)"
-        alt="Full size"
-        (click)="$event.stopPropagation()"
-      />
+      <img class="lightbox-image" [src]="resolveImageUrl(post.imageUrl!)" alt="Full size" (click)="$event.stopPropagation()" />
     </div>
 
     <!-- ===== DELETE CONFIRMATION ===== -->
@@ -135,7 +145,6 @@ export interface PostCardData {
       margin-bottom: 8px;
       position: relative;
     }
-
     .post-card__avatar {
       width: 42px;
       height: 42px;
@@ -149,8 +158,9 @@ export interface PostCardData {
       font-size: 0.8rem;
       flex-shrink: 0;
       letter-spacing: 0.5px;
+      text-decoration: none;
+      cursor: pointer;
     }
-
     .post-card__meta {
       display: flex;
       align-items: center;
@@ -158,21 +168,35 @@ export interface PostCardData {
       flex: 1;
       min-width: 0;
     }
-
     .post-card__author {
       font-weight: 600;
       color: var(--trellis-text);
       font-size: 0.95rem;
+      text-decoration: none;
+      cursor: pointer;
     }
-
+    .post-card__author:hover {
+      text-decoration: underline;
+    }
     .post-card__dot {
       color: var(--trellis-text-hint);
       font-size: 0.8rem;
     }
-
     .post-card__time {
       font-size: 0.82rem;
       color: var(--trellis-text-hint);
+    }
+    .post-card__plant-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--trellis-green-dark);
+      background: var(--trellis-green-ghost);
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-left: 4px;
     }
 
     /* ---------- Owner Menu ---------- */
@@ -180,7 +204,6 @@ export interface PostCardData {
       position: relative;
       margin-left: auto;
     }
-
     .menu-trigger {
       width: 32px;
       height: 32px;
@@ -198,7 +221,6 @@ export interface PostCardData {
       background: var(--trellis-green-pale);
       color: var(--trellis-green-dark);
     }
-
     .dropdown-menu {
       position: absolute;
       top: 100%;
@@ -212,12 +234,10 @@ export interface PostCardData {
       overflow: hidden;
       animation: dropdown-in 0.12s ease;
     }
-
     @keyframes dropdown-in {
       from { opacity: 0; transform: translateY(-4px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
     .dropdown-item {
       display: flex;
       align-items: center;
@@ -246,10 +266,7 @@ export interface PostCardData {
     }
 
     /* ---------- Edit Mode ---------- */
-    .post-card__edit {
-      margin-bottom: 8px;
-    }
-
+    .post-card__edit { margin-bottom: 8px; }
     .edit-textarea {
       width: 100%;
       border: 2px solid var(--trellis-border-light);
@@ -269,14 +286,12 @@ export interface PostCardData {
       border-color: var(--trellis-green);
       box-shadow: 0 0 0 3px rgba(56, 142, 60, 0.12);
     }
-
     .edit-actions {
       display: flex;
       gap: 8px;
       margin-top: 8px;
       justify-content: flex-end;
     }
-
     .edit-btn {
       padding: 6px 18px;
       border: none;
@@ -287,16 +302,10 @@ export interface PostCardData {
       cursor: pointer;
       transition: all 0.15s ease;
     }
-    .edit-btn--save {
-      background: var(--trellis-green);
-      color: #fff;
-    }
+    .edit-btn--save { background: var(--trellis-green); color: #fff; }
     .edit-btn--save:hover:not(:disabled) { background: var(--trellis-green-dark); }
     .edit-btn--save:disabled { opacity: 0.5; cursor: not-allowed; }
-    .edit-btn--cancel {
-      background: var(--trellis-border-light);
-      color: var(--trellis-text-secondary);
-    }
+    .edit-btn--cancel { background: var(--trellis-border-light); color: var(--trellis-text-secondary); }
     .edit-btn--cancel:hover { background: #e0e0e0; }
 
     /* ---------- Media ---------- */
@@ -307,7 +316,6 @@ export interface PostCardData {
       border: 1px solid var(--trellis-border-light);
       cursor: pointer;
     }
-
     .post-card__media img {
       width: 100%;
       display: block;
@@ -315,9 +323,7 @@ export interface PostCardData {
       max-height: 500px;
       transition: filter 0.2s ease;
     }
-    .post-card__media:hover img {
-      filter: brightness(0.92);
-    }
+    .post-card__media:hover img { filter: brightness(0.92); }
 
     /* ---------- Actions ---------- */
     .post-card__actions {
@@ -325,7 +331,6 @@ export interface PostCardData {
       gap: 4px;
       margin-top: 10px;
     }
-
     .action-btn {
       display: flex;
       align-items: center;
@@ -346,22 +351,18 @@ export interface PostCardData {
     }
     .action-btn i { font-size: 1.05rem; }
 
-    /* ❤️ Liked state — RED filled heart */
-    .action-btn.liked {
-      color: #E53E3E;
-    }
-    .action-btn.liked:hover {
-      background: #FFF5F5;
-      color: #C53030;
-    }
+    /* Heart — red when liked */
+    .action-btn.liked { color: #E53E3E; }
+    .action-btn.liked:hover { background: #FFF5F5; color: #C53030; }
 
-    /* ===========================
-       LIGHTBOX (z-index: 9999)
-       =========================== */
+    /* Comment icon — highlighted when thread open */
+    .action-btn.active-comments { color: var(--trellis-green); }
+
+    /* ===== LIGHTBOX ===== */
     .lightbox-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(0,0,0,0.85);
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
       display: flex;
@@ -371,12 +372,10 @@ export interface PostCardData {
       cursor: pointer;
       animation: lightbox-fade 0.2s ease;
     }
-
     @keyframes lightbox-fade {
       from { opacity: 0; }
       to { opacity: 1; }
     }
-
     .lightbox-image {
       max-width: 90vw;
       max-height: 90vh;
@@ -385,7 +384,6 @@ export interface PostCardData {
       cursor: default;
       box-shadow: 0 8px 32px rgba(0,0,0,0.5);
     }
-
     .lightbox-close {
       position: absolute;
       top: 16px;
@@ -404,24 +402,19 @@ export interface PostCardData {
       transition: background 0.15s ease;
       z-index: 10000;
     }
-    .lightbox-close:hover {
-      background: rgba(255,255,255,0.3);
-    }
+    .lightbox-close:hover { background: rgba(255,255,255,0.3); }
 
-    /* ===========================
-       DELETE CONFIRMATION
-       =========================== */
+    /* ===== DELETE CONFIRMATION ===== */
     .confirm-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0,0,0,0.4);
       backdrop-filter: blur(2px);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 10001;
     }
-
     .confirm-dialog {
       background: var(--trellis-white);
       border-radius: var(--trellis-radius-lg);
@@ -432,32 +425,13 @@ export interface PostCardData {
       text-align: center;
       animation: dialog-in 0.2s ease;
     }
-
     @keyframes dialog-in {
       from { opacity: 0; transform: scale(0.95); }
       to { opacity: 1; transform: scale(1); }
     }
-
-    .confirm-dialog h3 {
-      margin: 0 0 8px;
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: var(--trellis-text);
-    }
-
-    .confirm-dialog p {
-      margin: 0 0 20px;
-      font-size: 0.9rem;
-      color: var(--trellis-text-secondary);
-      line-height: 1.4;
-    }
-
-    .confirm-actions {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-    }
-
+    .confirm-dialog h3 { margin: 0 0 8px; font-size: 1.15rem; font-weight: 700; color: var(--trellis-text); }
+    .confirm-dialog p { margin: 0 0 20px; font-size: 0.9rem; color: var(--trellis-text-secondary); line-height: 1.4; }
+    .confirm-actions { display: flex; gap: 10px; justify-content: center; }
     .confirm-btn {
       padding: 8px 24px;
       border: none;
@@ -477,23 +451,23 @@ export interface PostCardData {
 export class PostCardComponent {
   @Input({ required: true }) post!: PostCardData;
   @Output() onLike = new EventEmitter<PostCardData>();
-  @Output() onComment = new EventEmitter<PostCardData>();
   @Output() onDelete = new EventEmitter<string>();
   @Output() onEdit = new EventEmitter<{ id: string; content: string }>();
 
   private authService = inject(AuthService);
+  private gatekeeper = inject(AuthGatekeeperService);
+  private router = inject(Router);
 
-  // Signals for UI state
   menuOpen = signal(false);
   lightboxOpen = signal(false);
   deleteConfirmOpen = signal(false);
   isEditing = signal(false);
+  isCommentsOpen = signal(false);
   editContent = '';
 
-  /** Show owner menu only if current user authored this post */
-  isOwner(): boolean {
-    const user = this.authService.currentUser();
-    return !!user && user.id === this.post.authorId;
+  // ---- Comments ----
+  toggleComments() {
+    this.isCommentsOpen.update(v => !v);
   }
 
   // ---- Menu ----
@@ -502,17 +476,30 @@ export class PostCardComponent {
     this.menuOpen.update(v => !v);
   }
 
+  visitProfile(userId: string) {
+    this.gatekeeper.run(() => {
+      this.router.navigate(['/profile', userId]);
+    });
+  }
+
+  isOwner(): boolean {
+    const user = this.authService.currentUser();
+    return !!user && user.id === this.post.authorId;
+  }
+
+  toggleLike() {
+    this.gatekeeper.run(() => {
+      this.onLike.emit(this.post);
+    });
+  }
+
   // ---- Edit ----
   startEdit() {
     this.editContent = this.post.content;
     this.isEditing.set(true);
     this.menuOpen.set(false);
   }
-
-  cancelEdit() {
-    this.isEditing.set(false);
-  }
-
+  cancelEdit() { this.isEditing.set(false); }
   saveEdit() {
     if (this.editContent.trim()) {
       this.onEdit.emit({ id: this.post.id, content: this.editContent });
@@ -525,31 +512,23 @@ export class PostCardComponent {
     this.menuOpen.set(false);
     this.deleteConfirmOpen.set(true);
   }
-
   doDelete() {
     this.deleteConfirmOpen.set(false);
     this.onDelete.emit(this.post.id);
   }
 
   // ---- Lightbox ----
-  openLightbox() {
-    this.lightboxOpen.set(true);
-  }
-
-  closeLightbox() {
-    this.lightboxOpen.set(false);
-  }
+  openLightbox() { this.lightboxOpen.set(true); }
+  closeLightbox() { this.lightboxOpen.set(false); }
 
   // ---- Helpers ----
   resolveImageUrl(url: string): string {
     if (url.startsWith('http')) return url;
     return 'http://localhost:8080' + url;
   }
-
   getInitials(name: string): string {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   }
-
   formatTime(dateStr: string): string {
     const date = new Date(dateStr);
     const now = new Date();

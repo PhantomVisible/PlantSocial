@@ -17,33 +17,31 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "posts")
+@Table(name = "plants")
 @EntityListeners(AuditingEntityListener.class)
-public class Post {
+public class Plant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(columnDefinition = "TEXT")
-    private String content;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User owner;
+
+    @Column(nullable = false)
+    private String nickname;
+
+    private String species;
 
     private String imageUrl;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User author;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "plant_id")
-    private Plant plant;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private PlantStatus status = PlantStatus.ALIVE;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    // Optimistic locking or just a counter? Keeping it simple with count query
-    // usually better,
-    // but for performance we can add specific field if needed.
-    // For now, will calculate dynamically or just mappedBy in OneToMany.
 }

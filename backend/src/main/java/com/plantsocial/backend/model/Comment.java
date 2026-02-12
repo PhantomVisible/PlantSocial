@@ -36,6 +36,11 @@ public class Comment {
     @JoinColumn(name = "user_id", nullable = false)
     private User author;
 
+    // Self-referencing for nested replies
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private Comment parentComment;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

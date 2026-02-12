@@ -1,0 +1,116 @@
+- Building...
+
+Failed to load feed Rr {
+  headers: e {
+    normalizedNames: Map(0) {},
+    lazyUpdate: null,
+    headers: Map(0) {}
+  },
+  status: 0,
+  statusText: 'Unknown Error',
+  url: 'http://localhost:8080/api/v1/feed?page=0&size=10',
+  ok: false,
+  name: 'HttpErrorResponse',
+  message: 'Http failure response for http://localhost:8080/api/v1/feed?page=0&size=10: 0 undefined',
+  error: TypeError: fetch failed
+      at node:internal/deps/undici/undici:12345:11
+      at a.invoke (file:///C:/Users/amine/Documents/GitHub/PlantSocial/frontend/.angular/prerender-root/3e1555ab-c27d-48ae-a389-7b0e21da482b/polyfills.server.mjs:3:6715)
+      at Object.onInvoke (file:///C:/Users/amine/Documents/GitHub/PlantSocial/frontend/.angular/prerender-root/3e1555ab-c27d-48ae-a389-7b0e21da482b/chunk-JHOTT7WO.mjs:34:4562)
+      at a.invoke (file:///C:/Users/amine/Documents/GitHub/PlantSocial/frontend/.angular/prerender-root/3e1555ab-c27d-48ae-a389-7b0e21da482b/polyfills.server.mjs:3:6654)
+      at l.run (file:///C:/Users/amine/Documents/GitHub/PlantSocial/frontend/.angular/prerender-root/3e1555ab-c27d-48ae-a389-7b0e21da482b/polyfills.server.mjs:3:1985)
+      at file:///C:/Users/amine/Documents/GitHub/PlantSocial/frontend/.angular/prerender-root/3e1555ab-c27d-48ae-a389-7b0e21da482b/polyfills.server.mjs:4:576
+      at a.invokeTask (file:///C:/Users/amine/Documents/GitHub/PlantSocial/frontend/.angular/prerender-root/3e1555ab-c27d-48ae-a389-7b0e21da482b/polyfills.server.mjs:3:7341)
+      at Object.onInvokeTask (file:///C:/Users/amine/Documents/GitHub/PlantSocial/frontend/.angular/prerender-root/3e1555ab-c27d-48ae-a389-7b0e21da482b/chunk-JHOTT7WO.mjs:34:4378)
+      at a.invokeTask (file:///C:/Users/amine/Documents/GitHub/PlantSocial/frontend/.angular/prerender-root/3e1555ab-c27d-48ae-a389-7b0e21da482b/polyfills.server.mjs:3:7262)
+      at l.runTask (file:///C:/Users/amine/Documents/GitHub/PlantSocial/frontend/.angular/prerender-root/3e1555ab-c27d-48ae-a389-7b0e21da482b/polyfills.server.mjs:3:2628) {
+    cause: AggregateError
+        at internalConnectMultiple (node:net:1114:18)
+        at afterConnectMultiple (node:net:1667:5) {
+      code: 'ECONNREFUSED',
+      [errors]: [Array]
+    }
+  }
+}
+Failed to load feed Rr {
+  headers: e {
+    normalizedNames: Map(0) {},
+    lazyUpdate: null,
+    headers: Map(0) {}
+  },
+  status: 0,
+  statusText: 'Unknown Error',
+  url: 'http://localhost:8080/api/v1/feed?page=0&size=10',
+  ok: false,
+  name: 'HttpErrorResponse',
+  message: 'Http failure response for http://localhost:8080/api/v1/feed?page=0&size=10: 0 undefined',
+  error: TypeError: fetch failed
+      at node:internal/deps/undici/undici:12345:11
+      at a.invoke (file:///C:/Users/amine/Documents/GitHub/PlantSocial/frontend/.angular/prerender-root/4d6b3ad5-a34e-47cd-8ea9-0ad2ab796e82/polyfills.server.mjs:3:6715)
+      at Object.onInvoke (file:///C:/Users/amine/Documents/GitHub/PlantSocial/frontend/.angular/prerender-root/4d6b3ad5-a34e-47cd-8ea9-0ad2ab796e82/chunk-JHOTT7WO.mjs:34:4562)
+      at a.invoke (file:///C:/Users/amine/Documents/GitHub/PlantSocial/frontend/.angular/prerender-root/4d6b3ad5-a34e-47cd-8ea9-0ad2ab796e82/polyfills.server.mjs:3:6654)
+      at l.run (file:///C:/Users/amine/Documents/GitHub/PlantSocial/frontend/.angular/prerender-root/4d6b3ad5-a34e-47cd-8ea9-0ad2ab796e82/polyfills.server.mjs:3:1985)
+      at file:///C:/Users/amine/Documents/GitHub/PlantSocial/frontend/.angular/prerender-root/4d6b3ad5-a34e-47cd-8ea9-0ad2ab796e82/polyfills.server.mjs:4:576
+      at a.invokeTask (file:///C:/Users/amine/Documents/GitHub/PlantSocial/frontend/.angular/prerender-root/4d6b3ad5-a34e-47cd-8ea9-0ad2ab796e82/polyfills.server.mjs:3:7341)
+      at Object.onInvokeTask (file:///C:/Users/amine/Documents/GitHub/PlantSocial/frontend/.angular/prerender-root/4d6b3ad5-a34e-47cd-8ea9-0ad2ab796e82/chunk-JHOTT7WO.mjs:34:4378)
+      at a.invokeTask (file:///C:/Users/amine/Documents/GitHub/PlantSocial/frontend/.angular/prerender-root/4d6b3ad5-a34e-47cd-8ea9-0ad2ab796e82/polyfills.server.mjs:3:7262)
+      at l.runTask (file:///C:/Users/amine/Documents/GitHub/PlantSocial/frontend/.angular/prerender-root/4d6b3ad5-a34e-47cd-8ea9-0ad2ab796e82/polyfills.server.mjs:3:2628) {
+    cause: AggregateError
+        at internalConnectMultiple (node:net:1114:18)
+        at afterConnectMultiple (node:net:1667:5) {
+      code: 'ECONNREFUSED',
+      [errors]: [Array]
+    }
+  }
+}
+Browser bundles        
+Initial chunk files     | Names               |  Raw size | Estimated transfer size
+styles-VURYELYW.css     | styles              | 520.55 kB |                35.35 kB
+main-LN5MLHIC.js        | main                | 494.37 kB |               118.72 kB
+polyfills-FFHMD2TL.js   | polyfills           |  33.71 kB |                11.02 kB
+
+                        | Initial total       |   1.02 MB |               165.09 kB
+
+
+Server bundles         
+Initial chunk files     | Names               |  Raw size
+server.mjs              | server              |   1.06 MB |                        
+chunk-JHOTT7WO.mjs      | -                   | 570.30 kB |                        
+polyfills.server.mjs    | polyfills.server    | 262.30 kB |                        
+chunk-N5P4PIWY.mjs      | -                   | 178.17 kB |                        
+chunk-VVCT4QZE.mjs      | -                   |   2.48 kB |                        
+render-utils.server.mjs | render-utils.server |   1.44 kB |                        
+main.server.mjs         | main.server         | 149 bytes |                        
+
+Lazy chunk files        | Names               |  Raw size
+chunk-QZP2S7SI.mjs      | xhr2                |  11.79 kB |                        
+
+Prerendered 3 static routes.
+Application bundle generation failed. [19.243 seconds]
+
+▲ [WARNING] bundle initial exceeded maximum budget. Budget 500.00 kB was not met by 548.63 kB with a total of 1.02 MB.
+
+
+▲ [WARNING] angular:styles/component:scss;3ba21100d4e89ecfc2ced62a93319159c844c5202feb7e1ef1e8b3d7214b5c47;C:/Users/amine/Documents/GitHub/PlantSocial/frontend/src/app/auth/landing/landing-page.component.ts exceeded maximum budget. Budget 2.00 kB was not met by 586 bytes with a total of 2.57 kB.
+
+
+▲ [WARNING] angular:styles/component:scss;de5f4996e3c4d5d8945a48a46e702d4bf82f58d29da15c82634e0e3754d17567;C:/Users/amine/Documents/GitHub/PlantSocial/frontend/src/app/features/feed/post-composer.component.ts exceeded maximum budget. Budget 2.00 kB was not met by 1.50 kB with a total of 3.50 kB.
+
+
+▲ [WARNING] angular:styles/component:scss;24e525c6ed07140403d7647808f7aaf4fe3bd24b0edb933aa0644fceb3bdb816;C:/Users/amine/Documents/GitHub/PlantSocial/frontend/src/app/features/feed/comment-thread.component.ts exceeded maximum budget. Budget 2.00 kB was not met by 1.53 kB with a total of 3.53 kB.
+
+
+▲ [WARNING] angular:styles/component:scss;b8cdde9108aa3c6dae61343a383804a638b6fabb4f412d9147dcc71f8b28475a;C:/Users/amine/Documents/GitHub/PlantSocial/frontend/src/app/features/feed/post-card.component.ts exceeded maximum budget. Budget 2.00 kB was not met by 4.06 kB with a total of 6.06 kB.
+
+
+▲ [WARNING] angular:styles/component:scss;a7c14c3b2041fb5107665fe65eecd95f2a612a06970f6ca807d9e5e12e286455;C:/Users/amine/Documents/GitHub/PlantSocial/frontend/src/app/features/garden/add-plant-dialog.component.ts exceeded maximum budget. Budget 2.00 kB was not met by 622 bytes with a total of 2.61 kB.
+
+
+▲ [WARNING] angular:styles/component:scss;24ce64a0e6e8fa89636c05b147d5a83b99788b4dc3af13989e0fa7cdcc391890;C:/Users/amine/Documents/GitHub/PlantSocial/frontend/src/app/features/profile/user-profile.component.ts exceeded maximum budget. Budget 2.00 kB was not met by 1.74 kB with a total of 3.74 kB.
+
+
+X [ERROR] bundle initial exceeded maximum budget. Budget 1.00 MB was not met by 24.63 kB with a total of 1.02 MB.
+
+
+X [ERROR] angular:styles/component:scss;b8cdde9108aa3c6dae61343a383804a638b6fabb4f412d9147dcc71f8b28475a;C:/Users/amine/Documents/GitHub/PlantSocial/frontend/src/app/features/feed/post-card.component.ts exceeded maximum budget. Budget 4.00 kB was not met by 2.06 kB with a total of 6.06 kB.
+
+

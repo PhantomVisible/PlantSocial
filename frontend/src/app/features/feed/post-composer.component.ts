@@ -1,6 +1,8 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { PlantService, PlantData } from '../garden/plant.service';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-post-composer',
@@ -12,6 +14,7 @@ import { FormsModule } from '@angular/forms';
         <i class="pi pi-user"></i>
       </div>
       <div class="composer__body">
+        <!-- Text Area -->
         <textarea
           class="composer__input"
           [(ngModel)]="content"
@@ -34,14 +37,57 @@ import { FormsModule } from '@angular/forms';
             <button class="icon-btn" title="Add location">
               <i class="pi pi-map-marker"></i>
             </button>
+            
+            <!-- Plant Selector Dropdown Trigger -->
+            <div class="plant-select-wrap">
+              <button 
+                class="icon-btn" 
+                [class.active]="selectedPlantId()" 
+                title="Tag a plant"
+                (click)="togglePlantDropdown()"
+              >
+                <i class="pi pi-ticket"></i>
+              </button>
+              
+              <!-- Plant Dropdown -->
+              <div *ngIf="showPlantDropdown()" class="plant-dropdown">
+                <div class="plant-dropdown__header">Tag a plant</div>
+                <div 
+                    class="plant-option" 
+                    [class.selected]="!selectedPlantId()"
+                    (click)="selectPlant(null)"
+                >
+                    <span class="plant-emoji">❌</span>
+                    <span>No tag</span>
+                </div>
+                <div 
+                    *ngFor="let plant of myPlants()" 
+                    class="plant-option"
+                    [class.selected]="selectedPlantId() === plant.id"
+                    (click)="selectPlant(plant)"
+                >
+                    <img *ngIf="plant.imageUrl" [src]="resolveUrl(plant.imageUrl)" class="plant-thumb" />
+                    <span *ngIf="!plant.imageUrl" class="plant-emoji">🌱</span>
+                    <span class="plant-name">{{ plant.nickname }}</span>
+                </div>
+              </div>
+            </div>
           </div>
-          <button
-            class="composer__post-btn"
-            [disabled]="!content.trim()"
-            (click)="submitPost()"
-          >
-            Post
-          </button>
+          
+          <div class="composer__actions">
+             <span *ngIf="selectedPlantNickname()" class="plant-tag-badge">
+                🌿 {{ selectedPlantNickname() }}
+                <button (click)="selectPlant(null)">&times;</button>
+             </span>
+             
+             <button
+                class="composer__post-btn"
+                [disabled]="!content.trim()"
+                (click)="submitPost()"
+              >
+                Post
+              </button>
+          </div>
         </div>
       </div>
     </div>
@@ -54,6 +100,9 @@ import { FormsModule } from '@angular/forms';
       (change)="onFileSelected($event)"
       style="display: none"
     />
+    
+    <!-- Backdrop for dropdown -->
+    <div *ngIf="showPlantDropdown()" class="dropdown-backdrop" (click)="showPlantDropdown.set(false)"></div>
   `,
   styles: [`
     .composer {
@@ -152,6 +201,7 @@ import { FormsModule } from '@angular/forms';
     .composer__icons {
       display: flex;
       gap: 4px;
+      position: relative;
     }
 
     .icon-btn {
@@ -169,8 +219,40 @@ import { FormsModule } from '@angular/forms';
       transition: all 0.15s ease;
     }
 
-    .icon-btn:hover {
+    .icon-btn:hover, .icon-btn.active {
       background: var(--trellis-green-pale);
+    }
+    
+    .composer__actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .plant-tag-badge {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--trellis-green-ghost);
+        color: var(--trellis-green-dark);
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 16px;
+    }
+    .plant-tag-badge button {
+        background: none;
+        border: none;
+        color: var(--trellis-text-secondary);
+        font-size: 1.1rem;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+    }
+    .plant-tag-badge button:hover {
+        color: #E53E3E;
     }
 
     .composer__post-btn {
@@ -194,14 +276,103 @@ import { FormsModule } from '@angular/forms';
       opacity: 0.5;
       cursor: not-allowed;
     }
+    
+    /* Plant Dropdown */
+    .plant-select-wrap {
+        position: relative;
+    }
+    
+    .plant-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        margin-top: 8px;
+        background: var(--trellis-white);
+        border: 1px solid var(--trellis-border-light);
+        border-radius: var(--trellis-radius-md);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        width: 220px;
+        max-height: 260px;
+        overflow-y: auto;
+        z-index: 1001;
+        padding: 4px 0;
+    }
+    
+    .dropdown-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        background: transparent;
+    }
+    
+    .plant-dropdown__header {
+        padding: 8px 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--trellis-text-hint);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .plant-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        cursor: pointer;
+        transition: background 0.1s ease;
+    }
+    .plant-option:hover {
+        background: var(--trellis-bg);
+    }
+    .plant-option.selected {
+        background: var(--trellis-green-ghost);
+        color: var(--trellis-green-dark);
+        font-weight: 600;
+    }
+    
+    .plant-thumb {
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        object-fit: cover;
+    }
+    .plant-emoji {
+        font-size: 1.2rem;
+        width: 24px;
+        text-align: center;
+    }
+    .plant-name {
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
   `]
 })
-export class PostComposerComponent {
+export class PostComposerComponent implements OnInit {
   content = '';
   selectedFile: File | null = null;
   previewUrl: string | null = null;
 
-  @Output() postCreated = new EventEmitter<{ content: string; file?: File }>();
+  private plantService = inject(PlantService);
+  private authService = inject(AuthService);
+
+  myPlants = signal<PlantData[]>([]);
+  showPlantDropdown = signal(false);
+  selectedPlantId = signal<string | null>(null);
+  selectedPlantNickname = signal<string | null>(null);
+
+  @Output() postCreated = new EventEmitter<{ content: string; file?: File, plantId?: string }>();
+
+  ngOnInit() {
+    const user = this.authService.currentUser();
+    if (user) {
+      this.plantService.getUserPlants(user.id).subscribe({
+        next: (plants) => this.myPlants.set(plants)
+      });
+    }
+  }
 
   autoResize(event: Event) {
     const textarea = event.target as HTMLTextAreaElement;
@@ -227,15 +398,41 @@ export class PostComposerComponent {
     this.previewUrl = null;
   }
 
+  togglePlantDropdown() {
+    if (this.myPlants().length > 0) {
+      this.showPlantDropdown.update(v => !v);
+    }
+  }
+
+  selectPlant(plant: PlantData | null) {
+    if (plant) {
+      this.selectedPlantId.set(plant.id);
+      this.selectedPlantNickname.set(plant.nickname);
+    } else {
+      this.selectedPlantId.set(null);
+      this.selectedPlantNickname.set(null);
+    }
+    this.showPlantDropdown.set(false);
+  }
+
+  resolveUrl(url: string): string {
+    if (url.startsWith('http')) return url;
+    return 'http://localhost:8080' + url;
+  }
+
   submitPost() {
     if (this.content.trim()) {
       this.postCreated.emit({
         content: this.content,
-        file: this.selectedFile || undefined
+        file: this.selectedFile || undefined,
+        plantId: this.selectedPlantId() || undefined
       });
+      // Reset
       this.content = '';
       this.selectedFile = null;
       this.previewUrl = null;
+      this.selectedPlantId.set(null);
+      this.selectedPlantNickname.set(null);
     }
   }
 }

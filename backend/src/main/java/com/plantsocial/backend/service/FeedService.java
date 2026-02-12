@@ -1,18 +1,19 @@
 package com.plantsocial.backend.service;
 
-import com.plantsocial.backend.dto.CommentRequest;
 import com.plantsocial.backend.dto.PostResponse;
-import com.plantsocial.backend.model.Comment;
+import com.plantsocial.backend.model.Plant;
 import com.plantsocial.backend.model.Post;
 import com.plantsocial.backend.model.PostLike;
 import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.repository.CommentRepository;
+import com.plantsocial.backend.repository.PlantRepository;
 import com.plantsocial.backend.repository.PostLikeRepository;
 import com.plantsocial.backend.repository.PostRepository;
 import com.plantsocial.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -29,6 +30,7 @@ public class FeedService {
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
     private final CommentRepository commentRepository;
+    private final PlantRepository plantRepository;
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
 
@@ -39,7 +41,7 @@ public class FeedService {
     }
 
     @Transactional
-    public PostResponse createPost(String caption, MultipartFile file) {
+    public PostResponse createPost(String caption, MultipartFile file, UUID plantId) {
         User user = getCurrentUser();
 
         String imageUrl = null;
@@ -47,10 +49,16 @@ public class FeedService {
             imageUrl = fileStorageService.storeFile(file);
         }
 
+        Plant plant = null;
+        if (plantId != null) {
+            plant = plantRepository.findById(plantId).orElse(null);
+        }
+
         Post post = Post.builder()
                 .content(caption)
                 .imageUrl(imageUrl)
                 .author(user)
+                .plant(plant)
                 .build();
         Post savedPost = postRepository.save(post);
         return mapToPostResponse(savedPost, user);
@@ -93,22 +101,14 @@ public class FeedService {
         }
     }
 
-    @Transactional
-    public void commentOnPost(UUID postId, CommentRequest request) {
-        User user = getCurrentUser();
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-
-        Comment comment = Comment.builder()
-                .content(request.content())
-                .post(post)
-                .author(user)
-                .build();
-        commentRepository.save(comment);
-    }
-
     private User getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equals(authentication.getPrincipal())) {
+            return null;
+        }
+
+        Object principal = authentication.getPrincipal();
         String email;
         if (principal instanceof UserDetails) {
             email = ((UserDetails) principal).getUsername();
@@ -119,9 +119,17 @@ public class FeedService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
+    public PostResponse mapToPostResponsePublic(Post post, User currentUser) {
+        return mapToPostResponse(post, currentUser);
+    }
+
     private PostResponse mapToPostResponse(Post post, User currentUser) {
         long likesCount = postLikeRepository.countByPost(post);
-        boolean likedByCurrentUser = postLikeRepository.existsByPostAndUser(post, currentUser);
+        long commentCount = commentRepository.countByPost(post);
+        boolean likedByCurrentUser = currentUser != null && postLikeRepository.existsByPostAndUser(post, currentUser);
+
+        UUID plantId = post.getPlant() != null ? post.getPlant().getId() : null;
+        String plantNickname = post.getPlant() != null ? post.getPlant().getNickname() : null;
 
         return new PostResponse(
                 post.getId(),
@@ -131,6 +139,9 @@ public class FeedService {
                 post.getAuthor().getId(),
                 post.getCreatedAt(),
                 likesCount,
-                likedByCurrentUser);
+                commentCount,
+                likedByCurrentUser,
+                plantId,
+                plantNickname);
     }
 }

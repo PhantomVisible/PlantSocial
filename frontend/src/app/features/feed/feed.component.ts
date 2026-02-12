@@ -5,9 +5,6 @@ import { PostComposerComponent } from './post-composer.component';
 import { PostCardComponent, PostCardData } from './post-card.component';
 import { FeedService, Post } from './feed.service';
 import { AuthService } from '../../auth/auth.service';
-import { DialogModule } from 'primeng/dialog';
-import { InputTextareaModule } from 'primeng/inputtextarea';
-import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-feed',
@@ -16,39 +13,23 @@ import { ButtonModule } from 'primeng/button';
     CommonModule,
     FormsModule,
     PostComposerComponent,
-    PostCardComponent,
-    DialogModule,
-    InputTextareaModule,
-    ButtonModule
+    PostCardComponent
   ],
   template: `
-    <!-- ===== Top Nav Bar ===== -->
-    <nav class="feed-nav">
-      <div class="feed-nav__inner">
-        <div class="feed-nav__brand">
-          <i class="pi pi-sun brand-icon"></i>
-          <span class="brand-name">trellis</span>
-        </div>
-        <div class="feed-nav__actions">
-          <button class="nav-btn" (click)="logout()">
-            <i class="pi pi-sign-out"></i>
-            <span>Log out</span>
-          </button>
-        </div>
-      </div>
-    </nav>
-
     <!-- ===== Feed Container ===== -->
     <div class="feed-layout">
       <div class="feed-column">
 
         <!-- Feed Header -->
         <div class="feed-header">
-          <h2>Home</h2>
+          <h2>{{ authService.currentUser() ? 'Your Feed' : 'Global Harvest' }}</h2>
         </div>
 
-        <!-- Composer -->
-        <app-post-composer (postCreated)="createPost($event)"></app-post-composer>
+        <!-- Composer (Only for logged in users) -->
+        <app-post-composer 
+          *ngIf="authService.currentUser()" 
+          (postCreated)="createPost($event)"
+        ></app-post-composer>
 
         <!-- Post List -->
         <div class="feed-list">
@@ -56,7 +37,6 @@ import { ButtonModule } from 'primeng/button';
             *ngFor="let post of posts()"
             [post]="post"
             (onLike)="toggleLike($event)"
-            (onComment)="openCommentDialog($event)"
             (onDelete)="deletePost($event)"
             (onEdit)="editPost($event)"
           ></app-post-card>
@@ -70,29 +50,6 @@ import { ButtonModule } from 'primeng/button';
       </div>
     </div>
 
-    <!-- Comment Dialog -->
-    <p-dialog
-      header="Add Comment"
-      [(visible)]="commentDialogVisible"
-      [modal]="true"
-      [style]="{ width: '480px' }"
-      [draggable]="false"
-      [resizable]="false"
-    >
-      <div style="margin-top: 12px">
-        <textarea
-          pInputTextarea
-          [(ngModel)]="commentContent"
-          [rows]="3"
-          placeholder="Write a comment..."
-          style="width: 100%; resize: none"
-        ></textarea>
-      </div>
-      <ng-template pTemplate="footer">
-        <p-button label="Cancel" (onClick)="commentDialogVisible = false" [text]="true" severity="secondary"></p-button>
-        <p-button label="Comment" (onClick)="submitComment()" [disabled]="!commentContent.trim()"></p-button>
-      </ng-template>
-    </p-dialog>
   `,
   styles: [`
     :host {
@@ -223,14 +180,9 @@ import { ButtonModule } from 'primeng/button';
 })
 export class FeedComponent implements OnInit {
   private feedService = inject(FeedService);
-  private authService = inject(AuthService);
+  public authService = inject(AuthService);
 
   posts = signal<Post[]>([]);
-
-  // Comment state
-  commentDialogVisible = false;
-  selectedPost: Post | null = null;
-  commentContent = '';
 
   ngOnInit() {
     this.loadFeed();
@@ -243,9 +195,11 @@ export class FeedComponent implements OnInit {
     });
   }
 
-  createPost(event: { content: string; file?: File }) {
-    this.feedService.createPost(event.content, event.file).subscribe({
-      next: (post) => this.posts.update(current => [post, ...current]),
+  createPost(event: { content: string; file?: File, plantId?: string }) {
+    this.feedService.createPost(event.content, event.file, event.plantId).subscribe({
+      next: (newPost) => {
+        this.posts.update(current => [newPost, ...current]);
+      },
       error: (err) => console.error('Failed to create post', err)
     });
   }
@@ -278,19 +232,7 @@ export class FeedComponent implements OnInit {
     });
   }
 
-  openCommentDialog(post: Post) {
-    this.selectedPost = post;
-    this.commentContent = '';
-    this.commentDialogVisible = true;
-  }
 
-  submitComment() {
-    if (!this.selectedPost || !this.commentContent.trim()) return;
-    this.feedService.commentOnPost(this.selectedPost.id, { content: this.commentContent }).subscribe({
-      next: () => { this.commentDialogVisible = false; },
-      error: (err) => console.error('Failed to comment', err)
-    });
-  }
 
   logout() {
     this.authService.logout();
