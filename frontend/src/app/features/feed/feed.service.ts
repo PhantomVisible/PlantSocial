@@ -7,14 +7,10 @@ export interface Post {
   content: string;
   imageUrl?: string;
   authorName: string;
+  authorId: string;
   createdAt: string;
   likesCount: number;
   likedByCurrentUser: boolean;
-}
-
-export interface CreatePostRequest {
-  content: string;
-  imageUrl?: string;
 }
 
 export interface CommentRequest {
@@ -32,8 +28,23 @@ export class FeedService {
     return this.http.get<{ content: Post[] }>(`${this.apiUrl}?page=${page}&size=${size}`);
   }
 
-  createPost(request: CreatePostRequest): Observable<Post> {
-    return this.http.post<Post>(this.apiUrl, request);
+  createPost(caption: string, file?: File): Observable<Post> {
+    const formData = new FormData();
+    formData.append('caption', caption);
+    if (file) {
+      formData.append('file', file);
+    }
+    return this.http.post<Post>(this.apiUrl, formData);
+  }
+
+  editPost(postId: string, caption: string): Observable<Post> {
+    const formData = new FormData();
+    formData.append('caption', caption);
+    return this.http.put<Post>(`${this.apiUrl}/${postId}`, formData);
+  }
+
+  deletePost(postId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${postId}`);
   }
 
   likePost(postId: string): Observable<void> {
@@ -41,6 +52,6 @@ export class FeedService {
   }
 
   commentOnPost(postId: string, request: CommentRequest): Observable<void> {
-      return this.http.post<void>(`${this.apiUrl}/${postId}/comment`, request);
+    return this.http.post<void>(`${this.apiUrl}/${postId}/comment`, request);
   }
 }

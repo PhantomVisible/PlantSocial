@@ -1,0 +1,50 @@
+.signup-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.signup-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.signup-input {
+    width: 100%;
+    height: 44px;
+    font-size: 0.95rem;
+    padding: 10px 14px;
+    border: 1px solid var(--trellis-border);
+    border-radius: var(--trellis-radius-sm);
+    background: var(--trellis-bg);
+    color: var(--trellis-text);
+    transition: var(--trellis-transition);
+
+    &::placeholder {
+        color: var(--trellis-text-hint);
+    }
+
+    &:focus {
+        border-color: var(--trellis-green);
+        background: var(--trellis-white);
+        box-shadow: 0 0 0 2px var(--trellis-green-pale);
+        outline: none;
+    }
+}
+
+:host ::ng-deep .signup-btn {
+    width: 100%;
+    height: 46px;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 4px;
+    background: var(--trellis-green-dark) !important;
+    border-color: var(--trellis-green-dark) !important;
+    border-radius: var(--trellis-radius-sm);
+
+    &:hover {
+        background: var(--trellis-green-darkest) !important;
+        border-color: var(--trellis-green-darkest) !important;
+    }
+}

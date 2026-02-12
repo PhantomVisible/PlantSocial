@@ -9,4 +9,6 @@ import java.util.UUID;
 
 public interface CommentRepository extends JpaRepository<Comment, UUID> {
     List<Comment> findByPostOrderByCreatedAtAsc(Post post);
+
+    void deleteAllByPost(Post post);
 }

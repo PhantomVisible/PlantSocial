@@ -1,28 +1,129 @@
-/* You can add global styles to this file, and also import other style files */
+/* ===== Trellis Design System ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* PrimeNG base */
 @import "primeng/resources/themes/lara-light-green/theme.css";
 @import "primeng/resources/primeng.css";
 @import "primeicons/primeicons.css";
 @import "primeflex/primeflex.css";
 
-body {
-    font-family: 'Inter', var(--font-family);
-    margin: 0;
-    min-height: 100vh;
-    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-    background-size: 400% 400%;
-    animation: gradient 15s ease infinite;
+/* ===== Design Tokens ===== */
+:root {
+  /* Primary greens */
+  --trellis-green-darkest: #1B4332;
+  --trellis-green-dark: #2D6A4F;
+  --trellis-green: #40916C;
+  --trellis-green-light: #52B788;
+  --trellis-green-pale: #D8F3DC;
+  --trellis-green-ghost: #F0FFF4;
+
+  /* Neutrals (FB-inspired) */
+  --trellis-bg: #F0F2F5;
+  --trellis-white: #FFFFFF;
+  --trellis-border: #CED4DA;
+  --trellis-border-light: #E4E6EB;
+
+  /* Text */
+  --trellis-text: #1C1E21;
+  --trellis-text-secondary: #65676B;
+  --trellis-text-hint: #8A8D91;
+
+  /* Accent */
+  --trellis-danger: #E74C3C;
+  --trellis-leaf: #40916C;
+
+  /* Shadows */
+  --trellis-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --trellis-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.12);
+  --trellis-shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
+
+  /* Radius */
+  --trellis-radius-sm: 6px;
+  --trellis-radius-md: 8px;
+  --trellis-radius-lg: 12px;
+  --trellis-radius-xl: 16px;
+
+  /* Transitions */
+  --trellis-transition: all 0.2s ease;
 }
 
-@keyframes gradient {
-    0% {
-        background-position: 0% 50%;
-    }
+/* ===== Global Reset ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
 
-    50% {
-        background-position: 100% 50%;
-    }
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-    100% {
-        background-position: 0% 50%;
-    }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--trellis-bg);
+  color: var(--trellis-text);
+  line-height: 1.5;
+}
+
+a {
+  color: var(--trellis-green-dark);
+  text-decoration: none;
+  transition: var(--trellis-transition);
+}
+
+a:hover {
+  color: var(--trellis-green);
+}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--trellis-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--trellis-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--trellis-text-hint);
+}
+
+/* ===== PrimeNG Overrides ===== */
+.p-button {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  border-radius: var(--trellis-radius-sm);
+  transition: var(--trellis-transition);
+}
+
+.p-inputtext {
+  font-family: 'Inter', sans-serif;
+  border-radius: var(--trellis-radius-sm);
+  border-color: var(--trellis-border);
+}
+
+.p-inputtext:focus {
+  border-color: var(--trellis-green);
+  box-shadow: 0 0 0 2px var(--trellis-green-pale);
+}
+
+.p-card {
+  border-radius: var(--trellis-radius-md);
+  box-shadow: var(--trellis-shadow-sm);
+  border: 1px solid var(--trellis-border-light);
+}
+
+/* Utility */
+.trellis-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 16px;
 }

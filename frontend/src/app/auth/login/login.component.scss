@@ -1,0 +1,51 @@
+.header-login-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-input {
+    height: 34px;
+    font-size: 0.85rem;
+    padding: 6px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: var(--trellis-radius-sm);
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    width: 160px;
+    transition: var(--trellis-transition);
+
+    &::placeholder {
+        color: rgba(255, 255, 255, 0.55);
+    }
+
+    &:focus {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: var(--trellis-green-light);
+        box-shadow: none;
+        outline: none;
+        color: #fff;
+    }
+}
+
+:host ::ng-deep .header-login-btn {
+    height: 34px;
+    font-size: 0.85rem;
+    padding: 0 16px;
+    background: var(--trellis-green-light) !important;
+    border-color: var(--trellis-green-light) !important;
+    white-space: nowrap;
+
+    &:hover {
+        background: var(--trellis-green) !important;
+        border-color: var(--trellis-green) !important;
+    }
+}
+
+.header-messages {
+    position: absolute;
+    top: 60px;
+    right: 24px;
+    z-index: 200;
+    max-width: 340px;
+}

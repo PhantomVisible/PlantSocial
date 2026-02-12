@@ -1,41 +1,8 @@
-<div class="flex justify-content-center align-items-center min-h-screen">
-  <div class="surface-card p-4 shadow-2 border-round w-full lg:w-4 border-1 surface-border"
-    style="max-width: 450px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);">
-
-    <div class="text-center mb-5">
-      <i class="pi pi-verified text-5xl text-primary mb-3"></i>
-      <div class="text-900 text-3xl font-medium mb-3">Welcome Back</div>
-      <span class="text-600 font-medium line-height-3">Do not have an account?</span>
-      <a routerLink="/register" class="font-medium no-underline ml-2 text-blue-500 cursor-pointer">Create today!</a>
-    </div>
-
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-      <p-messages [(value)]="messages" [enableService]="false" [closable]="true"></p-messages>
-
-      <div class="mb-3">
-        <label for="email" class="block text-900 font-medium mb-2">Email</label>
-        <span class="p-input-icon-left w-full">
-          <i class="pi pi-envelope"></i>
-          <input id="email" type="text" pInputText formControlName="email" class="w-full pl-5"
-            placeholder="Email address" />
-        </span>
-        <small *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" class="p-error block mt-1">
-          Valid email is required
-        </small>
-      </div>
-
-      <div class="mb-5">
-        <label for="password" class="block text-900 font-medium mb-2">Password</label>
-        <p-password id="password" formControlName="password" [feedback]="false" [toggleMask]="true" styleClass="w-full"
-          inputStyleClass="w-full" placeholder="Password"></p-password>
-        <small *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
-          class="p-error block mt-1">
-          Password is required
-        </small>
-      </div>
-
-      <p-button label="Sign In" type="submit" [loading]="loading" [disabled]="loginForm.invalid" styleClass="w-full"
-        icon="pi pi-user"></p-button>
-    </form>
-  </div>
-</div>
+<form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="header-login-form">
+  <input type="email" pInputText formControlName="email" placeholder="Email" class="header-input" />
+  <input type="password" pInputText formControlName="password" placeholder="Password" class="header-input" />
+  <p-button label="Log In" type="submit" [loading]="loading" [disabled]="loginForm.invalid"
+    styleClass="header-login-btn"></p-button>
+</form>
+<p-messages *ngIf="messages.length" [(value)]="messages" [enableService]="false" [closable]="true"
+  class="header-messages"></p-messages>

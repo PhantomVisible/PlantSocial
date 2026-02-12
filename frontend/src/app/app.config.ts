@@ -5,11 +5,20 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 
 import { routes } from './app.routes';
 import { authInterceptor } from './auth/auth.interceptor';
+import { loadingInterceptor } from './core/loading.interceptor';
+import { errorInterceptor } from './core/error.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideAnimations(),
-    provideHttpClient(withFetch(), withInterceptors([authInterceptor]))
+    provideHttpClient(
+      withFetch(),
+      withInterceptors([
+        loadingInterceptor,   // 1. Track loading state
+        authInterceptor,      // 2. Attach JWT token
+        errorInterceptor      // 3. Catch & toast errors
+      ])
+    )
   ]
 };

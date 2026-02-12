@@ -1,11 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { PasswordModule } from 'primeng/password';
-import { CardModule } from 'primeng/card';
 import { MessagesModule } from 'primeng/messages';
 import { Message } from 'primeng/api';
 import { AuthService } from '../auth.service';
@@ -18,10 +15,7 @@ import { AuthService } from '../auth.service';
     ReactiveFormsModule,
     ButtonModule,
     InputTextModule,
-    PasswordModule,
-    CardModule,
-    MessagesModule,
-    RouterLink
+    MessagesModule
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
@@ -29,7 +23,6 @@ import { AuthService } from '../auth.service';
 export class LoginComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
-  private router = inject(Router);
 
   loginForm: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -46,12 +39,11 @@ export class LoginComponent {
       this.authService.login(this.loginForm.value).subscribe({
         next: () => {
           this.loading = false;
-          // Navigation handled in service
         },
         error: (err) => {
           this.loading = false;
           console.error('Login failed', err);
-          this.messages = [{ severity: 'error', summary: 'Error', detail: 'Login failed. Please check your credentials.' }];
+          this.messages = [{ severity: 'error', summary: 'Error', detail: 'Login failed. Check your credentials.' }];
         }
       });
     }

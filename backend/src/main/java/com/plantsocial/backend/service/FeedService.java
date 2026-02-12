@@ -1,7 +1,6 @@
 package com.plantsocial.backend.service;
 
 import com.plantsocial.backend.dto.CommentRequest;
-import com.plantsocial.backend.dto.CreatePostRequest;
 import com.plantsocial.backend.dto.PostResponse;
 import com.plantsocial.backend.model.Comment;
 import com.plantsocial.backend.model.Post;
@@ -19,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -30,6 +30,7 @@ public class FeedService {
     private final PostLikeRepository postLikeRepository;
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
+    private final FileStorageService fileStorageService;
 
     public Page<PostResponse> getFeed(Pageable pageable) {
         User currentUser = getCurrentUser();
@@ -38,15 +39,41 @@ public class FeedService {
     }
 
     @Transactional
-    public PostResponse createPost(CreatePostRequest request) {
+    public PostResponse createPost(String caption, MultipartFile file) {
         User user = getCurrentUser();
+
+        String imageUrl = null;
+        if (file != null && !file.isEmpty()) {
+            imageUrl = fileStorageService.storeFile(file);
+        }
+
         Post post = Post.builder()
-                .content(request.content())
-                .imageUrl(request.imageUrl())
+                .content(caption)
+                .imageUrl(imageUrl)
                 .author(user)
                 .build();
         Post savedPost = postRepository.save(post);
         return mapToPostResponse(savedPost, user);
+    }
+
+    @Transactional
+    public PostResponse editPost(UUID postId, String caption) {
+        User user = getCurrentUser();
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        post.setContent(caption);
+        Post savedPost = postRepository.save(post);
+        return mapToPostResponse(savedPost, user);
+    }
+
+    @Transactional
+    public void deletePost(UUID postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        // Delete related likes and comments first
+        postLikeRepository.deleteAllByPost(post);
+        commentRepository.deleteAllByPost(post);
+        postRepository.delete(post);
     }
 
     @Transactional
@@ -56,7 +83,7 @@ public class FeedService {
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
 
         if (postLikeRepository.existsByPostAndUser(post, user)) {
-            postLikeRepository.deleteByPostAndUser(post, user); // Unlike if already liked
+            postLikeRepository.deleteByPostAndUser(post, user);
         } else {
             PostLike like = PostLike.builder()
                     .post(post)
@@ -101,6 +128,7 @@ public class FeedService {
                 post.getContent(),
                 post.getImageUrl(),
                 post.getAuthor().getFullName(),
+                post.getAuthor().getId(),
                 post.getCreatedAt(),
                 likesCount,
                 likedByCurrentUser);

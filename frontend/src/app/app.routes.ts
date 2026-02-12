@@ -1,11 +1,13 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './auth/login/login.component';
-import { RegisterComponent } from './auth/register/register.component';
+import { LandingPageComponent } from './auth/landing/landing-page.component';
 import { FeedComponent } from './features/feed/feed.component';
+import { authGuard } from './auth/auth.guard';
+import { guestGuard } from './auth/guest.guard';
 
 export const routes: Routes = [
-    { path: 'auth/login', component: LoginComponent },
-    { path: 'auth/register', component: RegisterComponent },
-    { path: 'feed', component: FeedComponent },
-    { path: '', redirectTo: 'feed', pathMatch: 'full' }
+    { path: '', component: LandingPageComponent, canActivate: [guestGuard] },
+    { path: 'auth/login', component: LandingPageComponent, canActivate: [guestGuard] },
+    { path: 'auth/register', component: LandingPageComponent, canActivate: [guestGuard] },
+    { path: 'feed', component: FeedComponent, canActivate: [authGuard] },
+    { path: '**', redirectTo: '' }
 ];

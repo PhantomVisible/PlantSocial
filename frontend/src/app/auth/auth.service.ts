@@ -20,14 +20,20 @@ export interface RegisterRequest {
     password: string;
 }
 
+export interface CurrentUser {
+    id: string;
+    email: string;
+    fullName: string;
+}
+
 @Injectable({
     providedIn: 'root'
 })
 export class AuthService {
-    private apiUrl = 'http://localhost:8080/api/v1/auth'; // Updated to match backend Controller
+    private apiUrl = 'http://localhost:8080/api/v1/auth';
 
-    // Signal to track auth state
     isAuthenticated = signal<boolean>(false);
+    currentUser = signal<CurrentUser | null>(null);
 
     constructor(
         private http: HttpClient,
@@ -35,7 +41,20 @@ export class AuthService {
         @Inject(PLATFORM_ID) private platformId: Object
     ) {
         if (isPlatformBrowser(this.platformId)) {
-            this.isAuthenticated.set(!!localStorage.getItem('token'));
+            const token = localStorage.getItem('token');
+            if (token) {
+                const user = this.decodeToken(token);
+                if (user && user.id) {
+                    // Valid new-format token
+                    this.isAuthenticated.set(true);
+                    this.currentUser.set(user);
+                } else {
+                    // Old token without userId — wipe it and force re-login
+                    localStorage.clear();
+                    this.isAuthenticated.set(false);
+                    this.currentUser.set(null);
+                }
+            }
         }
     }
 
@@ -45,6 +64,7 @@ export class AuthService {
                 if (isPlatformBrowser(this.platformId)) {
                     localStorage.setItem('token', response.token);
                     this.isAuthenticated.set(true);
+                    this.currentUser.set(this.decodeToken(response.token));
                 }
                 this.router.navigate(['/feed']);
             })
@@ -52,11 +72,12 @@ export class AuthService {
     }
 
     login(request: LoginRequest): Observable<AuthResponse> {
-        return this.http.post<AuthResponse>(`${this.apiUrl}/authenticate`, request).pipe( // Updated endpoint
+        return this.http.post<AuthResponse>(`${this.apiUrl}/authenticate`, request).pipe(
             tap(response => {
                 if (isPlatformBrowser(this.platformId)) {
                     localStorage.setItem('token', response.token);
                     this.isAuthenticated.set(true);
+                    this.currentUser.set(this.decodeToken(response.token));
                 }
                 this.router.navigate(['/feed']);
             })
@@ -65,9 +86,23 @@ export class AuthService {
 
     logout() {
         if (isPlatformBrowser(this.platformId)) {
-            localStorage.removeItem('token');
+            localStorage.clear();
             this.isAuthenticated.set(false);
+            this.currentUser.set(null);
         }
-        this.router.navigate(['/auth/login']); // Redirect to login
+        this.router.navigate(['/']);
+    }
+
+    private decodeToken(token: string): CurrentUser | null {
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return {
+                id: payload.userId || '',
+                email: payload.sub || '',
+                fullName: payload.fullName || ''
+            };
+        } catch {
+            return null;
+        }
     }
 }
