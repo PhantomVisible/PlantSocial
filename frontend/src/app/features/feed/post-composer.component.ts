@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PlantService, PlantData } from '../garden/plant.service';
 import { AuthService } from '../../auth/auth.service';
+import { WikipediaService } from '../../shared/wikipedia.service';
 
 @Component({
   selector: 'app-post-composer',
@@ -27,6 +28,29 @@ import { AuthService } from '../../auth/auth.service';
         <div *ngIf="previewUrl" class="composer__preview">
           <img [src]="previewUrl" alt="Attached image" />
           <button class="preview-remove" (click)="removeFile()">&times;</button>
+        </div>
+
+        <!-- Plant Tag Autocomplete -->
+        <div class="composer__tag-row">
+          <input
+            class="composer__tag-input"
+            [(ngModel)]="plantTag"
+            placeholder="🌿 Tag a plant (e.g., Tomato)..."
+            maxlength="40"
+            (input)="onTagSearch()"
+            (focus)="tagFocused = true"
+            (blur)="onTagBlur()"
+            autocomplete="off"
+          />
+          <div *ngIf="tagSuggestions().length > 0 && tagFocused" class="tag-suggestions">
+            <button
+              *ngFor="let s of tagSuggestions()"
+              class="tag-suggestion-item"
+              (mousedown)="selectTag(s)"
+            >
+              🌿 {{ s }}
+            </button>
+          </div>
         </div>
 
         <div class="composer__toolbar">
@@ -348,22 +372,78 @@ import { AuthService } from '../../auth/auth.service';
         overflow: hidden;
         text-overflow: ellipsis;
     }
+
+    /* Plant Tag Input */
+    .composer__tag-row {
+      padding: 0;
+      margin-top: 4px;
+    }
+    .composer__tag-input {
+      width: 100%;
+      border: none;
+      border-top: 1px solid var(--trellis-border-light);
+      padding: 8px 0;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      color: var(--trellis-text);
+      background: transparent;
+      outline: none;
+    }
+    .composer__tag-input::placeholder {
+      color: var(--trellis-text-hint);
+    }
+    .composer__tag-row {
+      position: relative;
+    }
+    .tag-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--trellis-white);
+      border: 1px solid var(--trellis-border-light);
+      border-radius: 0 0 8px 8px;
+      box-shadow: var(--trellis-shadow-lg);
+      z-index: 100;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    .tag-suggestion-item {
+      display: block;
+      width: 100%;
+      padding: 8px 12px;
+      border: none;
+      background: none;
+      text-align: left;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      color: var(--trellis-text);
+      cursor: pointer;
+      transition: background 0.1s ease;
+    }
+    .tag-suggestion-item:hover {
+      background: var(--trellis-green-ghost);
+    }
   `]
 })
 export class PostComposerComponent implements OnInit {
   content = '';
   selectedFile: File | null = null;
   previewUrl: string | null = null;
+  plantTag = '';
+  tagFocused = false;
+  tagSuggestions = signal<string[]>([]);
 
   private plantService = inject(PlantService);
   private authService = inject(AuthService);
+  private wikiService = inject(WikipediaService);
 
   myPlants = signal<PlantData[]>([]);
   showPlantDropdown = signal(false);
   selectedPlantId = signal<string | null>(null);
   selectedPlantNickname = signal<string | null>(null);
 
-  @Output() postCreated = new EventEmitter<{ content: string; file?: File, plantId?: string }>();
+  @Output() postCreated = new EventEmitter<{ content: string; file?: File, plantId?: string, plantTag?: string }>();
 
   ngOnInit() {
     const user = this.authService.currentUser();
@@ -378,6 +458,36 @@ export class PostComposerComponent implements OnInit {
     const textarea = event.target as HTMLTextAreaElement;
     textarea.style.height = 'auto';
     textarea.style.height = textarea.scrollHeight + 'px';
+  }
+
+  // ---- Tag Autocomplete ----
+  private searchTimeout: any;
+
+  onTagSearch() {
+    clearTimeout(this.searchTimeout);
+    const term = this.plantTag.trim();
+    if (term.length < 2) {
+      this.tagSuggestions.set([]);
+      return;
+    }
+    this.searchTimeout = setTimeout(() => {
+      this.wikiService.search(term).subscribe({
+        next: (results) => this.tagSuggestions.set(results),
+        error: () => this.tagSuggestions.set([])
+      });
+    }, 300);
+  }
+
+  onTagBlur() {
+    setTimeout(() => {
+      this.tagFocused = false;
+    }, 200);
+  }
+
+  selectTag(name: string) {
+    this.plantTag = name;
+    this.tagSuggestions.set([]);
+    this.tagFocused = false;
   }
 
   onFileSelected(event: Event) {
@@ -425,7 +535,8 @@ export class PostComposerComponent implements OnInit {
       this.postCreated.emit({
         content: this.content,
         file: this.selectedFile || undefined,
-        plantId: this.selectedPlantId() || undefined
+        plantId: this.selectedPlantId() || undefined,
+        plantTag: this.plantTag.trim() || undefined
       });
       // Reset
       this.content = '';
@@ -433,6 +544,7 @@ export class PostComposerComponent implements OnInit {
       this.previewUrl = null;
       this.selectedPlantId.set(null);
       this.selectedPlantNickname.set(null);
+      this.plantTag = '';
     }
   }
 }

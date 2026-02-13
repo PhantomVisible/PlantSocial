@@ -4,10 +4,10 @@ import { RouterModule } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 
 @Component({
-    selector: 'app-navbar',
-    standalone: true,
-    imports: [CommonModule, RouterModule],
-    template: `
+  selector: 'app-navbar',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  template: `
     <nav class="navbar">
       <div class="navbar__container">
         <!-- Logo -->
@@ -20,9 +20,9 @@ import { AuthService } from '../auth/auth.service';
         <div class="navbar__actions">
           <ng-container *ngIf="user(); else guestActions">
              <!-- User Actions -->
-             <a routerLink="/feed" class="btn-create" title="Create Post">
-               <i class="pi pi-plus"></i>
-             </a>
+             <button class="btn-logout" title="Log Out" (click)="authService.logout()">
+               <i class="pi pi-sign-out"></i>
+             </button>
              
              <!-- Avatar dropdown trigger (simple link for now) -->
              <a [routerLink]="['/profile', user()!.id]" class="user-avatar">
@@ -38,7 +38,7 @@ import { AuthService } from '../auth/auth.service';
       </div>
     </nav>
   `,
-    styles: [`
+  styles: [`
     .navbar {
       background: rgba(255,255,255,0.85);
       backdrop-filter: blur(12px);
@@ -81,19 +81,24 @@ import { AuthService } from '../auth/auth.service';
     }
 
     /* User Actions */
-    .btn-create {
+    .btn-logout {
       width: 36px;
       height: 36px;
       border-radius: 50%;
+      border: none;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--trellis-text);
-      text-decoration: none;
+      color: var(--trellis-text-secondary);
+      background: none;
       font-size: 1.1rem;
-      transition: background 0.15s ease;
+      cursor: pointer;
+      transition: all 0.15s ease;
     }
-    .btn-create:hover { background: rgba(0,0,0,0.05); }
+    .btn-logout:hover {
+      background: #FFF5F5;
+      color: #E53E3E;
+    }
 
     .user-avatar {
       width: 36px;
@@ -137,10 +142,10 @@ import { AuthService } from '../auth/auth.service';
   `]
 })
 export class NavbarComponent {
-    authService = inject(AuthService);
-    user = this.authService.currentUser;
+  authService = inject(AuthService);
+  user = this.authService.currentUser;
 
-    getInitials(name: string): string {
-        return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-    }
+  getInitials(name: string): string {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  }
 }

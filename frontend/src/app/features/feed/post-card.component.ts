@@ -6,6 +6,7 @@ import { AuthService } from '../../auth/auth.service';
 import { CommentThreadComponent } from './comment-thread.component';
 import { AuthPromptDialogComponent } from '../../auth/auth-prompt-dialog.component';
 import { AuthGatekeeperService } from '../../auth/auth-gatekeeper.service';
+import { WikipediaService } from '../../shared/wikipedia.service';
 
 export interface PostCardData {
   id: string;
@@ -19,6 +20,7 @@ export interface PostCardData {
   likedByCurrentUser: boolean;
   plantId?: string;
   plantNickname?: string;
+  plantTag?: string;
 }
 
 @Component({
@@ -37,9 +39,14 @@ export interface PostCardData {
           <span class="post-card__dot">·</span>
           <span class="post-card__time">{{ formatTime(post.createdAt) }}</span>
           
-          <!-- Plant Badge -->
+          <!-- Plant Badge (from garden) -->
           <span *ngIf="post.plantNickname" class="post-card__plant-badge">
             🌿 {{ post.plantNickname }}
+          </span>
+
+          <!-- Plant Tag Badge (free-text, clickable) -->
+          <span *ngIf="post.plantTag" class="post-card__plant-tag" (click)="onTagClick()">
+            🏷️ {{ post.plantTag }}
           </span>
         </div>
 
@@ -72,6 +79,27 @@ export interface PostCardData {
           rows="3"
           (keydown.escape)="cancelEdit()"
         ></textarea>
+        <div class="edit-tag-row">
+          <input
+            class="edit-tag-input"
+            [(ngModel)]="editTag"
+            placeholder="🌿 Plant tag (optional)"
+            (input)="onEditTagSearch()"
+            (focus)="editTagFocused = true"
+            (blur)="onEditTagBlur()"
+            autocomplete="off"
+          />
+          <button *ngIf="editTag" class="edit-tag-clear" (click)="editTag = ''">&times;</button>
+          <div *ngIf="editTagSuggestions().length > 0 && editTagFocused" class="edit-tag-suggestions">
+            <button
+              *ngFor="let s of editTagSuggestions()"
+              class="edit-tag-suggestion-item"
+              (mousedown)="selectEditTag(s)"
+            >
+              🌿 {{ s }}
+            </button>
+          </div>
+        </div>
         <div class="edit-actions">
           <button class="edit-btn edit-btn--save" [disabled]="!editContent.trim()" (click)="saveEdit()">Save</button>
           <button class="edit-btn edit-btn--cancel" (click)="cancelEdit()">Cancel</button>
@@ -197,6 +225,24 @@ export interface PostCardData {
       padding: 2px 8px;
       border-radius: 12px;
       margin-left: 4px;
+    }
+    .post-card__plant-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #fff;
+      background: var(--trellis-green);
+      padding: 2px 10px;
+      border-radius: 12px;
+      margin-left: 4px;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+    .post-card__plant-tag:hover {
+      background: var(--trellis-green-dark);
+      transform: scale(1.05);
     }
 
     /* ---------- Owner Menu ---------- */
@@ -446,17 +492,112 @@ export interface PostCardData {
     .confirm-btn--delete:hover { background: #C53030; }
     .confirm-btn--cancel { background: var(--trellis-border-light); color: var(--trellis-text-secondary); }
     .confirm-btn--cancel:hover { background: #e0e0e0; }
+
+    /* ===== EDIT MODE ===== */
+    .post-card__edit { padding: 0 20px 12px; }
+    .edit-textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--trellis-border-light);
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.92rem;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .edit-textarea:focus { border-color: var(--trellis-green); }
+    .edit-tag-row {
+      position: relative;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+    }
+    .edit-tag-input {
+      flex: 1;
+      padding: 8px 32px 8px 12px;
+      border: 1px solid var(--trellis-border-light);
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      outline: none;
+      background: transparent;
+    }
+    .edit-tag-input:focus { border-color: var(--trellis-green); }
+    .edit-tag-input::placeholder { color: var(--trellis-text-hint); }
+    .edit-tag-clear {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      font-size: 1.1rem;
+      color: var(--trellis-text-hint);
+      cursor: pointer;
+      padding: 0 4px;
+    }
+    .edit-tag-clear:hover { color: #E53E3E; }
+    .edit-tag-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--trellis-white);
+      border: 1px solid var(--trellis-border-light);
+      border-radius: 0 0 8px 8px;
+      box-shadow: var(--trellis-shadow-lg);
+      z-index: 100;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    .edit-tag-suggestion-item {
+      display: block;
+      width: 100%;
+      padding: 8px 12px;
+      border: none;
+      background: none;
+      text-align: left;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      color: var(--trellis-text);
+      cursor: pointer;
+      transition: background 0.1s ease;
+    }
+    .edit-tag-suggestion-item:hover { background: var(--trellis-green-ghost); }
+    .edit-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      justify-content: flex-end;
+    }
+    .edit-btn {
+      padding: 6px 18px;
+      border: none;
+      border-radius: 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .edit-btn--save { background: var(--trellis-green); color: #fff; }
+    .edit-btn--save:hover { background: var(--trellis-green-dark); }
+    .edit-btn--save:disabled { opacity: 0.5; cursor: not-allowed; }
+    .edit-btn--cancel { background: var(--trellis-border-light); color: var(--trellis-text-secondary); }
+    .edit-btn--cancel:hover { background: #e0e0e0; }
   `]
 })
 export class PostCardComponent {
   @Input({ required: true }) post!: PostCardData;
   @Output() onLike = new EventEmitter<PostCardData>();
   @Output() onDelete = new EventEmitter<string>();
-  @Output() onEdit = new EventEmitter<{ id: string; content: string }>();
+  @Output() onEdit = new EventEmitter<{ id: string; content: string; plantTag?: string | null }>();
 
   private authService = inject(AuthService);
   private gatekeeper = inject(AuthGatekeeperService);
   private router = inject(Router);
+  private wikiService = inject(WikipediaService);
 
   menuOpen = signal(false);
   lightboxOpen = signal(false);
@@ -464,6 +605,9 @@ export class PostCardComponent {
   isEditing = signal(false);
   isCommentsOpen = signal(false);
   editContent = '';
+  editTag = '';
+  editTagFocused = false;
+  editTagSuggestions = signal<string[]>([]);
 
   // ---- Comments ----
   toggleComments() {
@@ -493,18 +637,55 @@ export class PostCardComponent {
     });
   }
 
+  onTagClick() {
+    if (this.post.plantTag) {
+      this.router.navigate([], { queryParams: { plant: this.post.plantTag } });
+    }
+  }
+
   // ---- Edit ----
   startEdit() {
     this.editContent = this.post.content;
+    this.editTag = this.post.plantTag || '';
     this.isEditing.set(true);
     this.menuOpen.set(false);
   }
-  cancelEdit() { this.isEditing.set(false); }
+  cancelEdit() { this.isEditing.set(false); this.editTagSuggestions.set([]); }
   saveEdit() {
     if (this.editContent.trim()) {
-      this.onEdit.emit({ id: this.post.id, content: this.editContent });
+      this.onEdit.emit({
+        id: this.post.id,
+        content: this.editContent,
+        plantTag: this.editTag.trim() || null
+      });
       this.isEditing.set(false);
+      this.editTagSuggestions.set([]);
     }
+  }
+
+  // ---- Edit Tag Autocomplete ----
+  private editSearchTimeout: any;
+
+  onEditTagSearch() {
+    clearTimeout(this.editSearchTimeout);
+    const term = this.editTag.trim();
+    if (term.length < 2) { this.editTagSuggestions.set([]); return; }
+    this.editSearchTimeout = setTimeout(() => {
+      this.wikiService.search(term).subscribe({
+        next: (r) => this.editTagSuggestions.set(r),
+        error: () => this.editTagSuggestions.set([])
+      });
+    }, 300);
+  }
+
+  onEditTagBlur() {
+    setTimeout(() => { this.editTagFocused = false; }, 200);
+  }
+
+  selectEditTag(name: string) {
+    this.editTag = name;
+    this.editTagSuggestions.set([]);
+    this.editTagFocused = false;
   }
 
   // ---- Delete ----

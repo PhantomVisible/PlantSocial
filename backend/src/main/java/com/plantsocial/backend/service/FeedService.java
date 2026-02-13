@@ -34,14 +34,19 @@ public class FeedService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
 
-    public Page<PostResponse> getFeed(Pageable pageable) {
+    public Page<PostResponse> getFeed(Pageable pageable, String plant) {
         User currentUser = getCurrentUser();
-        return postRepository.findAllByOrderByCreatedAtDesc(pageable)
-                .map(post -> mapToPostResponse(post, currentUser));
+        Page<Post> posts;
+        if (plant != null && !plant.isBlank()) {
+            posts = postRepository.findByPlantTagIgnoreCaseOrderByCreatedAtDesc(plant.trim(), pageable);
+        } else {
+            posts = postRepository.findAllByOrderByCreatedAtDesc(pageable);
+        }
+        return posts.map(post -> mapToPostResponse(post, currentUser));
     }
 
     @Transactional
-    public PostResponse createPost(String caption, MultipartFile file, UUID plantId) {
+    public PostResponse createPost(String caption, MultipartFile file, UUID plantId, String plantTag) {
         User user = getCurrentUser();
 
         String imageUrl = null;
@@ -59,17 +64,20 @@ public class FeedService {
                 .imageUrl(imageUrl)
                 .author(user)
                 .plant(plant)
+                .plantTag(plantTag != null && !plantTag.isBlank() ? plantTag.trim() : null)
                 .build();
         Post savedPost = postRepository.save(post);
         return mapToPostResponse(savedPost, user);
     }
 
     @Transactional
-    public PostResponse editPost(UUID postId, String caption) {
+    public PostResponse editPost(UUID postId, String caption, String plantTag) {
         User user = getCurrentUser();
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
         post.setContent(caption);
+        // Set or clear plantTag
+        post.setPlantTag(plantTag != null && !plantTag.isBlank() ? plantTag.trim() : null);
         Post savedPost = postRepository.save(post);
         return mapToPostResponse(savedPost, user);
     }
@@ -78,9 +86,7 @@ public class FeedService {
     public void deletePost(UUID postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-        // Delete related likes and comments first
-        postLikeRepository.deleteAllByPost(post);
-        commentRepository.deleteAllByPost(post);
+        // CascadeType.ALL on comments/likes handles cleanup automatically
         postRepository.delete(post);
     }
 
@@ -142,6 +148,7 @@ public class FeedService {
                 commentCount,
                 likedByCurrentUser,
                 plantId,
-                plantNickname);
+                plantNickname,
+                post.getPlantTag());
     }
 }

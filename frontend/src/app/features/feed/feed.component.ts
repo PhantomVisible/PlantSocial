@@ -1,6 +1,8 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { PostComposerComponent } from './post-composer.component';
 import { PostCardComponent, PostCardData } from './post-card.component';
 import { FeedService, Post } from './feed.service';
@@ -16,131 +18,64 @@ import { AuthService } from '../../auth/auth.service';
     PostCardComponent
   ],
   template: `
-    <!-- ===== Feed Container ===== -->
     <div class="feed-layout">
-      <div class="feed-column">
 
-        <!-- Feed Header -->
-        <div class="feed-header">
-          <h2>{{ authService.currentUser() ? 'Your Feed' : 'Global Harvest' }}</h2>
-        </div>
+      <!-- Feed Header -->
+      <div class="feed-header">
+        <h2>{{ activeFilter() ? '🏷️ ' + activeFilter() : (authService.currentUser() ? 'Your Feed' : 'Global Harvest') }}</h2>
+        <button *ngIf="activeFilter()" class="filter-clear" (click)="clearFilter()">
+          Clear Filter &times;
+        </button>
+      </div>
 
-        <!-- Composer (Only for logged in users) -->
-        <app-post-composer 
-          *ngIf="authService.currentUser()" 
-          (postCreated)="createPost($event)"
-        ></app-post-composer>
+      <!-- Composer -->
+      <app-post-composer 
+        *ngIf="authService.currentUser()" 
+        (postCreated)="createPost($event)"
+      ></app-post-composer>
 
-        <!-- Post List -->
-        <div class="feed-list">
-          <app-post-card
-            *ngFor="let post of posts()"
-            [post]="post"
-            (onLike)="toggleLike($event)"
-            (onDelete)="deletePost($event)"
-            (onEdit)="editPost($event)"
-          ></app-post-card>
+      <!-- Post List -->
+      <div class="feed-list">
+        <app-post-card
+          *ngFor="let post of posts()"
+          [post]="post"
+          (onLike)="toggleLike($event)"
+          (onDelete)="deletePost($event)"
+          (onEdit)="editPost($event)"
+        ></app-post-card>
 
-          <div *ngIf="posts().length === 0" class="feed-empty">
-            <i class="pi pi-sun empty-icon"></i>
-            <p>Nothing here yet.</p>
-            <span>Share what's growing in your garden!</span>
-          </div>
+        <div *ngIf="posts().length === 0" class="feed-empty">
+          <i class="pi pi-sun empty-icon"></i>
+          <p *ngIf="!activeFilter()">Nothing here yet.</p>
+          <p *ngIf="activeFilter()">No posts tagged "{{ activeFilter() }}".</p>
+          <span *ngIf="!activeFilter()">Share what's growing in your garden!</span>
+          <span *ngIf="activeFilter()">Be the first to post about it!</span>
         </div>
       </div>
     </div>
-
   `,
   styles: [`
     :host {
       display: block;
       min-height: 100vh;
-      background: var(--trellis-bg);
-    }
-
-    /* ===== Nav Bar ===== */
-    .feed-nav {
       background: var(--trellis-white);
-      border-bottom: 1px solid var(--trellis-border-light);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      height: 53px;
-      display: flex;
-      align-items: center;
-      padding: 0 24px;
     }
 
-    .feed-nav__inner {
-      max-width: 600px;
-      width: 100%;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .feed-nav__brand {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .brand-icon {
-      font-size: 1.3rem;
-      color: var(--trellis-green);
-    }
-
-    .brand-name {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: var(--trellis-green-dark);
-      letter-spacing: -0.5px;
-    }
-
-    .nav-btn {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      border: none;
-      background: none;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      color: var(--trellis-text-secondary);
-      cursor: pointer;
-      transition: all 0.15s ease;
-      font-family: 'Inter', sans-serif;
-    }
-
-    .nav-btn:hover {
-      background: var(--trellis-green-pale);
-      color: var(--trellis-green-dark);
-    }
-
-    /* ===== Feed Layout ===== */
     .feed-layout {
-      display: flex;
-      justify-content: center;
-    }
-
-    .feed-column {
       width: 100%;
-      max-width: 600px;
-      min-height: calc(100vh - 53px);
-      background: var(--trellis-white);
-      border-left: 1px solid var(--trellis-border-light);
-      border-right: 1px solid var(--trellis-border-light);
     }
 
     .feed-header {
       padding: 16px 20px;
       border-bottom: 1px solid var(--trellis-border-light);
       position: sticky;
-      top: 53px;
+      top: 0;
       background: rgba(255,255,255,0.85);
       backdrop-filter: blur(12px);
       z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
     .feed-header h2 {
@@ -148,6 +83,26 @@ import { AuthService } from '../../auth/auth.service';
       font-size: 1.2rem;
       font-weight: 700;
       color: var(--trellis-text);
+    }
+
+    .filter-clear {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px;
+      border: 1px solid var(--trellis-border-light);
+      background: var(--trellis-white);
+      border-radius: 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      color: var(--trellis-text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .filter-clear:hover {
+      background: #FFF5F5;
+      border-color: #E53E3E;
+      color: #E53E3E;
     }
 
     /* Empty State */
@@ -178,25 +133,41 @@ import { AuthService } from '../../auth/auth.service';
     }
   `]
 })
-export class FeedComponent implements OnInit {
+export class FeedComponent implements OnInit, OnDestroy {
   private feedService = inject(FeedService);
   public authService = inject(AuthService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   posts = signal<Post[]>([]);
+  activeFilter = signal<string | null>(null);
+  private querySub?: Subscription;
 
   ngOnInit() {
-    this.loadFeed();
+    this.querySub = this.route.queryParams.subscribe(params => {
+      const plant = params['plant'] || null;
+      this.activeFilter.set(plant);
+      this.loadFeed(plant);
+    });
   }
 
-  loadFeed() {
-    this.feedService.getFeed().subscribe({
+  ngOnDestroy() {
+    this.querySub?.unsubscribe();
+  }
+
+  loadFeed(plant?: string | null) {
+    this.feedService.getFeed(0, 20, plant || undefined).subscribe({
       next: (response) => this.posts.set(response.content),
       error: (err) => console.error('Failed to load feed', err)
     });
   }
 
-  createPost(event: { content: string; file?: File, plantId?: string }) {
-    this.feedService.createPost(event.content, event.file, event.plantId).subscribe({
+  clearFilter() {
+    this.router.navigate([], { queryParams: {} });
+  }
+
+  createPost(event: { content: string; file?: File, plantId?: string, plantTag?: string }) {
+    this.feedService.createPost(event.content, event.file, event.plantId, event.plantTag).subscribe({
       next: (newPost) => {
         this.posts.update(current => [newPost, ...current]);
       },
@@ -232,8 +203,6 @@ export class FeedComponent implements OnInit {
     });
   }
 
-
-
   logout() {
     this.authService.logout();
   }
@@ -245,8 +214,8 @@ export class FeedComponent implements OnInit {
     });
   }
 
-  editPost(event: { id: string; content: string }) {
-    this.feedService.editPost(event.id, event.content).subscribe({
+  editPost(event: { id: string; content: string; plantTag?: string | null }) {
+    this.feedService.editPost(event.id, event.content, event.plantTag).subscribe({
       next: (updated) => this.posts.update(current =>
         current.map(p => p.id === updated.id ? updated : p)
       ),

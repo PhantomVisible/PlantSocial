@@ -21,24 +21,28 @@ public class FeedController {
     private final FeedService feedService;
 
     @GetMapping
-    public ResponseEntity<Page<PostResponse>> getFeed(Pageable pageable) {
-        return ResponseEntity.ok(feedService.getFeed(pageable));
+    public ResponseEntity<Page<PostResponse>> getFeed(
+            Pageable pageable,
+            @RequestParam(value = "plant", required = false) String plant) {
+        return ResponseEntity.ok(feedService.getFeed(pageable, plant));
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PostResponse> createPost(
             @RequestParam("caption") String caption,
             @RequestParam(value = "file", required = false) MultipartFile file,
-            @RequestParam(value = "plantId", required = false) UUID plantId) {
-        return ResponseEntity.ok(feedService.createPost(caption, file, plantId));
+            @RequestParam(value = "plantId", required = false) UUID plantId,
+            @RequestParam(value = "plantTag", required = false) String plantTag) {
+        return ResponseEntity.ok(feedService.createPost(caption, file, plantId, plantTag));
     }
 
     @PutMapping("/{postId}")
     @PreAuthorize("@postSecurity.isOwner(authentication, #postId)")
     public ResponseEntity<PostResponse> editPost(
             @PathVariable UUID postId,
-            @RequestParam("caption") String caption) {
-        return ResponseEntity.ok(feedService.editPost(postId, caption));
+            @RequestParam("caption") String caption,
+            @RequestParam(value = "plantTag", required = false) String plantTag) {
+        return ResponseEntity.ok(feedService.editPost(postId, caption, plantTag));
     }
 
     @DeleteMapping("/{postId}")

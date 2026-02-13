@@ -14,6 +14,7 @@ export interface Post {
   likedByCurrentUser: boolean;
   plantId?: string;
   plantNickname?: string;
+  plantTag?: string;
 }
 
 export interface CommentRequest {
@@ -27,11 +28,15 @@ export class FeedService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:8080/api/v1/feed';
 
-  getFeed(page: number = 0, size: number = 10): Observable<{ content: Post[] }> {
-    return this.http.get<{ content: Post[] }>(`${this.apiUrl}?page=${page}&size=${size}`);
+  getFeed(page: number = 0, size: number = 10, plant?: string): Observable<{ content: Post[] }> {
+    let url = `${this.apiUrl}?page=${page}&size=${size}`;
+    if (plant) {
+      url += `&plant=${encodeURIComponent(plant)}`;
+    }
+    return this.http.get<{ content: Post[] }>(url);
   }
 
-  createPost(caption: string, file?: File, plantId?: string): Observable<Post> {
+  createPost(caption: string, file?: File, plantId?: string, plantTag?: string): Observable<Post> {
     const formData = new FormData();
     formData.append('caption', caption);
     if (file) {
@@ -40,12 +45,18 @@ export class FeedService {
     if (plantId) {
       formData.append('plantId', plantId);
     }
+    if (plantTag) {
+      formData.append('plantTag', plantTag);
+    }
     return this.http.post<Post>(this.apiUrl, formData);
   }
 
-  editPost(postId: string, caption: string): Observable<Post> {
+  editPost(postId: string, caption: string, plantTag?: string | null): Observable<Post> {
     const formData = new FormData();
     formData.append('caption', caption);
+    if (plantTag) {
+      formData.append('plantTag', plantTag);
+    }
     return this.http.put<Post>(`${this.apiUrl}/${postId}`, formData);
   }
 
