@@ -1,12 +1,13 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
+import { AuthPromptDialogComponent } from '../auth/auth-prompt-dialog.component';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, AuthPromptDialogComponent],
   template: `
     <nav class="sidebar">
       <!-- Logo -->
@@ -65,14 +66,14 @@ import { AuthService } from '../auth/auth.service';
           </div>
         </ng-container>
         <ng-template #guestBlock>
-          <a routerLink="/auth/login" class="nav-item">
+          <button class="nav-item" (click)="showAuthModal.set(true)">
             <i class="pi pi-sign-in"></i>
             <span>Log In</span>
-          </a>
-          <a routerLink="/auth/register" class="nav-item">
+          </button>
+          <button class="nav-item nav-item--signup" (click)="showAuthModal.set(true)">
             <i class="pi pi-user-plus"></i>
             <span>Sign Up</span>
-          </a>
+          </button>
         </ng-template>
       </div>
 
@@ -81,6 +82,12 @@ import { AuthService } from '../auth/auth.service';
         {{ toastMessage }}
       </div>
     </nav>
+
+    <!-- Auth Modal -->
+    <app-auth-prompt-dialog
+      *ngIf="showAuthModal()"
+      (close)="showAuthModal.set(false)"
+    ></app-auth-prompt-dialog>
   `,
   styles: [`
     .sidebar {
@@ -102,9 +109,7 @@ import { AuthService } from '../auth/auth.service';
       gap: 10px;
       padding: 8px 14px 20px;
     }
-    .logo-icon {
-      font-size: 1.8rem;
-    }
+    .logo-icon { font-size: 1.8rem; }
     .logo-text {
       font-size: 1.3rem;
       font-weight: 800;
@@ -136,21 +141,10 @@ import { AuthService } from '../auth/auth.service';
       font-family: 'Inter', sans-serif;
       white-space: nowrap;
     }
-    .nav-item i {
-      font-size: 1.3rem;
-      width: 24px;
-      text-align: center;
-    }
-    .nav-item:hover {
-      background: var(--trellis-green-ghost);
-    }
-    .nav-item.active {
-      font-weight: 700;
-      color: var(--trellis-green);
-    }
-    .nav-item.active i {
-      color: var(--trellis-green);
-    }
+    .nav-item i { font-size: 1.3rem; width: 24px; text-align: center; }
+    .nav-item:hover { background: var(--trellis-green-ghost); }
+    .nav-item.active { font-weight: 700; color: var(--trellis-green); }
+    .nav-item.active i { color: var(--trellis-green); }
 
     .badge-ai {
       font-size: 0.65rem;
@@ -163,13 +157,18 @@ import { AuthService } from '../auth/auth.service';
       letter-spacing: 0.5px;
     }
 
-    .nav-item--logout:hover {
-      background: #FFF5F5;
-      color: #E53E3E;
+    .nav-item--logout:hover { background: #FFF5F5; color: #E53E3E; }
+    .nav-item--logout:hover i { color: #E53E3E; }
+
+    .nav-item--signup {
+      background: var(--trellis-green);
+      color: #fff !important;
+      font-weight: 600;
+      justify-content: center;
+      margin-top: 4px;
     }
-    .nav-item--logout:hover i {
-      color: #E53E3E;
-    }
+    .nav-item--signup i { color: #fff; }
+    .nav-item--signup:hover { background: var(--trellis-green-dark); }
 
     .sidebar__bottom {
       display: flex;
@@ -188,58 +187,30 @@ import { AuthService } from '../auth/auth.service';
       border-radius: 28px;
       transition: background 0.15s ease;
     }
-    .sidebar__user:hover {
-      background: rgba(0,0,0,0.03);
-    }
+    .sidebar__user:hover { background: rgba(0,0,0,0.03); }
     .user-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: var(--trellis-green);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      font-weight: 700;
-      flex-shrink: 0;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--trellis-green); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700; flex-shrink: 0;
     }
-    .user-info {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
+    .user-info { display: flex; flex-direction: column; overflow: hidden; }
     .user-name {
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: var(--trellis-text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 0.88rem; font-weight: 600; color: var(--trellis-text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .user-email {
-      font-size: 0.75rem;
-      color: var(--trellis-text-hint);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 0.75rem; color: var(--trellis-text-hint);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* Toast */
     .sidebar-toast {
-      position: fixed;
-      bottom: 24px;
-      left: 270px;
-      background: var(--trellis-text);
-      color: #fff;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-size: 0.88rem;
-      font-weight: 500;
-      box-shadow: var(--trellis-shadow-lg);
-      z-index: 9999;
-      animation: toast-in 0.25s ease;
-      cursor: pointer;
+      position: fixed; bottom: 24px; left: 270px;
+      background: var(--trellis-text); color: #fff;
+      padding: 10px 20px; border-radius: 8px;
+      font-size: 0.88rem; font-weight: 500;
+      box-shadow: var(--trellis-shadow-lg); z-index: 9999;
+      animation: toast-in 0.25s ease; cursor: pointer;
     }
     @keyframes toast-in {
       from { opacity: 0; transform: translateY(8px); }
@@ -247,45 +218,27 @@ import { AuthService } from '../auth/auth.service';
     }
 
     @media (max-width: 1100px) {
-      .sidebar {
-        width: 72px;
-        align-items: center;
-      }
-      .nav-item span, .logo-text, .user-info, .badge-ai {
-        display: none;
-      }
+      .sidebar { width: 72px; align-items: center; }
+      .nav-item span, .logo-text, .user-info, .badge-ai { display: none; }
       .nav-item {
-        justify-content: center;
-        padding: 12px;
-        border-radius: 50%;
-        width: 48px;
-        height: 48px;
+        justify-content: center; padding: 12px;
+        border-radius: 50%; width: 48px; height: 48px;
       }
-      .nav-item i {
-        margin: 0;
-      }
-      .sidebar__logo {
-        justify-content: center;
-        padding-bottom: 16px;
-      }
-      .sidebar__user {
-        justify-content: center;
-      }
-      .sidebar-toast {
-        left: 80px;
-      }
+      .nav-item i { margin: 0; }
+      .sidebar__logo { justify-content: center; padding-bottom: 16px; }
+      .sidebar__user { justify-content: center; }
+      .sidebar-toast { left: 80px; }
     }
 
     @media (max-width: 768px) {
-      .sidebar {
-        display: none;
-      }
+      .sidebar { display: none; }
     }
   `]
 })
 export class SidebarComponent {
   authService = inject(AuthService);
   user = this.authService.currentUser;
+  showAuthModal = signal(false);
   toastMessage: string | null = null;
   private toastTimeout: any;
 

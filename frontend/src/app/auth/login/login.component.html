@@ -1,8 +1,0 @@
-<form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="header-login-form">
-  <input type="email" pInputText formControlName="email" placeholder="Email" class="header-input" />
-  <input type="password" pInputText formControlName="password" placeholder="Password" class="header-input" />
-  <p-button label="Log In" type="submit" [loading]="loading" [disabled]="loginForm.invalid"
-    styleClass="header-login-btn"></p-button>
-</form>
-<p-messages *ngIf="messages.length" [(value)]="messages" [enableService]="false" [closable]="true"
-  class="header-messages"></p-messages>

@@ -87,8 +87,7 @@ import { CommonModule } from '@angular/common';
         max-width: 100%;
       }
     }
-  `],
-  styleUrl: './app.component.scss'
+  `]
 })
 export class AppComponent {
   title = 'frontend';

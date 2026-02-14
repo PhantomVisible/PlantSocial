@@ -1,127 +1,106 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, Input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { AuthFormComponent } from './auth-form.component';
 
 @Component({
-    selector: 'app-auth-prompt-dialog',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
-    <div class="dialog-overlay" (click)="close.emit()">
-      <div class="dialog" (click)="$event.stopPropagation()">
-        <button class="dialog__close" (click)="close.emit()">&times;</button>
-        
-        <div class="dialog__icon">🌿</div>
-        <h2 class="dialog__title">Start growing with us</h2>
-        <p class="dialog__text">
-          Join Trellis to like posts, share your garden, and connect with other plant lovers.
-        </p>
-        
-        <div class="dialog__actions">
-          <button class="btn btn--login" (click)="navigate('/auth/login')">Log in</button>
-          <button class="btn btn--signup" (click)="navigate('/auth/register')">Sign up</button>
-        </div>
+  selector: 'app-auth-prompt-dialog',
+  standalone: true,
+  imports: [CommonModule, AuthFormComponent],
+  template: `
+    <div class="glass-overlay" (click)="close.emit()" [@.disabled]="true">
+      <div class="glass-card" (click)="$event.stopPropagation()">
+        <button class="close-btn" (click)="close.emit()">
+          <i class="pi pi-times"></i>
+        </button>
+        <app-auth-form
+          [mode]="activeMode()"
+          (authSuccess)="close.emit()"
+          (footerNav)="toggleMode()"
+        ></app-auth-form>
       </div>
     </div>
   `,
-    styles: [`
-    .dialog-overlay {
+  styles: [`
+    .glass-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
-      z-index: 2000;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 5000;
       display: flex;
       align-items: center;
       justify-content: center;
-      animation: fade-in 0.2s ease;
+      animation: overlay-in 0.3s ease;
     }
-    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes overlay-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
 
-    .dialog {
-      background: var(--trellis-white);
-      width: 90%;
-      max-width: 400px;
-      padding: 32px 24px;
-      border-radius: var(--trellis-radius-lg);
-      text-align: center;
+    .glass-card {
       position: relative;
-      animation: slide-up 0.2s ease;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: 20px;
+      padding: 36px 32px;
+      box-shadow:
+        0 24px 80px rgba(0, 0, 0, 0.15),
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      max-width: 440px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: card-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    @keyframes slide-up { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes card-in {
+      from {
+        opacity: 0;
+        transform: translateY(24px) scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
 
-    .dialog__close {
+    .close-btn {
       position: absolute;
-      top: 12px;
-      right: 12px;
-      background: none;
+      top: 16px;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
       border: none;
-      font-size: 1.5rem;
-      color: var(--trellis-text-hint);
+      background: rgba(0, 0, 0, 0.05);
+      color: #6b7280;
       cursor: pointer;
-      line-height: 1;
-    }
-
-    .dialog__icon {
-      font-size: 3rem;
-      margin-bottom: 16px;
-    }
-    .dialog__title {
-      font-size: 1.5rem;
-      font-weight: 800;
-      margin: 0 0 8px;
-      color: var(--trellis-text);
-    }
-    .dialog__text {
-      color: var(--trellis-text-secondary);
-      margin: 0 0 24px;
-      line-height: 1.5;
-    }
-
-    .dialog__actions {
       display: flex;
-      flex-direction: column;
-      gap: 12px;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      transition: all 0.15s ease;
+    }
+    .close-btn:hover {
+      background: rgba(0, 0, 0, 0.1);
+      color: #374151;
     }
 
-    .btn {
-      width: 100%;
-      padding: 12px;
-      border-radius: 24px;
-      font-weight: 700;
-      font-family: 'Inter', sans-serif;
-      font-size: 1rem;
-      cursor: pointer;
-      border: none;
-      transition: transform 0.1s ease;
-    }
-    .btn:active { transform: scale(0.98); }
-
-    .btn--signup {
-      background: var(--trellis-green);
-      color: #fff;
-    }
-    .btn--signup:hover { background: var(--trellis-green-dark); }
-
-    .btn--login {
-      background: transparent;
-      border: 1px solid var(--trellis-border-light);
-      color: var(--trellis-green);
-    }
-    .btn--login:hover {
-      background: var(--trellis-green-ghost);
-      border-color: var(--trellis-green);
-    }
+    /* Scrollbar */
+    .glass-card::-webkit-scrollbar { width: 4px; }
+    .glass-card::-webkit-scrollbar-track { background: transparent; }
+    .glass-card::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 4px; }
   `]
 })
 export class AuthPromptDialogComponent {
-    @Output() close = new EventEmitter<void>();
+  @Output() close = new EventEmitter<void>();
 
-    constructor(private router: Router) { }
+  activeMode = signal<'login' | 'register'>('login');
 
-    navigate(path: string) {
-        this.router.navigate([path]);
-        this.close.emit();
-    }
+  toggleMode() {
+    this.activeMode.update(m => m === 'login' ? 'register' : 'login');
+  }
 }
