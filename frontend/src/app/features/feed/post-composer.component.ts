@@ -42,6 +42,7 @@ import { WikipediaService } from '../../shared/wikipedia.service';
             (blur)="onTagBlur()"
             autocomplete="off"
           />
+          <i *ngIf="validatingTag()" class="pi pi-spin pi-spinner tag-spinner"></i>
           <div *ngIf="tagSuggestions().length > 0 && tagFocused" class="tag-suggestions">
             <button
               *ngFor="let s of tagSuggestions()"
@@ -127,6 +128,11 @@ import { WikipediaService } from '../../shared/wikipedia.service';
     
     <!-- Backdrop for dropdown -->
     <div *ngIf="showPlantDropdown()" class="dropdown-backdrop" (click)="showPlantDropdown.set(false)"></div>
+
+    <!-- Tag Toast -->
+    <div *ngIf="tagToast" class="tag-toast" (click)="tagToast = null">
+      {{ tagToast }}
+    </div>
   `,
   styles: [`
     .composer {
@@ -424,6 +430,38 @@ import { WikipediaService } from '../../shared/wikipedia.service';
     .tag-suggestion-item:hover {
       background: var(--trellis-green-ghost);
     }
+
+    .tag-spinner {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.85rem;
+      color: var(--trellis-green);
+    }
+
+    .tag-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #991b1b;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      z-index: 9999;
+      animation: toast-pop 0.3s ease;
+      cursor: pointer;
+      max-width: 90vw;
+      text-align: center;
+    }
+    @keyframes toast-pop {
+      from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
   `]
 })
 export class PostComposerComponent implements OnInit {
@@ -433,6 +471,9 @@ export class PostComposerComponent implements OnInit {
   plantTag = '';
   tagFocused = false;
   tagSuggestions = signal<string[]>([]);
+  validatingTag = signal(false);
+  tagToast: string | null = null;
+  private tagToastTimeout: any;
 
   private plantService = inject(PlantService);
   private authService = inject(AuthService);
@@ -485,9 +526,27 @@ export class PostComposerComponent implements OnInit {
   }
 
   selectTag(name: string) {
-    this.plantTag = name;
     this.tagSuggestions.set([]);
     this.tagFocused = false;
+    this.validatingTag.set(true);
+    this.plantTag = name;
+
+    this.wikiService.validateTopic(name).subscribe({
+      next: (result) => {
+        this.validatingTag.set(false);
+        if (result.isValid) {
+          this.plantTag = name;
+        } else {
+          this.plantTag = '';
+          this.showTagToast(`🌱 "${name}" doesn't look like a plant. Try searching for the species name!`);
+        }
+      },
+      error: () => {
+        this.validatingTag.set(false);
+        // Allow it on network error — don't block the user
+        this.plantTag = name;
+      }
+    });
   }
 
   onFileSelected(event: Event) {
@@ -546,5 +605,11 @@ export class PostComposerComponent implements OnInit {
       this.selectedPlantNickname.set(null);
       this.plantTag = '';
     }
+  }
+
+  showTagToast(message: string) {
+    clearTimeout(this.tagToastTimeout);
+    this.tagToast = message;
+    this.tagToastTimeout = setTimeout(() => this.tagToast = null, 4000);
   }
 }

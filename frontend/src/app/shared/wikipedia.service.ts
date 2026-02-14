@@ -10,6 +10,24 @@ export interface WikiSummary {
     content_urls?: { desktop: { page: string } };
 }
 
+export interface WikiValidation {
+    summary: WikiSummary;
+    isValid: boolean;
+}
+
+const BOTANICAL_KEYWORDS = [
+    'plant', 'species', 'botany', 'flower', 'tree', 'shrub', 'vegetable',
+    'fruit', 'herb', 'cultivar', 'crop', 'agriculture', 'harvest', 'garden',
+    'leaf', 'root', 'stem', 'flora', 'fern', 'moss', 'algae', 'fungi',
+    'fungus', 'seed', 'pollen', 'orchid', 'succulent', 'cactus', 'vine',
+    'perennial', 'annual', 'biennial', 'genus', 'family', 'flowering',
+    'photosynthesis', 'chlorophyll', 'tropical', 'deciduous', 'conifer',
+    'edible', 'medicinal', 'ornamental', 'horticulture', 'nursery',
+    'greenhouse', 'foliage', 'blossom', 'petal', 'sprout', 'seedling',
+    'compost', 'soil', 'mulch', 'pruning', 'propagation', 'bulb', 'tuber',
+    'rhizome', 'native', 'invasive', 'woodland', 'grassland', 'wetland'
+];
+
 @Injectable({
     providedIn: 'root'
 })
@@ -27,5 +45,20 @@ export class WikipediaService {
     getSummary(title: string): Observable<WikiSummary> {
         const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
         return this.http.get<WikiSummary>(url);
+    }
+
+    validateTopic(title: string): Observable<WikiValidation> {
+        return this.getSummary(title).pipe(
+            map(summary => {
+                const text = [
+                    summary.extract || '',
+                    summary.description || '',
+                    summary.title || ''
+                ].join(' ').toLowerCase();
+
+                const isValid = BOTANICAL_KEYWORDS.some(kw => text.includes(kw));
+                return { summary, isValid };
+            })
+        );
     }
 }

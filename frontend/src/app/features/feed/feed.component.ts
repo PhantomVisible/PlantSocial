@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { PostComposerComponent } from './post-composer.component';
 import { PostCardComponent, PostCardData } from './post-card.component';
+import { PostSkeletonComponent } from './post-skeleton.component';
 import { FeedService, Post } from './feed.service';
 import { AuthService } from '../../auth/auth.service';
 
@@ -15,6 +16,7 @@ import { AuthService } from '../../auth/auth.service';
     CommonModule,
     FormsModule,
     PostComposerComponent,
+    PostSkeletonComponent,
     PostCardComponent
   ],
   template: `
@@ -34,8 +36,15 @@ import { AuthService } from '../../auth/auth.service';
         (postCreated)="createPost($event)"
       ></app-post-composer>
 
+      <!-- Skeleton Loading -->
+      <div *ngIf="isLoading()" class="feed-list">
+        <app-post-skeleton></app-post-skeleton>
+        <app-post-skeleton></app-post-skeleton>
+        <app-post-skeleton></app-post-skeleton>
+      </div>
+
       <!-- Post List -->
-      <div class="feed-list">
+      <div *ngIf="!isLoading()" class="feed-list">
         <app-post-card
           *ngFor="let post of posts()"
           [post]="post"
@@ -140,6 +149,7 @@ export class FeedComponent implements OnInit, OnDestroy {
   private router = inject(Router);
 
   posts = signal<Post[]>([]);
+  isLoading = signal(true);
   activeFilter = signal<string | null>(null);
   private querySub?: Subscription;
 
@@ -156,9 +166,16 @@ export class FeedComponent implements OnInit, OnDestroy {
   }
 
   loadFeed(plant?: string | null) {
+    this.isLoading.set(true);
     this.feedService.getFeed(0, 20, plant || undefined).subscribe({
-      next: (response) => this.posts.set(response.content),
-      error: (err) => console.error('Failed to load feed', err)
+      next: (response) => {
+        this.posts.set(response.content);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load feed', err);
+        this.isLoading.set(false);
+      }
     });
   }
 
