@@ -7,6 +7,7 @@ import { CommentThreadComponent } from './comment-thread.component';
 import { AuthPromptDialogComponent } from '../../auth/auth-prompt-dialog.component';
 import { AuthGatekeeperService } from '../../auth/auth-gatekeeper.service';
 import { WikipediaService } from '../../shared/wikipedia.service';
+import { PlantDetailsDialogComponent } from '../garden/plant-details-dialog.component';
 
 export interface PostCardData {
   id: string;
@@ -26,7 +27,7 @@ export interface PostCardData {
 @Component({
   selector: 'app-post-card',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, CommentThreadComponent],
+  imports: [CommonModule, FormsModule, RouterModule, CommentThreadComponent, PlantDetailsDialogComponent],
   template: `
     <article class="post-card">
       <!-- Header -->
@@ -40,12 +41,12 @@ export interface PostCardData {
           <span class="post-card__time">{{ formatTime(post.createdAt) }}</span>
           
           <!-- Plant Badge (from garden) -->
-          <span *ngIf="post.plantNickname" class="post-card__plant-badge">
+          <span *ngIf="post.plantNickname" class="post-card__plant-badge" (click)="openPlantDetails($event)">
             🌿 {{ post.plantNickname }}
           </span>
 
           <!-- Plant Tag Badge (free-text, clickable) -->
-          <span *ngIf="post.plantTag" class="post-card__plant-tag" (click)="onTagClick()">
+          <span *ngIf="post.plantTag" class="post-card__plant-tag" (click)="onTagClick($event)">
             🏷️ {{ post.plantTag }}
           </span>
         </div>
@@ -150,6 +151,13 @@ export interface PostCardData {
         </div>
       </div>
     </div>
+
+    <!-- ===== PLANT DETAILS DIALOG ===== -->
+    <app-plant-details-dialog
+      *ngIf="showPlantDetails() && selectedPlantId()"
+      [plantId]="selectedPlantId()!"
+      (close)="closePlantDetails()"
+    ></app-plant-details-dialog>
   `,
   styles: [`
     /* ===========================
@@ -225,6 +233,12 @@ export interface PostCardData {
       padding: 2px 8px;
       border-radius: 12px;
       margin-left: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .post-card__plant-badge:hover {
+      background: var(--trellis-green-pale);
+      color: var(--trellis-green-dark);
     }
     .post-card__plant-tag {
       display: inline-flex;
@@ -604,6 +618,10 @@ export class PostCardComponent {
   deleteConfirmOpen = signal(false);
   isEditing = signal(false);
   isCommentsOpen = signal(false);
+  // Plant Details
+  showPlantDetails = signal(false);
+  selectedPlantId = signal<string | null>(null);
+
   editContent = '';
   editTag = '';
   editTagFocused = false;
@@ -637,10 +655,27 @@ export class PostCardComponent {
     });
   }
 
-  onTagClick() {
-    if (this.post.plantTag) {
+  onTagClick(event: Event) {
+    event.stopPropagation();
+    // If there is a linked plant, open details. Otherwise filter.
+    if (this.post.plantId) {
+      this.openPlantDetails(event);
+    } else if (this.post.plantTag) {
       this.router.navigate([], { queryParams: { plant: this.post.plantTag } });
     }
+  }
+
+  openPlantDetails(event: Event) {
+    event.stopPropagation();
+    if (this.post.plantId) {
+      this.selectedPlantId.set(this.post.plantId);
+      this.showPlantDetails.set(true);
+    }
+  }
+
+  closePlantDetails() {
+    this.showPlantDetails.set(false);
+    this.selectedPlantId.set(null);
   }
 
   // ---- Edit ----

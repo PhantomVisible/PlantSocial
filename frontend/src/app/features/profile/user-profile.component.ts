@@ -9,12 +9,13 @@ import { PostCardComponent } from '../feed/post-card.component';
 import { AuthService } from '../../auth/auth.service';
 import { GardenGridComponent } from '../garden/garden-grid.component';
 import { AddPlantDialogComponent } from '../garden/add-plant-dialog.component';
-import { PlantService } from '../garden/plant.service';
+import { PlantService, PlantData } from '../garden/plant.service';
+import { PlantDetailsDialogComponent } from '../garden/plant-details-dialog.component';
 
 @Component({
   selector: 'app-user-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule, PostCardComponent, GardenGridComponent, AddPlantDialogComponent],
+  imports: [CommonModule, RouterModule, PostCardComponent, GardenGridComponent, AddPlantDialogComponent, PlantDetailsDialogComponent],
   template: `
     <div class="profile-page">
       <!-- Nav Bar -->
@@ -125,8 +126,13 @@ import { PlantService } from '../garden/plant.service';
           <ng-container *ngIf="activeTab() === 'garden'">
             <app-garden-grid
               [userId]="profile()!.id"
+              [plants]="plants()"
               [isOwner]="isOwner()"
-              (addPlantClicked)="showAddPlantDialog.set(true)"
+              [isOwner]="isOwner()"
+              (addPlantClicked)="openAddPlantDialog()"
+              (plantEdit)="openEditPlantDialog($event)"
+              (plantDelete)="onDeletePlant($event)"
+              (plantClick)="openPlantDetails($event)"
             ></app-garden-grid>
           </ng-container>
         </section>
@@ -134,9 +140,17 @@ import { PlantService } from '../garden/plant.service';
         <!-- Add Plant Dialog -->
         <app-add-plant-dialog
           *ngIf="showAddPlantDialog()"
+          [plantToEdit]="plantToEdit()"
           (close)="showAddPlantDialog.set(false)"
-          (plantAdded)="onPlantAdded($event)"
+          (save)="onSavePlant($event)"
         ></app-add-plant-dialog>
+
+        <!-- Plant Details Dialog -->
+        <app-plant-details-dialog
+          *ngIf="selectedPlantId()"
+          [plantId]="selectedPlantId()!"
+          (close)="selectedPlantId.set(null)"
+        ></app-plant-details-dialog>
       </div>
     </div>
   `,
@@ -394,9 +408,12 @@ export class UserProfileComponent implements OnInit, OnDestroy {
 
   profile = signal<UserProfile | null>(null);
   posts = signal<Post[]>([]);
+  plants = signal<PlantData[]>([]);
   loading = signal(true);
   activeTab = signal<'posts' | 'garden'>('posts');
   showAddPlantDialog = signal(false);
+  plantToEdit = signal<PlantData | undefined>(undefined);
+  selectedPlantId = signal<string | null>(null);
   private followState = signal(false);
   private plantService = inject(PlantService);
 
@@ -409,14 +426,16 @@ export class UserProfileComponent implements OnInit, OnDestroy {
           const userId = params.get('id')!;
           return forkJoin({
             profile: this.userService.getUserProfile(userId),
-            posts: this.userService.getUserPosts(userId)
+            posts: this.userService.getUserPosts(userId),
+            plants: this.plantService.getUserPlants(userId)
           });
         })
       )
       .subscribe({
-        next: ({ profile, posts }) => {
+        next: ({ profile, posts, plants }) => {
           this.profile.set(profile);
           this.posts.set(posts);
+          this.plants.set(plants);
           this.loading.set(false);
         },
         error: () => this.loading.set(false)
@@ -444,11 +463,63 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     // TODO: open edit-profile dialog
   }
 
-  onPlantAdded(event: { nickname: string; species: string; image?: File }) {
-    this.plantService.addPlant(event.nickname, event.species, event.image).subscribe({
+  openAddPlantDialog() {
+    this.plantToEdit.set(undefined);
+    this.showAddPlantDialog.set(true);
+  }
+
+  openEditPlantDialog(plant: PlantData) {
+    this.plantToEdit.set(plant);
+    this.showAddPlantDialog.set(true);
+  }
+
+  openPlantDetails(plant: PlantData) {
+    this.selectedPlantId.set(plant.id);
+  }
+
+  onSavePlant(event: { id?: string; nickname: string; species: string; status: string; plantedDate: string; image?: File }) {
+    if (event.id) {
+      // Update
+      // For now we don't expose harvestDate in the dialog, so undefined.
+      this.plantService.updatePlant(event.id, event.nickname, event.species, event.status, event.plantedDate, undefined, event.image).subscribe({
+        next: () => {
+          this.showAddPlantDialog.set(false);
+          this.loadData(this.profile()!.id);
+        }
+      });
+    } else {
+      // Create
+      this.plantService.addPlant(event.nickname, event.species, event.status, event.plantedDate, event.image).subscribe({
+        next: () => {
+          this.showAddPlantDialog.set(false);
+          this.loadData(this.profile()!.id);
+        }
+      });
+    }
+  }
+
+  onDeletePlant(plantId: string) {
+    this.plantService.deletePlant(plantId).subscribe({
       next: () => {
-        this.showAddPlantDialog.set(false);
-        // Refresh garden grid on next render
+        this.loadData(this.profile()!.id);
+      }
+    });
+  }
+
+  private loadData(userId: string) {
+    forkJoin({
+      profile: this.userService.getUserProfile(userId),
+      posts: this.userService.getUserPosts(userId),
+      plants: this.plantService.getUserPlants(userId)
+    }).subscribe({
+      next: ({ profile, posts, plants }) => {
+        this.profile.set(profile);
+        this.posts.set(posts);
+        this.plants.set(plants);
+        // We also need to refresh garden grid... 
+        // GardenGrid handles its own loading via userId input change or init.
+        // If we want it to refresh, we should probably output a "refresh" signal to it or use a shared service state.
+        // Even better: Move state to UserProfile. 
       }
     });
   }

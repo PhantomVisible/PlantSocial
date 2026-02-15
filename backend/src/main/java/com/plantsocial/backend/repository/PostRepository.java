@@ -19,4 +19,6 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     long countByAuthorId(UUID authorId);
 
     Page<Post> findByPlantTagIgnoreCaseOrderByCreatedAtDesc(String plantTag, Pageable pageable);
+
+    List<Post> findAllByPlantId(UUID plantId);
 }

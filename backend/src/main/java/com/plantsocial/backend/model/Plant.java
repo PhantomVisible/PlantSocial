@@ -39,9 +39,19 @@ public class Plant {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private PlantStatus status = PlantStatus.ALIVE;
+    private PlantStatus status = PlantStatus.VEGETATIVE;
+
+    @Column(nullable = false, columnDefinition = "DATE DEFAULT CURRENT_DATE")
+    @Builder.Default
+    private java.time.LocalDate plantedDate = java.time.LocalDate.now();
+
+    private java.time.LocalDate harvestDate;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "plant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private java.util.List<PlantLog> logs = new java.util.ArrayList<>();
 }

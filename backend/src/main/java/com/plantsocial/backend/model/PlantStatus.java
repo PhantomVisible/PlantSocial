@@ -1,7 +1,13 @@
 package com.plantsocial.backend.model;
 
 public enum PlantStatus {
-    ALIVE,
+    SEED,
+    GERMINATED,
+    VEGETATIVE,
+    FLOWERING,
+    FRUITING,
     HARVESTED,
-    DIED
+    DEAD,
+    // Legacy support to prevent runtime crashes on existing data
+    ALIVE
 }

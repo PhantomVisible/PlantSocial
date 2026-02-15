@@ -1,16 +1,17 @@
-import { Component, Output, EventEmitter, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { PlantData } from './plant.service';
 
 @Component({
-    selector: 'app-add-plant-dialog',
-    standalone: true,
-    imports: [CommonModule, FormsModule],
-    template: `
+  selector: 'app-add-plant-dialog',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
     <div class="dialog-overlay" (click)="close.emit()">
       <div class="dialog" (click)="$event.stopPropagation()">
         <div class="dialog__header">
-          <h2>Add a New Plant 🌱</h2>
+          <h2>{{ plantToEdit ? 'Edit Plant' : 'Add a New Plant' }} 🌱</h2>
           <button class="dialog__close" (click)="close.emit()">&times;</button>
         </div>
 
@@ -24,7 +25,7 @@ import { FormsModule } from '@angular/forms';
             <img *ngIf="previewUrl()" [src]="previewUrl()" alt="Plant preview" />
             <div *ngIf="!previewUrl()" class="upload-placeholder">
               <i class="pi pi-camera"></i>
-              <span>Add a photo</span>
+              <span>{{ plantToEdit ? 'Change photo' : 'Add a photo' }}</span>
             </div>
           </div>
           <input
@@ -56,6 +57,30 @@ import { FormsModule } from '@angular/forms';
               maxlength="200"
             />
           </div>
+
+          <!-- Status -->
+          <div class="field">
+            <label>Status</label>
+            <select [(ngModel)]="status">
+              <option value="SEED">🌱 Seed</option>
+              <option value="GERMINATED">🌱 Germinated</option>
+              <option value="VEGETATIVE">🌿 Vegetative</option>
+              <option value="FLOWERING">🌸 Flowering</option>
+              <option value="FRUITING">🍅 Fruiting</option>
+              <option value="HARVESTED">🧺 Harvested</option>
+              <option value="DEAD">💀 Dead</option>
+              <option value="ALIVE">🌿 Alive (Legacy)</option>
+            </select>
+          </div>
+
+          <!-- Planted Date -->
+          <div class="field">
+            <label>Planted Date</label>
+            <input
+              type="date"
+              [(ngModel)]="plantedDate"
+            />
+          </div>
         </div>
 
         <div class="dialog__footer">
@@ -65,13 +90,13 @@ import { FormsModule } from '@angular/forms';
             [disabled]="!nickname.trim()"
             (click)="submit()"
           >
-            Add to Garden
+            {{ plantToEdit ? 'Update Plant' : 'Add to Garden' }}
           </button>
         </div>
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .dialog-overlay {
       position: fixed;
       inset: 0;
@@ -180,7 +205,7 @@ import { FormsModule } from '@angular/forms';
       font-size: 0.82rem;
       color: var(--trellis-text-secondary);
     }
-    .field input {
+    .field input, .field select {
       padding: 10px 14px;
       border: 1px solid var(--trellis-border-light);
       border-radius: var(--trellis-radius-md);
@@ -189,8 +214,9 @@ import { FormsModule } from '@angular/forms';
       color: var(--trellis-text);
       outline: none;
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      background: #fff;
     }
-    .field input:focus {
+    .field input:focus, .field select:focus {
       border-color: var(--trellis-green);
       box-shadow: 0 0 0 3px rgba(56,142,60,0.1);
     }
@@ -225,31 +251,57 @@ import { FormsModule } from '@angular/forms';
     .btn--save:disabled { opacity: 0.5; cursor: not-allowed; }
   `]
 })
-export class AddPlantDialogComponent {
-    @Output() close = new EventEmitter<void>();
-    @Output() plantAdded = new EventEmitter<{ nickname: string; species: string; image?: File }>();
+export class AddPlantDialogComponent implements OnInit {
+  @Input() plantToEdit?: PlantData; // Simplified input type
+  @Output() close = new EventEmitter<void>();
+  @Output() save = new EventEmitter<{ id?: string; nickname: string; species: string; status: string; plantedDate: string; image?: File }>();
 
-    nickname = '';
-    species = '';
-    selectedFile: File | null = null;
-    previewUrl = signal<string | null>(null);
+  nickname = '';
+  species = '';
+  status = 'VEGETATIVE';
+  plantedDate = new Date().toISOString().split('T')[0]; // Default to today
+  selectedFile: File | null = null;
+  previewUrl = signal<string | null>(null);
 
-    onFileSelected(event: Event) {
-        const input = event.target as HTMLInputElement;
-        if (input.files && input.files[0]) {
-            this.selectedFile = input.files[0];
-            const reader = new FileReader();
-            reader.onload = (e) => this.previewUrl.set(e.target?.result as string);
-            reader.readAsDataURL(this.selectedFile);
-        }
+  ngOnInit() {
+    if (this.plantToEdit) {
+      this.nickname = this.plantToEdit.nickname;
+      this.species = this.plantToEdit.species;
+      this.status = this.plantToEdit.status;
+      // Handle date format if it comes as full ISO
+      if (this.plantToEdit.plantedDate) {
+        this.plantedDate = this.plantToEdit.plantedDate.split('T')[0];
+      }
+      if (this.plantToEdit.imageUrl) {
+        this.previewUrl.set(this.resolveUrl(this.plantToEdit.imageUrl));
+      }
     }
+  }
 
-    submit() {
-        if (!this.nickname.trim()) return;
-        this.plantAdded.emit({
-            nickname: this.nickname.trim(),
-            species: this.species.trim(),
-            image: this.selectedFile || undefined
-        });
+  resolveUrl(url: string): string {
+    if (url.startsWith('http')) return url;
+    return 'http://localhost:8080' + url;
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.selectedFile = input.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => this.previewUrl.set(e.target?.result as string);
+      reader.readAsDataURL(this.selectedFile);
     }
+  }
+
+  submit() {
+    if (!this.nickname.trim()) return;
+    this.save.emit({
+      id: this.plantToEdit?.id,
+      nickname: this.nickname.trim(),
+      species: this.species.trim(),
+      status: this.status,
+      plantedDate: this.plantedDate,
+      image: this.selectedFile || undefined
+    });
+  }
 }
