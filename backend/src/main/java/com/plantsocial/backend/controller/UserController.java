@@ -38,6 +38,14 @@ public class UserController {
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
 
         long postCount = postRepository.countByAuthorId(user.getId());
+        long followerCount = user.getFollowers().size();
+        long followingCount = user.getFollowing().size();
+
+        boolean isFollowing = false;
+        User currentUser = getCurrentUserSafe(); // Need safe method or try/catch for auth check
+        if (currentUser != null && !currentUser.getId().equals(user.getId())) {
+            isFollowing = user.getFollowers().contains(currentUser);
+        }
 
         UserProfileDTO dto = new UserProfileDTO(
                 user.getId(),
@@ -47,7 +55,10 @@ public class UserController {
                 user.getLocation(),
                 user.getProfilePictureUrl(),
                 user.getCreatedAt(),
-                postCount);
+                postCount,
+                followerCount,
+                followingCount,
+                isFollowing);
         return ResponseEntity.ok(dto);
     }
 
@@ -97,6 +108,10 @@ public class UserController {
         userRepository.save(currentUser);
 
         long postCount = postRepository.countByAuthorId(currentUser.getId());
+        long followerCount = currentUser.getFollowers().size();
+        long followingCount = currentUser.getFollowing().size();
+        // User cannot follow themselves, so isFollowing is false
+
         UserProfileDTO dto = new UserProfileDTO(
                 currentUser.getId(),
                 currentUser.getFullName(),
@@ -105,9 +120,20 @@ public class UserController {
                 currentUser.getLocation(),
                 currentUser.getProfilePictureUrl(),
                 currentUser.getCreatedAt(),
-                postCount);
+                postCount,
+                followerCount,
+                followingCount,
+                false);
 
         return ResponseEntity.ok(dto);
+    }
+
+    private User getCurrentUserSafe() {
+        try {
+            return getCurrentUser();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private User getCurrentUser() {

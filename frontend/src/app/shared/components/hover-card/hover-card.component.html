@@ -1,0 +1,34 @@
+<div class="hover-card">
+  <div *ngIf="loading()" class="hover-card__loading">
+    <i class="pi pi-spin pi-spinner"></i>
+  </div>
+
+  <div *ngIf="!loading() && user()" class="hover-card__content">
+    <div class="hover-card__header">
+      <app-avatar [imageUrl]="resolveImageUrl(user()?.profilePictureUrl)" [name]="user()?.fullName || ''" [size]="50">
+      </app-avatar>
+      <div class="hover-card__info">
+        <h4 class="hover-card__name" (click)="visitProfile()">{{ user()?.fullName }}</h4>
+        <span class="hover-card__username">{{ '@' + user()?.username }}</span>
+      </div>
+    </div>
+
+    <p class="hover-card__bio" *ngIf="user()?.bio">{{ user()?.bio }}</p>
+
+    <div class="hover-card__stats">
+      <div class="stat">
+        <span class="stat-val">{{ user()?.followingCount }}</span>
+        <span class="stat-label">Following</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val">{{ user()?.followerCount }}</span>
+        <span class="stat-label">Followers</span>
+      </div>
+    </div>
+
+    <p-button *ngIf="!isSelf()" [label]="user()!.isFollowing ? 'Following' : 'Follow'"
+      [styleClass]="user()!.isFollowing ? 'p-button-outlined p-button-secondary' : 'p-button-primary'"
+      (onClick)="toggleFollow($event)" [loading]="loading()" styleClass="w-full text-sm py-1">
+    </p-button>
+  </div>
+</div>

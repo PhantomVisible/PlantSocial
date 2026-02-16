@@ -29,21 +29,30 @@ export interface PostCardData {
 
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
 
+import { HoverCardComponent } from '../../shared/components/hover-card/hover-card.component';
+
 @Component({
   selector: 'app-post-card',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, CommentThreadComponent, PlantDetailsDialogComponent, AvatarComponent],
+  imports: [CommonModule, FormsModule, RouterModule, CommentThreadComponent, PlantDetailsDialogComponent, AvatarComponent, HoverCardComponent],
   template: `
     <article class="post-card">
       <!-- Header -->
       <div class="post-card__header">
-        <a (click)="visitProfile(post.authorUsername)" class="post-card__avatar-link">
-          <app-avatar 
-            [imageUrl]="resolveImageUrl(post.authorProfilePictureUrl || '')" 
-            [name]="post.authorName" 
-            [size]="42">
-          </app-avatar>
-        </a>
+        <div class="avatar-wrapper" (mouseenter)="onAvatarMouseEnter()" (mouseleave)="onAvatarMouseLeave()">
+            <a (click)="visitProfile(post.authorUsername)" class="post-card__avatar-link">
+            <app-avatar 
+                [imageUrl]="resolveImageUrl(post.authorProfilePictureUrl || '')" 
+                [name]="post.authorName" 
+                [size]="42">
+            </app-avatar>
+            </a>
+            
+            <!-- Hover Card Overlay -->
+            <div *ngIf="hoverCardVisible()" class="hover-card-popup" (mouseenter)="onCardMouseEnter()" (mouseleave)="onCardMouseLeave()">
+                <app-hover-card [username]="post.authorUsername" [userId]="post.authorId"></app-hover-card>
+            </div>
+        </div>
         <div class="post-card__meta">
           <a (click)="visitProfile(post.authorUsername)" class="post-card__author">{{ post.authorName }}</a>
           <span class="post-card__dot">·</span>
@@ -206,6 +215,18 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
       gap: 6px;
       flex: 1;
       min-width: 0;
+    }
+    
+    .avatar-wrapper {
+        position: relative;
+    }
+
+    .hover-card-popup {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 1000;
+        padding-top: 10px; /* Spacer to bridge the gap for mouseover */
     }
     .post-card__author {
       font-weight: 600;
@@ -648,6 +669,49 @@ export class PostCardComponent {
   editTag = '';
   editTagFocused = false;
   editTagSuggestions = signal<string[]>([]);
+
+  // ---- Hover Card ----
+  hoverCardVisible = signal(false);
+  hoverCardUsername = signal<string | null>(null);
+  private hoverTimeout: any;
+
+  onAvatarMouseEnter() {
+    const currentUser = this.authService.currentUser();
+    // Debug logging
+    console.log('Avatar Hover:', {
+      currentUserId: currentUser?.id,
+      authorId: this.post.authorId,
+      match: currentUser?.id === this.post.authorId
+    });
+
+    if (currentUser && currentUser.id === this.post.authorId) {
+      return;
+    }
+
+    this.hoverTimeout = setTimeout(() => {
+      this.hoverCardVisible.set(true);
+    }, 500);
+  }
+
+  onAvatarMouseLeave() {
+    clearTimeout(this.hoverTimeout);
+    // Add a small delay for moving mouse to the card itself if needed, 
+    // but for now strict leave closes it unless we handle "enter card" too.
+    // To keep it simple: close immediately or short delay.
+    this.hoverTimeout = setTimeout(() => {
+      this.hoverCardVisible.set(false);
+    }, 300);
+  }
+
+  // If we want the card to stay open when hovering the card itself,
+  // we need to handle events on the card wrapper too.
+  onCardMouseEnter() {
+    clearTimeout(this.hoverTimeout);
+  }
+
+  onCardMouseLeave() {
+    this.onAvatarMouseLeave();
+  }
 
   // ---- Comments ----
   toggleComments() {

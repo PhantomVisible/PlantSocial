@@ -14,6 +14,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -63,6 +65,21 @@ public class User implements UserDetails {
     @LastModifiedDate
     @Column(insertable = false)
     private LocalDateTime updatedAt;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_follows", joinColumns = @JoinColumn(name = "follower_id"), inverseJoinColumns = @JoinColumn(name = "following_id"))
+    @JsonIgnore // Prevents infinite recursion by not serializing this set
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
+    @Builder.Default
+    private java.util.Set<User> following = new java.util.HashSet<>();
+
+    @ManyToMany(mappedBy = "following", fetch = FetchType.LAZY)
+    @JsonIgnore // Prevents infinite recursion by not serializing this set
+    @lombok.ToString.Exclude
+    @lombok.EqualsAndHashCode.Exclude
+    @Builder.Default
+    private java.util.Set<User> followers = new java.util.HashSet<>();
 
     // UserDetails Implementation
 

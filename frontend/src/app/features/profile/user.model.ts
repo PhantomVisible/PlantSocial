@@ -7,4 +7,18 @@ export interface UserProfile {
     profilePictureUrl?: string; // Optional because legacy users might not have it immediately
     joinDate: string;
     postCount: number;
+    followerCount: number;
+    followingCount: number;
+    isFollowing: boolean;
+}
+
+export interface UserHoverCard {
+    id: string;
+    fullName: string;
+    username: string;
+    bio: string | null;
+    profilePictureUrl?: string;
+    followerCount: number;
+    followingCount: number;
+    isFollowing: boolean;
 }

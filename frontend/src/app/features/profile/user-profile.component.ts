@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { Subject, switchMap, takeUntil, tap, forkJoin } from 'rxjs';
@@ -90,6 +90,12 @@ import { EditProfileDialogComponent } from './edit-profile-dialog.component';
           <div class="hero__stats">
             <span class="stat">
               <strong>{{ profile()!.postCount }}</strong> Posts
+            </span>
+            <span class="stat">
+              <strong>{{ profile()!.followerCount }}</strong> Followers
+            </span>
+            <span class="stat">
+              <strong>{{ profile()!.followingCount }}</strong> Following
             </span>
           </div>
         </section>
@@ -438,6 +444,24 @@ export class UserProfileComponent implements OnInit, OnDestroy {
         tap(() => this.loading.set(true)),
         switchMap(params => {
           const username = params.get('username')!;
+
+          // Subscribe to refresh events specifically for this profile view
+          this.userService.profileRefresh$.pipe(
+            takeUntil(this.destroy$)
+          ).subscribe(() => {
+            // Only reload if we are looking at the same user who was updated? 
+            // Actually, if I follow someone, my profile (if I am viewing it) might change (following count up).
+            // If I am viewing THEIR profile, their follower count goes up.
+            // So general refresh is fine.
+            this.loadData(this.profile()?.id || '');
+            // Note: loadData needs ID. profile() might be null initially.
+            // But we are inside switchMap of params.
+            // Better to just let loadData handle it.
+            if (this.profile()) {
+              this.loadData(this.profile()!.id);
+            }
+          });
+
           return this.userService.getUserProfile(username).pipe(
             switchMap(profile => {
               return forkJoin({
@@ -479,10 +503,35 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     return !!user && !!p && user.id === p.id;
   }
 
-  isFollowing = this.followState;
+  isFollowing = computed(() => this.profile()?.isFollowing ?? false);
 
   toggleFollow() {
-    this.followState.update(v => !v);
+    const p = this.profile();
+    if (!p) return;
+
+    if (p.isFollowing) {
+      this.userService.unfollowUser(p.id).subscribe({
+        next: (updatedDTO) => {
+          this.profile.update(curr => curr ? {
+            ...curr,
+            isFollowing: updatedDTO.isFollowing,
+            followerCount: updatedDTO.followerCount,
+            followingCount: updatedDTO.followingCount
+          } : null);
+        }
+      });
+    } else {
+      this.userService.followUser(p.id).subscribe({
+        next: (updatedDTO) => {
+          this.profile.update(curr => curr ? {
+            ...curr,
+            isFollowing: updatedDTO.isFollowing,
+            followerCount: updatedDTO.followerCount,
+            followingCount: updatedDTO.followingCount
+          } : null);
+        }
+      });
+    }
   }
 
   editProfile() {
