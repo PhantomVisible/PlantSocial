@@ -9,6 +9,7 @@ import { guestGuard } from './auth/guest.guard';
 export const routes: Routes = [
     { path: '', component: FeedComponent },
     { path: 'feed', component: FeedComponent },
+    { path: 'post/:id', loadComponent: () => import('./features/feed/post-detail.component').then(m => m.PostDetailComponent) },
     { path: 'auth/login', component: LoginComponent, canActivate: [guestGuard] },
     { path: 'auth/register', component: RegisterComponent, canActivate: [guestGuard] },
     { path: 'profile/:username', component: UserProfileComponent },

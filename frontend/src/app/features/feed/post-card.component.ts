@@ -8,6 +8,7 @@ import { AuthPromptDialogComponent } from '../../auth/auth-prompt-dialog.compone
 import { AuthGatekeeperService } from '../../auth/auth-gatekeeper.service';
 import { WikipediaService } from '../../shared/wikipedia.service';
 import { PlantDetailsDialogComponent } from '../garden/plant-details-dialog.component';
+import { ToastService } from '../../core/toast.service'; // Add this
 
 export interface PostCardData {
   id: string;
@@ -46,7 +47,7 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
         <div class="post-card__meta">
           <a (click)="visitProfile(post.authorUsername)" class="post-card__author">{{ post.authorName }}</a>
           <span class="post-card__dot">·</span>
-          <span class="post-card__time">{{ formatTime(post.createdAt) }}</span>
+          <a [routerLink]="['/post', post.id]" class="post-card__time" title="View post">{{ formatTime(post.createdAt) }}</a>
           
           <!-- Plant Badge (from garden) -->
           <span *ngIf="post.plantNickname" class="post-card__plant-badge" (click)="openPlantDetails($event)">
@@ -130,7 +131,7 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
           <i class="pi pi-comment"></i>
           <span *ngIf="post.commentCount > 0">{{ post.commentCount }}</span>
         </button>
-        <button class="action-btn">
+        <button class="action-btn" (click)="sharePost($event)" title="Share link">
           <i class="pi pi-share-alt"></i>
         </button>
       </div>
@@ -223,6 +224,12 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
     .post-card__time {
       font-size: 0.82rem;
       color: var(--trellis-text-hint);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+    .post-card__time:hover {
+      color: var(--trellis-text-secondary);
+      text-decoration: underline;
     }
     .post-card__plant-badge {
       display: inline-flex;
@@ -614,12 +621,25 @@ export class PostCardComponent {
   private gatekeeper = inject(AuthGatekeeperService);
   private router = inject(Router);
   private wikiService = inject(WikipediaService);
+  private toastService = inject(ToastService); // Add this
 
   menuOpen = signal(false);
   lightboxOpen = signal(false);
   deleteConfirmOpen = signal(false);
   isEditing = signal(false);
   isCommentsOpen = signal(false);
+
+  // ---- Share ----
+  sharePost(event: Event) {
+    event.stopPropagation();
+    const url = `${window.location.origin}/post/${this.post.id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      this.toastService.showSuccess('Link copied to clipboard!');
+    }).catch(err => {
+      console.error('Failed to copy link', err);
+      this.toastService.showError('Failed to copy link.');
+    });
+  }
   // Plant Details
   showPlantDetails = signal(false);
   selectedPlantId = signal<string | null>(null);

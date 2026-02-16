@@ -38,6 +38,14 @@ export class FeedService {
     return this.http.get<{ content: Post[] }>(url);
   }
 
+  getPostById(id: string): Observable<Post> {
+    // Note: Backend endpoint is /api/v1/posts/{id}, which is distinct from /api/v1/feed
+    // Construct the URL directly or update apiUrl base.
+    // For now, I'll hardcode the replacement since apiUrl is .../feed
+    const baseUrl = this.apiUrl.replace('/feed', '/posts');
+    return this.http.get<Post>(`${baseUrl}/${id}`);
+  }
+
   createPost(caption: string, file?: File, plantId?: string, plantTag?: string): Observable<Post> {
     const formData = new FormData();
     formData.append('caption', caption);

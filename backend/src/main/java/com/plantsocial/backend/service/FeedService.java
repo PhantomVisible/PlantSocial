@@ -45,6 +45,13 @@ public class FeedService {
         return posts.map(post -> mapToPostResponse(post, currentUser));
     }
 
+    public PostResponse getPostById(UUID postId) {
+        User currentUser = getCurrentUser();
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        return mapToPostResponse(post, currentUser);
+    }
+
     @Transactional
     public PostResponse createPost(String caption, MultipartFile file, UUID plantId, String plantTag) {
         User user = getCurrentUser();
