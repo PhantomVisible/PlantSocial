@@ -659,10 +659,7 @@ export class PostCardComponent {
 
   onTagClick(event: Event) {
     event.stopPropagation();
-    // If there is a linked plant, open details. Otherwise filter.
-    if (this.post.plantId) {
-      this.openPlantDetails(event);
-    } else if (this.post.plantTag) {
+    if (this.post.plantTag) {
       this.router.navigate([], { queryParams: { plant: this.post.plantTag } });
     }
   }

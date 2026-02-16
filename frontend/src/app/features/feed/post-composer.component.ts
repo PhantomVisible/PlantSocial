@@ -68,7 +68,7 @@ import { WikipediaService } from '../../shared/wikipedia.service';
               <button 
                 class="icon-btn" 
                 [class.active]="selectedPlantId()" 
-                title="Tag a plant"
+                title="Tag your plant"
                 (click)="togglePlantDropdown()"
               >
                 <i class="pi pi-ticket"></i>
@@ -76,7 +76,7 @@ import { WikipediaService } from '../../shared/wikipedia.service';
               
               <!-- Plant Dropdown -->
               <div *ngIf="showPlantDropdown()" class="plant-dropdown">
-                <div class="plant-dropdown__header">Tag a plant</div>
+                <div class="plant-dropdown__header">Tag your plant</div>
                 <div 
                     class="plant-option" 
                     [class.selected]="!selectedPlantId()"
