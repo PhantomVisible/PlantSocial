@@ -392,29 +392,40 @@ export class AuthFormComponent {
   form!: FormGroup;
 
   ngOnInit() {
-    if (this.mode === 'register') {
-      this.form = this.fb.group({
-        fullName: ['', Validators.required],
-        username: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(20)]],
-        email: ['', [Validators.required, Validators.email]],
-        password: ['', [Validators.required, Validators.minLength(6)]]
-      });
-    } else {
-      this.form = this.fb.group({
-        email: ['', [Validators.required, Validators.email]],
-        password: ['', Validators.required]
-      });
-    }
+    const isRegister = this.mode === 'register';
+    this.form = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', isRegister ? [Validators.required, Validators.minLength(6)] : [Validators.required]],
+      fullName: ['', isRegister ? [Validators.required] : []],
+      username: ['', isRegister ? [Validators.required, Validators.minLength(3), Validators.maxLength(20)] : []]
+    });
   }
 
   onSubmit() {
-    if (!this.form.valid) return;
+    if (!this.form.valid) {
+      console.warn('Form Invalid:', this.form.errors);
+      return;
+    }
     this.loading.set(true);
     this.errorMessage.set(null);
 
-    const action$ = this.mode === 'login'
-      ? this.authService.login(this.form.value)
-      : this.authService.register(this.form.value);
+    let action$;
+    if (this.mode === 'login') {
+      console.log('Logging in with form value:', this.form.value);
+      action$ = this.authService.login(this.form.value);
+    } else {
+      const val = this.form.getRawValue();
+      console.log('FORM RAW VALUE:', val);
+
+      const request = {
+        fullName: val.fullName,
+        username: val.username,
+        email: val.email,
+        password: val.password
+      };
+      console.log('HTTP PAYLOAD SENDING (Component):', request);
+      action$ = this.authService.register(request);
+    }
 
     action$.subscribe({
       next: () => {
@@ -424,10 +435,14 @@ export class AuthFormComponent {
       error: (err) => {
         this.loading.set(false);
         console.error(`${this.mode} failed`, err);
+        // Log the error response body if available
+        if (err.error) {
+          console.error('Error details:', err.error);
+        }
         this.errorMessage.set(
           this.mode === 'login'
             ? 'Invalid email or password. Please try again.'
-            : 'Registration failed. This email may already be taken.'
+            : 'Registration failed. This email or username may already be taken.'
         );
       }
     });

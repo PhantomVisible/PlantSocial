@@ -62,6 +62,7 @@ export class AuthService {
     }
 
     register(request: RegisterRequest): Observable<AuthResponse> {
+        console.log('HTTP PAYLOAD SENDING (Service):', request);
         return this.http.post<AuthResponse>(`${this.apiUrl}/register`, request).pipe(
             tap(response => {
                 if (isPlatformBrowser(this.platformId)) {
