@@ -4,10 +4,12 @@ import { RouterModule } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { AuthPromptDialogComponent } from '../auth/auth-prompt-dialog.component';
 
+import { AvatarComponent } from '../shared/components/avatar/avatar.component';
+
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule, AuthPromptDialogComponent],
+  imports: [CommonModule, RouterModule, AuthPromptDialogComponent, AvatarComponent],
   template: `
     <nav class="sidebar">
       <!-- Logo -->
@@ -44,7 +46,7 @@ import { AuthPromptDialogComponent } from '../auth/auth-prompt-dialog.component'
           <span class="badge-ai">AI</span>
         </button>
 
-        <a *ngIf="user()" [routerLink]="['/profile', user()!.id]" routerLinkActive="active" class="nav-item">
+        <a *ngIf="user()" [routerLink]="['/profile', user()!.username]" routerLinkActive="active" class="nav-item">
           <i class="pi pi-user"></i>
           <span>Profile</span>
         </a>
@@ -58,7 +60,13 @@ import { AuthPromptDialogComponent } from '../auth/auth-prompt-dialog.component'
             <span>Log Out</span>
           </button>
           <div class="sidebar__user">
-            <div class="user-avatar">{{ getInitials(user()!.fullName) }}</div>
+            <!-- Avatar -->
+            <app-avatar 
+              [imageUrl]="resolveImageUrl(user()!.profilePictureUrl)" 
+              [name]="user()!.fullName" 
+              [size]="36">
+            </app-avatar>
+            
             <div class="user-info">
               <span class="user-name">{{ user()!.fullName }}</span>
               <span class="user-email">{{ user()!.email }}</span>
@@ -258,5 +266,11 @@ export class SidebarComponent {
 
   getInitials(name: string): string {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  resolveImageUrl(url: string | undefined | null): string | null {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    return 'http://localhost:8080' + url;
   }
 }

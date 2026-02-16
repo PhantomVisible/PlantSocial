@@ -12,7 +12,9 @@ import { PlantDetailsDialogComponent } from '../garden/plant-details-dialog.comp
 export interface PostCardData {
   id: string;
   authorName: string;
+  authorUsername: string;
   authorId: string;
+  authorProfilePictureUrl?: string;
   content: string;
   imageUrl?: string;
   createdAt: string;
@@ -24,19 +26,25 @@ export interface PostCardData {
   plantTag?: string;
 }
 
+import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
+
 @Component({
   selector: 'app-post-card',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, CommentThreadComponent, PlantDetailsDialogComponent],
+  imports: [CommonModule, FormsModule, RouterModule, CommentThreadComponent, PlantDetailsDialogComponent, AvatarComponent],
   template: `
     <article class="post-card">
       <!-- Header -->
       <div class="post-card__header">
-        <a (click)="visitProfile(post.authorId)" class="post-card__avatar">
-          {{ getInitials(post.authorName) }}
+        <a (click)="visitProfile(post.authorUsername)" class="post-card__avatar-link">
+          <app-avatar 
+            [imageUrl]="resolveImageUrl(post.authorProfilePictureUrl || '')" 
+            [name]="post.authorName" 
+            [size]="42">
+          </app-avatar>
         </a>
         <div class="post-card__meta">
-          <a (click)="visitProfile(post.authorId)" class="post-card__author">{{ post.authorName }}</a>
+          <a (click)="visitProfile(post.authorUsername)" class="post-card__author">{{ post.authorName }}</a>
           <span class="post-card__dot">·</span>
           <span class="post-card__time">{{ formatTime(post.createdAt) }}</span>
           
@@ -181,21 +189,15 @@ export interface PostCardData {
       margin-bottom: 8px;
       position: relative;
     }
-    .post-card__avatar {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--trellis-green), var(--trellis-green-dark));
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 0.8rem;
-      flex-shrink: 0;
-      letter-spacing: 0.5px;
+    .post-card__avatar-link {
+      display: inline-block;
       text-decoration: none;
       cursor: pointer;
+      flex-shrink: 0;
+      transition: opacity 0.15s ease;
+    }
+    .post-card__avatar-link:hover {
+      opacity: 0.85;
     }
     .post-card__meta {
       display: flex;
@@ -638,9 +640,9 @@ export class PostCardComponent {
     this.menuOpen.update(v => !v);
   }
 
-  visitProfile(userId: string) {
+  visitProfile(username: string) {
     this.gatekeeper.run(() => {
-      this.router.navigate(['/profile', userId]);
+      this.router.navigate(['/profile', username]);
     });
   }
 

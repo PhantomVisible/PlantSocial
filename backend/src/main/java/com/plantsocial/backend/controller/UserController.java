@@ -26,22 +26,26 @@ public class UserController {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final FeedService feedService;
+    private final com.plantsocial.backend.service.FileStorageService fileStorageService;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     /**
      * Get a user's public profile
      */
-    @GetMapping("/users/{id}")
-    public ResponseEntity<UserProfileDTO> getUserProfile(@PathVariable UUID id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    @GetMapping("/users/{username}")
+    public ResponseEntity<UserProfileDTO> getUserProfile(@PathVariable String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
 
-        long postCount = postRepository.countByAuthorId(id);
+        long postCount = postRepository.countByAuthorId(user.getId());
 
         UserProfileDTO dto = new UserProfileDTO(
                 user.getId(),
                 user.getFullName(),
+                user.getHandle(),
                 user.getBio(),
                 user.getLocation(),
+                user.getProfilePictureUrl(),
                 user.getCreatedAt(),
                 postCount);
         return ResponseEntity.ok(dto);
@@ -60,6 +64,50 @@ public class UserController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(responses);
+    }
+
+    /**
+     * Update user profile
+     */
+    @PutMapping(value = "/users/profile", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UserProfileDTO> updateProfile(
+            @RequestPart("data") com.plantsocial.backend.dto.UpdateProfileRequest request,
+            @RequestPart(value = "image", required = false) org.springframework.web.multipart.MultipartFile image) {
+
+        User currentUser = getCurrentUser();
+
+        // 1. Validate Username
+        if (!currentUser.getHandle().equals(request.username())) {
+            if (userRepository.existsByUsername(request.username())) {
+                throw new IllegalArgumentException("Username already taken");
+            }
+            currentUser.setUsername(request.username());
+        }
+
+        // 2. Update Text Fields
+        currentUser.setFullName(request.fullName());
+        currentUser.setBio(request.bio());
+
+        // 3. Handle Image Upload
+        if (image != null && !image.isEmpty()) {
+            String imageUrl = fileStorageService.storeFile(image);
+            currentUser.setProfilePictureUrl(imageUrl);
+        }
+
+        userRepository.save(currentUser);
+
+        long postCount = postRepository.countByAuthorId(currentUser.getId());
+        UserProfileDTO dto = new UserProfileDTO(
+                currentUser.getId(),
+                currentUser.getFullName(),
+                currentUser.getHandle(),
+                currentUser.getBio(),
+                currentUser.getLocation(),
+                currentUser.getProfilePictureUrl(),
+                currentUser.getCreatedAt(),
+                postCount);
+
+        return ResponseEntity.ok(dto);
     }
 
     private User getCurrentUser() {

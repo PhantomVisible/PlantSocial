@@ -25,9 +25,13 @@ public class AuthService {
         if (repository.existsByEmail(request.email())) {
             throw new IllegalArgumentException("Email already in use");
         }
+        if (repository.existsByUsername(request.username())) {
+            throw new IllegalArgumentException("Username already taken");
+        }
 
         var user = User.builder()
                 .fullName(request.fullName())
+                .username(request.username())
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
                 .role(Role.USER)
@@ -49,8 +53,13 @@ public class AuthService {
     }
 
     private Map<String, Object> buildClaims(User user) {
-        return Map.of(
-                "userId", user.getId().toString(),
-                "fullName", user.getFullName());
+        java.util.HashMap<String, Object> claims = new java.util.HashMap<>();
+        claims.put("userId", user.getId().toString());
+        claims.put("fullName", user.getFullName());
+        claims.put("username", user.getHandle());
+        if (user.getProfilePictureUrl() != null) {
+            claims.put("profilePictureUrl", user.getProfilePictureUrl());
+        }
+        return claims;
     }
 }

@@ -142,6 +142,7 @@ public class FeedService {
                 post.getContent(),
                 post.getImageUrl(),
                 post.getAuthor().getFullName(),
+                post.getAuthor().getHandle(),
                 post.getAuthor().getId(),
                 post.getCreatedAt(),
                 likesCount,
@@ -149,6 +150,7 @@ public class FeedService {
                 likedByCurrentUser,
                 plantId,
                 plantNickname,
-                post.getPlantTag());
+                post.getPlantTag(),
+                post.getAuthor().getProfilePictureUrl());
     }
 }

@@ -100,7 +100,8 @@ public class CommentService {
                 comment.getAuthor().getFullName(),
                 comment.getAuthor().getId(),
                 comment.getCreatedAt(),
-                replyCount);
+                replyCount,
+                comment.getAuthor().getProfilePictureUrl());
     }
 
     private User getCurrentUser() {

@@ -5,10 +5,10 @@ import { RouterModule } from '@angular/router';
 import { AuthService } from './auth.service';
 
 @Component({
-    selector: 'app-auth-form',
-    standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule],
-    template: `
+  selector: 'app-auth-form',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  template: `
     <div class="auth-form">
       <!-- Header -->
       <div class="auth-header">
@@ -50,6 +50,24 @@ import { AuthService } from './auth.service';
             />
           </div>
           <small *ngIf="form.get('fullName')?.invalid && form.get('fullName')?.touched" class="field-error">Required</small>
+        </div>
+
+        <!-- Username (Register only) -->
+        <div *ngIf="mode === 'register'" class="input-group">
+          <label for="af-username">Username</label>
+          <div class="input-wrapper">
+            <i class="pi pi-at input-icon"></i>
+            <input
+              id="af-username"
+              type="text"
+              formControlName="username"
+              placeholder="Pick a username"
+              [class.has-error]="form.get('username')?.invalid && form.get('username')?.touched"
+            />
+          </div>
+          <small *ngIf="form.get('username')?.invalid && form.get('username')?.touched" class="field-error">
+            Username must be 3-20 chars
+          </small>
         </div>
 
         <!-- Email -->
@@ -120,7 +138,7 @@ import { AuthService } from './auth.service';
       <div *ngIf="socialToast" class="mini-toast">{{ socialToast }}</div>
     </div>
   `,
-    styles: [`
+  styles: [`
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&display=swap');
 
     .auth-form {
@@ -357,66 +375,67 @@ import { AuthService } from './auth.service';
   `]
 })
 export class AuthFormComponent {
-    @Input() mode: 'login' | 'register' = 'login';
-    @Input() hideFooter = false;
-    @Output() footerNav = new EventEmitter<void>();
-    @Output() authSuccess = new EventEmitter<void>();
+  @Input() mode: 'login' | 'register' = 'login';
+  @Input() hideFooter = false;
+  @Output() footerNav = new EventEmitter<void>();
+  @Output() authSuccess = new EventEmitter<void>();
 
-    private fb = inject(FormBuilder);
-    private authService = inject(AuthService);
+  private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
 
-    loading = signal(false);
-    errorMessage = signal<string | null>(null);
-    showPassword = false;
-    socialToast: string | null = null;
-    private socialTimeout: any;
+  loading = signal(false);
+  errorMessage = signal<string | null>(null);
+  showPassword = false;
+  socialToast: string | null = null;
+  private socialTimeout: any;
 
-    form!: FormGroup;
+  form!: FormGroup;
 
-    ngOnInit() {
-        if (this.mode === 'register') {
-            this.form = this.fb.group({
-                fullName: ['', Validators.required],
-                email: ['', [Validators.required, Validators.email]],
-                password: ['', [Validators.required, Validators.minLength(6)]]
-            });
-        } else {
-            this.form = this.fb.group({
-                email: ['', [Validators.required, Validators.email]],
-                password: ['', Validators.required]
-            });
-        }
+  ngOnInit() {
+    if (this.mode === 'register') {
+      this.form = this.fb.group({
+        fullName: ['', Validators.required],
+        username: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(20)]],
+        email: ['', [Validators.required, Validators.email]],
+        password: ['', [Validators.required, Validators.minLength(6)]]
+      });
+    } else {
+      this.form = this.fb.group({
+        email: ['', [Validators.required, Validators.email]],
+        password: ['', Validators.required]
+      });
     }
+  }
 
-    onSubmit() {
-        if (!this.form.valid) return;
-        this.loading.set(true);
-        this.errorMessage.set(null);
+  onSubmit() {
+    if (!this.form.valid) return;
+    this.loading.set(true);
+    this.errorMessage.set(null);
 
-        const action$ = this.mode === 'login'
-            ? this.authService.login(this.form.value)
-            : this.authService.register(this.form.value);
+    const action$ = this.mode === 'login'
+      ? this.authService.login(this.form.value)
+      : this.authService.register(this.form.value);
 
-        action$.subscribe({
-            next: () => {
-                this.loading.set(false);
-                this.authSuccess.emit();
-            },
-            error: (err) => {
-                this.loading.set(false);
-                console.error(`${this.mode} failed`, err);
-                this.errorMessage.set(
-                    this.mode === 'login'
-                        ? 'Invalid email or password. Please try again.'
-                        : 'Registration failed. This email may already be taken.'
-                );
-            }
-        });
-    }
+    action$.subscribe({
+      next: () => {
+        this.loading.set(false);
+        this.authSuccess.emit();
+      },
+      error: (err) => {
+        this.loading.set(false);
+        console.error(`${this.mode} failed`, err);
+        this.errorMessage.set(
+          this.mode === 'login'
+            ? 'Invalid email or password. Please try again.'
+            : 'Registration failed. This email may already be taken.'
+        );
+      }
+    });
+  }
 
-    showSocialToast(provider: string) {
-        clearTimeout(this.socialTimeout);
-        this.socialToast = `${provider} sign-in coming soon! Use email for now.`;
-        this.socialTimeout = setTimeout(() => this.socialToast = null, 3000);
-    }
+  showSocialToast(provider: string) {
+    clearTimeout(this.socialTimeout);
+    this.socialToast = `${provider} sign-in coming soon! Use email for now.`;
+    this.socialTimeout = setTimeout(() => this.socialToast = null, 3000);
+  }
 }

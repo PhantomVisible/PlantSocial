@@ -7,7 +7,9 @@ export interface Post {
   content: string;
   imageUrl?: string;
   authorName: string;
+  authorUsername: string;
   authorId: string;
+  authorProfilePictureUrl?: string; // Add this
   createdAt: string;
   likesCount: number;
   commentCount: number;

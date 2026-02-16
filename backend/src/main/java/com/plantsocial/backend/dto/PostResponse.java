@@ -7,7 +7,9 @@ public record PostResponse(
         UUID id,
         String content,
         String imageUrl,
+
         String authorName,
+        String authorUsername,
         UUID authorId,
         LocalDateTime createdAt,
         long likesCount,
@@ -15,5 +17,6 @@ public record PostResponse(
         boolean likedByCurrentUser,
         UUID plantId,
         String plantNickname,
-        String plantTag) {
+        String plantTag,
+        String authorProfilePictureUrl) {
 }

@@ -16,6 +16,7 @@ export interface LoginRequest {
 
 export interface RegisterRequest {
     fullName: string;
+    username: string; // Added
     email: string;
     password: string;
 }
@@ -23,7 +24,9 @@ export interface RegisterRequest {
 export interface CurrentUser {
     id: string;
     email: string;
+    username: string; // Added
     fullName: string;
+    profilePictureUrl?: string; // Added
 }
 
 @Injectable({
@@ -99,7 +102,9 @@ export class AuthService {
             return {
                 id: payload.userId || '',
                 email: payload.sub || '',
-                fullName: payload.fullName || ''
+                username: payload.username || '', // Added
+                fullName: payload.fullName || '',
+                profilePictureUrl: payload.profilePictureUrl
             };
         } catch {
             return null;

@@ -11,6 +11,6 @@ export const routes: Routes = [
     { path: 'feed', component: FeedComponent },
     { path: 'auth/login', component: LoginComponent, canActivate: [guestGuard] },
     { path: 'auth/register', component: RegisterComponent, canActivate: [guestGuard] },
-    { path: 'profile/:id', component: UserProfileComponent },
+    { path: 'profile/:username', component: UserProfileComponent },
     { path: '**', redirectTo: '' }
 ];

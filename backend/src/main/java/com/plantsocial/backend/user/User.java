@@ -51,6 +51,11 @@ public class User implements UserDetails {
 
     private String location;
 
+    private String profilePictureUrl;
+
+    @Column(nullable = false, unique = true)
+    private String username;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -66,9 +71,12 @@ public class User implements UserDetails {
         return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
-    @Override
     public String getUsername() {
         return email;
+    }
+
+    public String getHandle() {
+        return username;
     }
 
     @Override

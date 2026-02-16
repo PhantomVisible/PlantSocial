@@ -1,8 +1,9 @@
 import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { Subject, switchMap, takeUntil, tap, forkJoin } from 'rxjs';
-import { UserService, UserProfile } from './user.service';
+import { UserService } from './user.service';
+import { UserProfile } from './user.model';
 import { Post } from '../feed/feed.service';
 import { FeedService } from '../feed/feed.service';
 import { PostCardComponent } from '../feed/post-card.component';
@@ -12,10 +13,14 @@ import { AddPlantDialogComponent } from '../garden/add-plant-dialog.component';
 import { PlantService, PlantData } from '../garden/plant.service';
 import { PlantDetailsDialogComponent } from '../garden/plant-details-dialog.component';
 
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { EditProfileDialogComponent } from './edit-profile-dialog.component';
+
 @Component({
   selector: 'app-user-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule, PostCardComponent, GardenGridComponent, AddPlantDialogComponent, PlantDetailsDialogComponent],
+  imports: [CommonModule, RouterModule, PostCardComponent, GardenGridComponent, AddPlantDialogComponent, PlantDetailsDialogComponent, EditProfileDialogComponent],
+  providers: [DialogService],
   template: `
     <div class="profile-page">
       <!-- Nav Bar -->
@@ -44,7 +49,8 @@ import { PlantDetailsDialogComponent } from '../garden/plant-details-dialog.comp
           <!-- Avatar + Actions -->
           <div class="hero__row">
             <div class="hero__avatar">
-              {{ getInitials(profile()!.fullName) }}
+              <img *ngIf="profile()!.profilePictureUrl" [src]="resolveImageUrl(profile()!.profilePictureUrl)" alt="Avatar" class="hero__avatar-img">
+              <span *ngIf="!profile()!.profilePictureUrl">{{ getInitials(profile()!.fullName) }}</span>
             </div>
             <div class="hero__action">
               <button
@@ -68,7 +74,7 @@ import { PlantDetailsDialogComponent } from '../garden/plant-details-dialog.comp
           <!-- Info -->
           <div class="hero__info">
             <h1 class="hero__name">{{ profile()!.fullName }}</h1>
-            <p class="hero__handle">&#64;{{ getHandle(profile()!.fullName) }}</p>
+            <p class="hero__handle">&#64;{{ profile()!.username }}</p>
             <p *ngIf="profile()!.bio" class="hero__bio">{{ profile()!.bio }}</p>
             <div class="hero__meta">
               <span *ngIf="profile()!.location" class="meta-item">
@@ -238,6 +244,12 @@ import { PlantDetailsDialogComponent } from '../garden/plant-details-dialog.comp
       border: 4px solid var(--trellis-white);
       box-shadow: 0 4px 16px rgba(0,0,0,0.12);
       flex-shrink: 0;
+      overflow: hidden; /* Added to clip image */
+    }
+    .hero__avatar-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .hero__action {
@@ -401,9 +413,11 @@ import { PlantDetailsDialogComponent } from '../garden/plant-details-dialog.comp
 })
 export class UserProfileComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private userService = inject(UserService);
   private feedService = inject(FeedService);
   private authService = inject(AuthService);
+  private dialogService = inject(DialogService);
   private destroy$ = new Subject<void>();
 
   profile = signal<UserProfile | null>(null);
@@ -423,16 +437,28 @@ export class UserProfileComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         tap(() => this.loading.set(true)),
         switchMap(params => {
-          const userId = params.get('id')!;
-          return forkJoin({
-            profile: this.userService.getUserProfile(userId),
-            posts: this.userService.getUserPosts(userId),
-            plants: this.plantService.getUserPlants(userId)
-          });
+          const username = params.get('username')!;
+          return this.userService.getUserProfile(username).pipe(
+            switchMap(profile => {
+              return forkJoin({
+                posts: this.userService.getUserPosts(profile.id),
+                plants: this.plantService.getUserPlants(profile.id)
+              }).pipe(
+                switchMap(results => {
+                  return [{ profile, posts: results.posts, plants: results.plants }];
+                })
+              );
+            })
+          );
         })
       )
       .subscribe({
-        next: ({ profile, posts, plants }) => {
+        next: (data) => {
+          // data is an array because I returned an array in switchMap to wrap the object?
+          // Wait, 'of' or just returning the object directly is better if using map.
+          // Let's use map inside the inner pipe instead of switchMap to array.
+          // Actually, let's simplify.
+          const { profile, posts, plants } = data;
           this.profile.set(profile);
           this.posts.set(posts);
           this.plants.set(plants);
@@ -460,7 +486,25 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   }
 
   editProfile() {
-    // TODO: open edit-profile dialog
+    const ref = this.dialogService.open(EditProfileDialogComponent, {
+      header: 'Edit Profile',
+      width: '90%',
+      style: { maxWidth: '500px' },
+      data: {
+        profile: this.profile()
+      }
+    });
+
+    ref.onClose.subscribe((updatedProfile: UserProfile) => {
+      if (updatedProfile) {
+        // If username changed, redirect to new URL
+        if (updatedProfile.username !== this.profile()?.username) {
+          this.router.navigate(['/profile', updatedProfile.username]);
+        } else {
+          this.profile.set(updatedProfile);
+        }
+      }
+    });
   }
 
   openAddPlantDialog() {
@@ -579,5 +623,11 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   formatJoinDate(dateStr: string): string {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  }
+
+  resolveImageUrl(url: string | undefined | null): string | null {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    return 'http://localhost:8080' + url;
   }
 }
