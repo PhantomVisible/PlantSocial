@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, signal, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -374,7 +374,7 @@ import { AuthService } from './auth.service';
     }
   `]
 })
-export class AuthFormComponent {
+export class AuthFormComponent implements OnInit, OnChanges {
   @Input() mode: 'login' | 'register' = 'login';
   @Input() hideFooter = false;
   @Output() footerNav = new EventEmitter<void>();
@@ -392,6 +392,17 @@ export class AuthFormComponent {
   form!: FormGroup;
 
   ngOnInit() {
+    this.buildForm();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['mode'] && !changes['mode'].firstChange) {
+      this.buildForm();
+      this.errorMessage.set(null);
+    }
+  }
+
+  private buildForm() {
     if (this.mode === 'register') {
       this.form = this.fb.group({
         fullName: ['', Validators.required],
