@@ -31,6 +31,33 @@ import { AuthService } from '../../auth/auth.service';
     <div class="edit-profile">
       <form [formGroup]="form" (ngSubmit)="save()" class="edit-profile__form">
         
+        <!-- Cover Image Section -->
+        <div class="edit-profile__cover-container">
+          <div class="edit-profile__cover-wrapper">
+            <img *ngIf="(previewCover() || currentProfile.coverPictureUrl) && !coverError()"
+                 [src]="previewCover() || resolveImageUrl(currentProfile.coverPictureUrl)"
+                 (error)="handleCoverError($event)"
+                 alt="Cover"
+                 class="edit-profile__cover-img">
+            
+            <div *ngIf="(!previewCover() && !currentProfile.coverPictureUrl) || coverError()" class="edit-profile__cover-placeholder">
+            </div>
+
+            <div class="edit-profile__camera-overlay cover-overlay">
+              <p-fileUpload mode="basic"
+                            chooseLabel=" "
+                            chooseIcon="pi pi-camera"
+                            name="coverImage"
+                            accept="image/*"
+                            maxFileSize="2000000"
+                            (onSelect)="onCoverFileSelect($event)"
+                            [auto]="true"
+                            class="edit-profile__upload-btn">
+              </p-fileUpload>
+            </div>
+          </div>
+        </div>
+
         <!-- Avatar Section -->
         <div class="edit-profile__avatar-container">
           <div class="edit-profile__avatar-wrapper">
@@ -102,10 +129,43 @@ import { AuthService } from '../../auth/auth.service';
     .edit-profile {
       padding: 0.5rem;
     }
+    .edit-profile__cover-container {
+      margin-bottom: -60px; /* Pull avatar up overlapping cover */
+      position: relative;
+    }
+    .edit-profile__cover-wrapper {
+        position: relative;
+        height: 120px;
+        background: linear-gradient(135deg, #ddd, #eee);
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 0;
+    }
+    .edit-profile__cover-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .edit-profile__cover-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 100%);
+    }
+    .cover-overlay {
+        bottom: 8px !important;
+        right: 8px !important;
+        background: rgba(0,0,0,0.4) !important;
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255,255,255,0.3) !important;
+    }
+    
     .edit-profile__avatar-container {
       display: flex;
-      justify-content: center;
-      margin-bottom: 2rem;
+      justify-content: flex-start; /* Align left */
+      padding-left: 20px;
+      margin-bottom: 1.5rem;
+      position: relative;
+      z-index: 2;
     }
     .edit-profile__avatar-wrapper {
       position: relative;
@@ -223,9 +283,16 @@ export class EditProfileDialogComponent {
 
   currentProfile: UserProfile = this.config.data.profile;
   saving = signal(false);
+
+  // Avatar
   previewImage = signal<string | null>(null);
   selectedFile: File | null = null;
   imageError = signal(false);
+
+  // Cover
+  previewCover = signal<string | null>(null);
+  selectedCoverFile: File | null = null;
+  coverError = signal(false);
 
   form = this.fb.group({
     username: [this.currentProfile.username, [Validators.required, Validators.pattern('^[a-zA-Z0-9_]{3,20}$')]],
@@ -234,16 +301,26 @@ export class EditProfileDialogComponent {
   });
 
   onFileSelect(event: any) {
-    // PrimeNG's p-fileUpload [auto]="true" with mode="basic" and customUpload="true" 
-    // might behave differently. But user says "event.files[0]".
-    // We need to ensure we catch it.
     const file = event.files && event.files[0];
     if (file) {
       this.selectedFile = file;
-      this.imageError.set(false); // Reset error on new selection
+      this.imageError.set(false);
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.previewImage.set(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  onCoverFileSelect(event: any) {
+    const file = event.files && event.files[0];
+    if (file) {
+      this.selectedCoverFile = file;
+      this.coverError.set(false);
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.previewCover.set(e.target.result);
       };
       reader.readAsDataURL(file);
     }
@@ -253,9 +330,13 @@ export class EditProfileDialogComponent {
     this.imageError.set(true);
   }
 
+  handleCoverError(event: any) {
+    this.coverError.set(true);
+  }
+
   resolveImageUrl(url: string | undefined | null): string | null {
     if (!url) return null;
-    if (url.startsWith('data:')) return url; // For preview data URLs
+    if (url.startsWith('data:')) return url;
     if (url.startsWith('http')) return url;
     return 'http://localhost:8080' + url;
   }
@@ -278,9 +359,12 @@ export class EditProfileDialogComponent {
     };
     formData.append('data', new Blob([JSON.stringify(profileData)], { type: 'application/json' }));
 
-    // Image part
+    // Image parts
     if (this.selectedFile) {
       formData.append('image', this.selectedFile);
+    }
+    if (this.selectedCoverFile) {
+      formData.append('coverImage', this.selectedCoverFile);
     }
 
     this.userService.updateProfile(formData).subscribe({

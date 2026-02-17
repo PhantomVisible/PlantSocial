@@ -44,7 +44,11 @@ import { EditProfileDialogComponent } from './edit-profile-dialog.component';
         <!-- ===== Hero Header ===== -->
         <section class="hero">
           <!-- Banner -->
-          <div class="hero__banner"></div>
+          <!-- Banner -->
+          <div class="hero__banner" 
+               [style.background-image]="profile()!.coverPictureUrl ? 'url(' + resolveImageUrl(profile()!.coverPictureUrl) + ')' : null"
+               [class.has-cover]="!!profile()!.coverPictureUrl">
+          </div>
 
           <!-- Avatar + Actions -->
           <div class="hero__row">
@@ -225,6 +229,11 @@ import { EditProfileDialogComponent } from './edit-profile-dialog.component';
     .hero__banner {
       height: 180px;
       background: linear-gradient(135deg, #2E7D32 0%, #66BB6A 40%, #A5D6A7 70%, #C8E6C9 100%);
+      background-size: cover;
+      background-position: center;
+    }
+    .hero__banner.has-cover {
+        /* background-image set inline */
     }
 
     .hero__row {

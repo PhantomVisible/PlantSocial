@@ -55,6 +55,7 @@ public class UserController {
                 user.getBio(),
                 user.getLocation(),
                 user.getProfilePictureUrl(),
+                user.getCoverPictureUrl(),
                 user.getCreatedAt(),
                 postCount,
                 followerCount,
@@ -84,7 +85,8 @@ public class UserController {
     @PutMapping(value = "/users/profile", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserProfileDTO> updateProfile(
             @RequestPart("data") com.plantsocial.backend.dto.UpdateProfileRequest request,
-            @RequestPart(value = "image", required = false) org.springframework.web.multipart.MultipartFile image) {
+            @RequestPart(value = "image", required = false) org.springframework.web.multipart.MultipartFile image,
+            @RequestPart(value = "coverImage", required = false) org.springframework.web.multipart.MultipartFile coverImage) {
 
         User currentUser = getCurrentUser();
 
@@ -100,10 +102,15 @@ public class UserController {
         currentUser.setFullName(request.fullName());
         currentUser.setBio(request.bio());
 
-        // 3. Handle Image Upload
+        // 3. Handle Image Uploads
         if (image != null && !image.isEmpty()) {
             String imageUrl = fileStorageService.storeFile(image);
             currentUser.setProfilePictureUrl(imageUrl);
+        }
+
+        if (coverImage != null && !coverImage.isEmpty()) {
+            String coverUrl = fileStorageService.storeFile(coverImage);
+            currentUser.setCoverPictureUrl(coverUrl);
         }
 
         userRepository.save(currentUser);
@@ -120,6 +127,7 @@ public class UserController {
                 currentUser.getBio(),
                 currentUser.getLocation(),
                 currentUser.getProfilePictureUrl(),
+                currentUser.getCoverPictureUrl(),
                 currentUser.getCreatedAt(),
                 postCount,
                 followerCount,

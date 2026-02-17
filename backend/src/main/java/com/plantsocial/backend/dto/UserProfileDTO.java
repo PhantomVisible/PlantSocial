@@ -4,15 +4,16 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record UserProfileDTO(
-                UUID id,
-                String fullName,
-                String username,
-                String bio,
-                String location,
-                String profilePictureUrl,
-                LocalDateTime joinDate,
-                long postCount,
-                long followerCount,
-                long followingCount,
-                boolean isFollowing) {
+        UUID id,
+        String fullName,
+        String username,
+        String bio,
+        String location,
+        String profilePictureUrl,
+        String coverPictureUrl,
+        LocalDateTime joinDate,
+        long postCount,
+        long followerCount,
+        long followingCount,
+        boolean isFollowing) {
 }

@@ -5,6 +5,7 @@ export interface UserProfile {
     bio: string | null;
     location: string | null;
     profilePictureUrl?: string; // Optional because legacy users might not have it immediately
+    coverPictureUrl?: string;
     joinDate: string;
     postCount: number;
     followerCount: number;

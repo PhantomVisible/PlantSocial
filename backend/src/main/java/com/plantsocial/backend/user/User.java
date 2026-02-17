@@ -55,6 +55,8 @@ public class User implements UserDetails {
 
     private String profilePictureUrl;
 
+    private String coverPictureUrl;
+
     @Column(nullable = false, unique = true)
     private String username;
 
