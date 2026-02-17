@@ -4,6 +4,7 @@ import com.plantsocial.backend.dto.PostResponse;
 import com.plantsocial.backend.model.Plant;
 import com.plantsocial.backend.model.Post;
 import com.plantsocial.backend.model.PostLike;
+import com.plantsocial.backend.model.NotificationType;
 import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.repository.CommentRepository;
 import com.plantsocial.backend.repository.PlantRepository;
@@ -33,6 +34,7 @@ public class FeedService {
     private final PlantRepository plantRepository;
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
+    private final NotificationService notificationService;
 
     public Page<PostResponse> getFeed(Pageable pageable, String plant) {
         User currentUser = getCurrentUser();
@@ -111,6 +113,14 @@ public class FeedService {
                     .user(user)
                     .build();
             postLikeRepository.save(like);
+
+            // Notify post author
+            notificationService.createNotification(
+                    post.getAuthor(),
+                    user,
+                    NotificationType.LIKE,
+                    user.getFullName() + " liked your post",
+                    post.getId());
         }
     }
 
@@ -122,13 +132,13 @@ public class FeedService {
         }
 
         Object principal = authentication.getPrincipal();
-        String email;
+        String username;
         if (principal instanceof UserDetails) {
-            email = ((UserDetails) principal).getUsername();
+            username = ((UserDetails) principal).getUsername();
         } else {
-            email = principal.toString();
+            username = principal.toString();
         }
-        return userRepository.findByEmail(email)
+        return userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 

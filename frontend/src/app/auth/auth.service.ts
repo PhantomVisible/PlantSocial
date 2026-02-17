@@ -97,12 +97,19 @@ export class AuthService {
         this.router.navigate(['/']);
     }
 
+    getToken(): string | null {
+        if (isPlatformBrowser(this.platformId)) {
+            return localStorage.getItem('token');
+        }
+        return null;
+    }
+
     private decodeToken(token: string): CurrentUser | null {
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
             return {
                 id: payload.userId || '',
-                email: payload.sub || '',
+                email: payload.email || payload.sub || '',
                 username: payload.username || '', // Added
                 fullName: payload.fullName || '',
                 profilePictureUrl: payload.profilePictureUrl

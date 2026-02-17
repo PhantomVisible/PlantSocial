@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { GlobalLoaderComponent } from './shared/global-loader/global-loader.component';
 import { ToastContainerComponent } from './shared/toast-container/toast-container.component';
@@ -6,6 +6,7 @@ import { SidebarComponent } from './layout/sidebar.component';
 import { WikiSidebarComponent } from './features/feed/wiki-sidebar.component';
 import { AuthPromptDialogComponent } from './auth/auth-prompt-dialog.component';
 import { AuthGatekeeperService } from './auth/auth-gatekeeper.service';
+import { NotificationService } from './core/notification.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -89,7 +90,12 @@ import { CommonModule } from '@angular/common';
     }
   `]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'frontend';
   gatekeeper = inject(AuthGatekeeperService);
+  notificationService = inject(NotificationService);
+
+  ngOnInit() {
+    this.notificationService.init();
+  }
 }
