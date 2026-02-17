@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, signal, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -374,7 +374,7 @@ import { AuthService } from './auth.service';
     }
   `]
 })
-export class AuthFormComponent {
+export class AuthFormComponent implements OnInit, OnChanges {
   @Input() mode: 'login' | 'register' = 'login';
   @Input() hideFooter = false;
   @Output() footerNav = new EventEmitter<void>();
@@ -392,13 +392,30 @@ export class AuthFormComponent {
   form!: FormGroup;
 
   ngOnInit() {
-    const isRegister = this.mode === 'register';
-    this.form = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', isRegister ? [Validators.required, Validators.minLength(6)] : [Validators.required]],
-      fullName: ['', isRegister ? [Validators.required] : []],
-      username: ['', isRegister ? [Validators.required, Validators.minLength(3), Validators.maxLength(20)] : []]
-    });
+    this.buildForm();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['mode'] && !changes['mode'].firstChange) {
+      this.buildForm();
+      this.errorMessage.set(null);
+    }
+  }
+
+  private buildForm() {
+    if (this.mode === 'register') {
+      this.form = this.fb.group({
+        fullName: ['', Validators.required],
+        username: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(20)]],
+        email: ['', [Validators.required, Validators.email]],
+        password: ['', [Validators.required, Validators.minLength(6)]]
+      });
+    } else {
+      this.form = this.fb.group({
+        email: ['', [Validators.required, Validators.email]],
+        password: ['', Validators.required]
+      });
+    }
   }
 
   onSubmit() {
@@ -432,7 +449,7 @@ export class AuthFormComponent {
         this.loading.set(false);
         this.authSuccess.emit();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.loading.set(false);
         console.error(`${this.mode} failed`, err);
         // Log the error response body if available

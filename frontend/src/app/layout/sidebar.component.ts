@@ -5,6 +5,7 @@ import { AuthService } from '../auth/auth.service';
 import { AuthPromptDialogComponent } from '../auth/auth-prompt-dialog.component';
 
 import { AvatarComponent } from '../shared/components/avatar/avatar.component';
+import { NotificationService } from '../core/notification.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -30,15 +31,18 @@ import { AvatarComponent } from '../shared/components/avatar/avatar.component';
           <span>Explore</span>
         </button>
 
-        <button class="nav-item" (click)="showComingSoon('Notifications')">
+        <a routerLink="/notifications" routerLinkActive="active" class="nav-item nav-item--notifications">
           <i class="pi pi-bell"></i>
           <span>Notifications</span>
-        </button>
+          <span *ngIf="notifService.unreadCount() > 0" class="badge-count">
+            {{ notifService.unreadCount() }}
+          </span>
+        </a>
 
-        <button class="nav-item" (click)="showComingSoon('Chat')">
+        <a routerLink="/chat" routerLinkActive="active" class="nav-item">
           <i class="pi pi-comments"></i>
           <span>Chat</span>
-        </button>
+        </a>
 
         <button class="nav-item" (click)="showComingSoon('Sage')">
           <i class="pi pi-sparkles"></i>
@@ -178,6 +182,27 @@ import { AvatarComponent } from '../shared/components/avatar/avatar.component';
     .nav-item--signup i { color: #fff; }
     .nav-item--signup:hover { background: var(--trellis-green-dark); }
 
+    .nav-item--notifications {
+      position: relative;
+    }
+    .badge-count {
+      position: absolute;
+      top: 8px;
+      left: 28px;
+      background: #EF4444;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      border: 2px solid #fff;
+    }
+
     .sidebar__bottom {
       display: flex;
       flex-direction: column;
@@ -245,6 +270,7 @@ import { AvatarComponent } from '../shared/components/avatar/avatar.component';
 })
 export class SidebarComponent {
   authService = inject(AuthService);
+  notifService = inject(NotificationService);
   user = this.authService.currentUser;
   showAuthModal = signal(false);
   toastMessage: string | null = null;

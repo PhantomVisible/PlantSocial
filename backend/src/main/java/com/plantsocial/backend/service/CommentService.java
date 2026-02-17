@@ -3,6 +3,7 @@ package com.plantsocial.backend.service;
 import com.plantsocial.backend.dto.CommentRequest;
 import com.plantsocial.backend.dto.CommentResponse;
 import com.plantsocial.backend.model.Comment;
+import com.plantsocial.backend.model.NotificationType;
 import com.plantsocial.backend.model.Post;
 import com.plantsocial.backend.repository.CommentRepository;
 import com.plantsocial.backend.repository.PostRepository;
@@ -26,6 +27,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     /**
      * Get top-level comments for a post (parentComment IS NULL)
@@ -63,6 +65,15 @@ public class CommentService {
                 .parentComment(null)
                 .build();
         Comment saved = commentRepository.save(comment);
+
+        // Notify post author
+        notificationService.createNotification(
+                post.getAuthor(),
+                user,
+                NotificationType.COMMENT,
+                user.getFullName() + " commented on your post",
+                post.getId());
+
         return mapToResponse(saved);
     }
 
@@ -82,6 +93,15 @@ public class CommentService {
                 .parentComment(parent)
                 .build();
         Comment saved = commentRepository.save(reply);
+
+        // Notify parent comment author
+        notificationService.createNotification(
+                parent.getAuthor(),
+                user,
+                NotificationType.COMMENT,
+                user.getFullName() + " replied to your comment",
+                parent.getPost().getId());
+
         return mapToResponse(saved);
     }
 
@@ -106,13 +126,13 @@ public class CommentService {
 
     private User getCurrentUser() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String email;
+        String username;
         if (principal instanceof UserDetails) {
-            email = ((UserDetails) principal).getUsername();
+            username = ((UserDetails) principal).getUsername();
         } else {
-            email = principal.toString();
+            username = principal.toString();
         }
-        return userRepository.findByEmail(email)
+        return userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 }
