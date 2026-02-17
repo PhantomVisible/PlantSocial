@@ -26,10 +26,10 @@ import { NotificationService } from '../core/notification.service';
           <span>Home</span>
         </a>
 
-        <button class="nav-item" (click)="showComingSoon('Explore')">
+        <a routerLink="/explore" routerLinkActive="active" class="nav-item">
           <i class="pi pi-search"></i>
           <span>Explore</span>
-        </button>
+        </a>
 
         <a routerLink="/notifications" routerLinkActive="active" class="nav-item nav-item--notifications">
           <i class="pi pi-bell"></i>

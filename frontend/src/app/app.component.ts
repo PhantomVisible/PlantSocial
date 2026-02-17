@@ -4,6 +4,7 @@ import { GlobalLoaderComponent } from './shared/global-loader/global-loader.comp
 import { ToastContainerComponent } from './shared/toast-container/toast-container.component';
 import { SidebarComponent } from './layout/sidebar.component';
 import { WikiSidebarComponent } from './features/feed/wiki-sidebar.component';
+import { NewsWidgetComponent } from './shared/components/news-widget/news-widget.component';
 import { AuthPromptDialogComponent } from './auth/auth-prompt-dialog.component';
 import { AuthGatekeeperService } from './auth/auth-gatekeeper.service';
 import { NotificationService } from './core/notification.service';
@@ -19,6 +20,7 @@ import { CommonModule } from '@angular/common';
     ToastContainerComponent,
     SidebarComponent,
     WikiSidebarComponent,
+    NewsWidgetComponent,
     AuthPromptDialogComponent
   ],
   template: `
@@ -35,6 +37,7 @@ import { CommonModule } from '@angular/common';
         <router-outlet />
       </main>
       <aside class="app-right">
+        <app-news-widget></app-news-widget>
         <app-wiki-sidebar></app-wiki-sidebar>
       </aside>
     </div>
