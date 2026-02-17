@@ -44,7 +44,8 @@ public class UserController {
         boolean isFollowing = false;
         User currentUser = getCurrentUserSafe(); // Need safe method or try/catch for auth check
         if (currentUser != null && !currentUser.getId().equals(user.getId())) {
-            isFollowing = user.getFollowers().contains(currentUser);
+            isFollowing = user.getFollowers().stream()
+                    .anyMatch(f -> f.getId().equals(currentUser.getId()));
         }
 
         UserProfileDTO dto = new UserProfileDTO(

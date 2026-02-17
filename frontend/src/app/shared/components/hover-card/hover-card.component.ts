@@ -40,6 +40,7 @@ export class HoverCardComponent implements OnInit {
 
     req$.subscribe({
       next: (data) => {
+        console.log('Hover Card Data:', data);
         this.user.set(data);
         this.loading.set(false);
       },
@@ -52,17 +53,28 @@ export class HoverCardComponent implements OnInit {
     const u = this.user();
     if (!u) return;
 
-    if (u.isFollowing) {
-      // Unfollow
-      this.userService.unfollowUser(u.id).subscribe((updatedDTO) => {
-        this.user.set(updatedDTO);
-      });
-    } else {
-      // Follow
-      this.userService.followUser(u.id).subscribe((updatedDTO) => {
-        this.user.set(updatedDTO);
-      });
-    }
+    const currentUser = u;
+    // Visually toggle immediately (Optimistic UI) or inside subscription
+    const req$ = currentUser.isFollowing
+      ? this.userService.unfollowUser(currentUser.id)
+      : this.userService.followUser(currentUser.id);
+
+    req$.subscribe({
+      next: () => {
+        // Update the local Signal to flip the boolean and adjust counts
+        this.user.update(curr => {
+          if (!curr) return null;
+          const newStatus = !curr.isFollowing;
+          return {
+            ...curr,
+            isFollowing: newStatus,
+            followerCount: newStatus ? curr.followerCount + 1 : Math.max(0, curr.followerCount - 1),
+            followingCount: curr.followingCount
+          };
+        });
+      },
+      error: () => console.error('Follow action failed')
+    });
   }
 
   visitProfile() {

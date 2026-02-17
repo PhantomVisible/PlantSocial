@@ -84,7 +84,8 @@ public class FollowService {
 
         boolean isFollowing = false;
         if (currentUser != null && !currentUser.getId().equals(targetUser.getId())) {
-            isFollowing = targetUser.getFollowers().contains(currentUser);
+            isFollowing = targetUser.getFollowers().stream()
+                    .anyMatch(follower -> follower.getId().equals(currentUser.getId()));
         }
 
         return UserHoverCardDTO.builder()

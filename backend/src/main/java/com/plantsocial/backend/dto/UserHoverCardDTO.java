@@ -20,5 +20,6 @@ public class UserHoverCardDTO {
 
     private long followerCount;
     private long followingCount;
+    @com.fasterxml.jackson.annotation.JsonProperty("isFollowing")
     private boolean isFollowing;
 }
