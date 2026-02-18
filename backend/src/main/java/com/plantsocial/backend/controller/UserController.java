@@ -8,6 +8,7 @@ import com.plantsocial.backend.service.FeedService;
 import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -79,6 +80,35 @@ public class UserController {
                 followingCount,
                 isFollowing);
         return ResponseEntity.ok(dto);
+    }
+
+    /**
+     * Get user follow suggestions (users not followed by current user, sorted by
+     * follower count)
+     */
+    @GetMapping("/users/suggestions")
+    public ResponseEntity<List<UserProfileDTO>> getSuggestions() {
+        User currentUser = getCurrentUser();
+        List<User> suggestions = userRepository.findSuggestedUsers(
+                currentUser.getId(),
+                PageRequest.of(0, 3));
+
+        List<UserProfileDTO> result = suggestions.stream().map(u -> new UserProfileDTO(
+                u.getId(),
+                u.getFullName(),
+                u.getHandle(),
+                u.getBio(),
+                u.getLocation(),
+                u.getProfilePictureUrl(),
+                u.getCoverPictureUrl(),
+                u.getCreatedAt(),
+                postRepository.countByAuthorId(u.getId()),
+                (long) u.getFollowers().size(),
+                (long) u.getFollowing().size(),
+                false // current user doesn't follow them (that's the point)
+        )).collect(Collectors.toList());
+
+        return ResponseEntity.ok(result);
     }
 
     /**

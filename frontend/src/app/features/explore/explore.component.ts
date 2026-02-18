@@ -2,7 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { NewsWidgetComponent } from '../../shared/components/news-widget/news-widget.component';
-import { WikiSidebarComponent } from '../feed/wiki-sidebar.component';
+import { WhoToFollowComponent } from '../../shared/components/who-to-follow/who-to-follow.component';
 import { PostCardComponent } from '../feed/post-card.component';
 import { FeedService, Post } from '../feed/feed.service';
 import { PostSkeletonComponent } from '../feed/post-skeleton.component';
@@ -10,7 +10,7 @@ import { PostSkeletonComponent } from '../feed/post-skeleton.component';
 @Component({
   selector: 'app-explore',
   standalone: true,
-  imports: [CommonModule, NewsWidgetComponent, WikiSidebarComponent, PostCardComponent, PostSkeletonComponent],
+  imports: [CommonModule, NewsWidgetComponent, WhoToFollowComponent, PostCardComponent, PostSkeletonComponent],
   template: `
     <div class="explore-container">
       <div class="explore-header">
@@ -34,17 +34,10 @@ import { PostSkeletonComponent } from '../feed/post-skeleton.component';
             ></app-post-card>
         </div>
 
-        <!-- Default Widgets (Only show if not searching or pushed down?) -> User said "redirect to explore page where we search" -->
-        <!-- Let's keep widgets but maybe below or to the side if searching. 
-             If exact X style: Explore text search usually replaces content. 
-             Let's hide widgets if searching to focus on content. -->
-             
+        <!-- Default Widgets (shown when not searching) -->
         <div *ngIf="!searchQuery()">
             <app-news-widget></app-news-widget>
-            <div class="who-to-follow-section">
-                <h3>Who to Follow</h3>
-                <app-wiki-sidebar></app-wiki-sidebar>
-            </div>
+            <app-who-to-follow></app-who-to-follow>
         </div>
       </div>
     </div>

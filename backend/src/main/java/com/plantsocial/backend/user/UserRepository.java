@@ -24,4 +24,15 @@ public interface UserRepository extends JpaRepository<User, UUID> {
                 AND u.id <> :excludeId
             """)
     List<User> searchByUsernameOrFullName(@Param("q") String q, @Param("excludeId") UUID excludeId);
+
+    @Query("""
+                SELECT u FROM User u
+                WHERE u.id <> :currentUserId
+                AND u.id NOT IN (
+                    SELECT f.id FROM User me JOIN me.following f WHERE me.id = :currentUserId
+                )
+                ORDER BY SIZE(u.followers) DESC
+            """)
+    List<User> findSuggestedUsers(@Param("currentUserId") UUID currentUserId,
+            org.springframework.data.domain.Pageable pageable);
 }

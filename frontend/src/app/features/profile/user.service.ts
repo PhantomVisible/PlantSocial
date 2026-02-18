@@ -53,4 +53,8 @@ export class UserService {
             tap(() => this.triggerRefresh())
         );
     }
+
+    getSuggestions(): Observable<UserProfile[]> {
+        return this.http.get<UserProfile[]>(`${this.baseUrl}/users/suggestions`);
+    }
 }
