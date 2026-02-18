@@ -1,6 +1,6 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { AuthPromptDialogComponent } from '../auth/auth-prompt-dialog.component';
 
@@ -31,7 +31,7 @@ import { NotificationService } from '../features/notifications/notification.serv
           <span>Explore</span>
         </a>
 
-        <a routerLink="/notifications" routerLinkActive="active" class="nav-item nav-item--notifications">
+        <a *ngIf="user()" routerLink="/notifications" routerLinkActive="active" class="nav-item nav-item--notifications">
           <i class="pi pi-bell"></i>
           <span>Notifications</span>
           <span *ngIf="notifService.unreadCount() > 0" class="badge-count">
@@ -39,7 +39,7 @@ import { NotificationService } from '../features/notifications/notification.serv
           </span>
         </a>
 
-        <a routerLink="/chat" routerLinkActive="active" class="nav-item nav-item--chat">
+        <a *ngIf="user()" routerLink="/chat" routerLinkActive="active" class="nav-item nav-item--chat">
           <i class="pi pi-comments"></i>
           <span>Chat</span>
           <span *ngIf="unreadMessageCount() > 0" class="badge-count badge-count--chat">
@@ -274,9 +274,10 @@ import { NotificationService } from '../features/notifications/notification.serv
     }
   `]
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   authService = inject(AuthService);
   notifService = inject(NotificationService);
+  private router = inject(Router);
   user = this.authService.currentUser;
   showAuthModal = signal(false);
   toastMessage: string | null = null;
@@ -287,6 +288,22 @@ export class SidebarComponent {
       n => n.type === 'MESSAGE' && !n.isRead
     ).length;
   });
+
+  ngOnInit() {
+    // When navigating to /chat, mark all MESSAGE notifications as read
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd && event.url.startsWith('/chat')) {
+        this.markAllMessageNotificationsAsRead();
+      }
+    });
+  }
+
+  private markAllMessageNotificationsAsRead() {
+    const unreadMessages = this.notifService.notificationsList().filter(
+      n => n.type === 'MESSAGE' && !n.isRead
+    );
+    unreadMessages.forEach(n => this.notifService.markAsRead(n.id));
+  }
   private toastTimeout: any;
 
   showComingSoon(name: string) {

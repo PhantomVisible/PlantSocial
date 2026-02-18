@@ -8,6 +8,7 @@ import { NewsWidgetComponent } from './shared/components/news-widget/news-widget
 import { TrendsWidgetComponent } from './shared/components/trends-widget/trends-widget.component';
 import { AuthPromptDialogComponent } from './auth/auth-prompt-dialog.component';
 import { AuthGatekeeperService } from './auth/auth-gatekeeper.service';
+import { AuthService } from './auth/auth.service';
 import { NotificationService } from './features/notifications/notification.service';
 import { CommonModule } from '@angular/common';
 import { FloatingChatContainerComponent } from './features/chat/floating-chat/floating-chat-container.component';
@@ -41,7 +42,7 @@ import { ChatService } from './features/chat/chat.service';
       <main class="app-main">
         <router-outlet />
       </main>
-      <aside class="app-right">
+      <aside class="app-right" *ngIf="!isFullWidthRoute()">
         <!-- If Filtering: Wiki First, No News -->
         <app-wiki-sidebar *ngIf="isPlantSelected()"></app-wiki-sidebar>
 
@@ -54,7 +55,7 @@ import { ChatService } from './features/chat/chat.service';
         <app-wiki-sidebar *ngIf="!isPlantSelected()"></app-wiki-sidebar>
       </aside>
     </div>
-    <app-floating-chat-container></app-floating-chat-container>
+    <app-floating-chat-container *ngIf="authService.currentUser()"></app-floating-chat-container>
   `,
   styles: [`
     .app-layout {
@@ -112,10 +113,12 @@ export class AppComponent implements OnInit {
   gatekeeper = inject(AuthGatekeeperService);
   notificationService = inject(NotificationService);
   chatService = inject(ChatService);
+  authService = inject(AuthService);
 
   route = inject(ActivatedRoute);
   private router = inject(Router);
   isPlantSelected = signal(false);
+  isFullWidthRoute = signal(false);
 
   ngOnInit() {
     this.notificationService.init();
@@ -124,6 +127,8 @@ export class AppComponent implements OnInit {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         this.isPlantSelected.set(this.router.url.includes('plant='));
+        const url = this.router.url;
+        this.isFullWidthRoute.set(url.startsWith('/chat') || url.startsWith('/notifications'));
       }
     });
 
