@@ -30,10 +30,13 @@ export class FeedService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:8080/api/v1/feed';
 
-  getFeed(page: number = 0, size: number = 10, plant?: string): Observable<{ content: Post[] }> {
+  getFeed(page: number = 0, size: number = 10, plant?: string, query?: string): Observable<{ content: Post[] }> {
     let url = `${this.apiUrl}?page=${page}&size=${size}`;
     if (plant) {
       url += `&plant=${encodeURIComponent(plant)}`;
+    }
+    if (query) {
+      url += `&q=${encodeURIComponent(query)}`;
     }
     return this.http.get<{ content: Post[] }>(url);
   }

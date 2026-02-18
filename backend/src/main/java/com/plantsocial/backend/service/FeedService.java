@@ -37,13 +37,16 @@ public class FeedService {
     private final FileStorageService fileStorageService;
     private final NotificationService notificationService;
 
-    public Page<PostResponse> getFeed(Pageable pageable, String plant) {
+    public Page<PostResponse> getFeed(Pageable pageable, String plant, String query) {
         System.out.println("DEBUG: Entering getFeed");
         User currentUser = getCurrentUser();
         System.out.println("DEBUG: Current user resolved: " + (currentUser != null ? currentUser.getEmail() : "null"));
 
         Page<Post> posts;
-        if (plant != null && !plant.isBlank()) {
+        if (query != null && !query.isBlank()) {
+            System.out.println("DEBUG: Searching posts by query: " + query);
+            posts = postRepository.findByContentContainingIgnoreCaseOrderByCreatedAtDesc(query.trim(), pageable);
+        } else if (plant != null && !plant.isBlank()) {
             System.out.println("DEBUG: Fetching posts by plant tag: " + plant);
             posts = postRepository.findByPlantTagIgnoreCaseOrderByCreatedAtDesc(plant.trim(), pageable);
         } else {

@@ -23,9 +23,10 @@ public class FeedController {
     @GetMapping
     public ResponseEntity<Page<PostResponse>> getFeed(
             Pageable pageable,
-            @RequestParam(value = "plant", required = false) String plant) {
+            @RequestParam(value = "plant", required = false) String plant,
+            @RequestParam(value = "q", required = false) String query) {
         try {
-            return ResponseEntity.ok(feedService.getFeed(pageable, plant));
+            return ResponseEntity.ok(feedService.getFeed(pageable, plant, query));
         } catch (Exception e) {
             e.printStackTrace();
             throw e;

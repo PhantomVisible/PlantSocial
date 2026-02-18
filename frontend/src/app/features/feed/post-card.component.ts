@@ -30,11 +30,12 @@ export interface PostCardData {
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
 
 import { HoverCardComponent } from '../../shared/components/hover-card/hover-card.component';
+import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
 
 @Component({
   selector: 'app-post-card',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, CommentThreadComponent, PlantDetailsDialogComponent, AvatarComponent, HoverCardComponent],
+  imports: [CommonModule, FormsModule, RouterModule, CommentThreadComponent, PlantDetailsDialogComponent, AvatarComponent, HoverCardComponent, LinkifyPipe],
   template: `
     <article class="post-card">
       <!-- Header -->
@@ -87,7 +88,7 @@ import { HoverCardComponent } from '../../shared/components/hover-card/hover-car
 
       <!-- Content: Normal -->
       <div class="post-card__content" *ngIf="!isEditing()">
-        <p>{{ post.content }}</p>
+        <p [innerHTML]="post.content | linkify"></p>
       </div>
 
       <!-- Content: Edit mode -->
@@ -354,6 +355,19 @@ import { HoverCardComponent } from '../../shared/components/hover-card/hover-car
       color: var(--trellis-text);
       word-wrap: break-word;
     }
+
+    /* Interactive Links - Need ::ng-deep because they are injected via innerHTML */
+    ::ng-deep .link-mention, ::ng-deep .link-hashtag {
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    ::ng-deep .link-mention { color: var(--trellis-green); }
+    ::ng-deep .link-mention:hover { text-decoration: underline; color: var(--trellis-green-dark); }
+    
+    ::ng-deep .link-hashtag { color: #3182ce; } /* Blue for tags */
+    ::ng-deep .link-hashtag:hover { text-decoration: underline; color: #2b6cb0; }
+
 
     /* ---------- Edit Mode ---------- */
     .post-card__edit { margin-bottom: 8px; }

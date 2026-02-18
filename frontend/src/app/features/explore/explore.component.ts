@@ -1,29 +1,55 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { NewsWidgetComponent } from '../../shared/components/news-widget/news-widget.component';
 import { WikiSidebarComponent } from '../feed/wiki-sidebar.component';
+import { PostCardComponent } from '../feed/post-card.component';
+import { FeedService, Post } from '../feed/feed.service';
+import { PostSkeletonComponent } from '../feed/post-skeleton.component';
 
 @Component({
-    selector: 'app-explore',
-    standalone: true,
-    imports: [CommonModule, NewsWidgetComponent, WikiSidebarComponent],
-    template: `
+  selector: 'app-explore',
+  standalone: true,
+  imports: [CommonModule, NewsWidgetComponent, WikiSidebarComponent, PostCardComponent, PostSkeletonComponent],
+  template: `
     <div class="explore-container">
       <div class="explore-header">
-        <h2>Explore</h2>
+        <h2>{{ searchQuery() ? 'Results for "' + searchQuery() + '"' : 'Explore' }}</h2>
       </div>
       
       <div class="explore-content">
-        <app-news-widget></app-news-widget>
-        
-        <div class="who-to-follow-section">
-            <h3>Who to Follow</h3>
-            <app-wiki-sidebar></app-wiki-sidebar>
+        <!-- Search Results Feed -->
+        <div *ngIf="searchQuery()" class="search-results">
+            <app-post-skeleton *ngIf="loading()"></app-post-skeleton>
+            
+            <div *ngIf="!loading() && posts().length === 0" class="empty-search">
+                <i class="pi pi-search" style="font-size: 2rem; color: var(--trellis-text-secondary);"></i>
+                <p>No posts found for "{{ searchQuery() }}"</p>
+            </div>
+
+            <app-post-card 
+                *ngFor="let post of posts()" 
+                [post]="post"
+                (onLike)="toggleLike($event)"
+            ></app-post-card>
+        </div>
+
+        <!-- Default Widgets (Only show if not searching or pushed down?) -> User said "redirect to explore page where we search" -->
+        <!-- Let's keep widgets but maybe below or to the side if searching. 
+             If exact X style: Explore text search usually replaces content. 
+             Let's hide widgets if searching to focus on content. -->
+             
+        <div *ngIf="!searchQuery()">
+            <app-news-widget></app-news-widget>
+            <div class="who-to-follow-section">
+                <h3>Who to Follow</h3>
+                <app-wiki-sidebar></app-wiki-sidebar>
+            </div>
         </div>
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .explore-container {
       padding: 16px;
     }
@@ -49,6 +75,62 @@ import { WikiSidebarComponent } from '../feed/wiki-sidebar.component';
         margin-bottom: 16px;
         color: var(--trellis-text);
     }
+    .empty-search {
+        text-align: center;
+        padding: 40px;
+        color: var(--trellis-text-secondary);
+    }
   `]
 })
-export class ExploreComponent { }
+export class ExploreComponent implements OnInit {
+  private route = inject(ActivatedRoute);
+  private feedService = inject(FeedService);
+
+  searchQuery = signal<string | null>(null);
+  posts = signal<Post[]>([]);
+  loading = signal(false);
+
+  ngOnInit() {
+    this.route.queryParams.subscribe(params => {
+      const q = params['q'] || null;
+      this.searchQuery.set(q);
+      if (q) {
+        this.performSearch(q);
+      } else {
+        this.posts.set([]);
+      }
+    });
+  }
+
+  performSearch(query: string) {
+    this.loading.set(true);
+    // Using "query" param we added to getFeed
+    // Note: plant param is null here
+    this.feedService.getFeed(0, 20, undefined, query).subscribe({
+      next: (page) => {
+        this.posts.set(page.content);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error('Search failed', err);
+        this.loading.set(false);
+      }
+    });
+  }
+
+  // Reuse like logic (simplified)
+  toggleLike(post: Post) {
+    this.feedService.likePost(post.id).subscribe();
+    // Optimistic update
+    this.posts.update(current => current.map(p => {
+      if (p.id === post.id) {
+        return {
+          ...p,
+          likedByCurrentUser: !p.likedByCurrentUser,
+          likesCount: p.likedByCurrentUser ? p.likesCount - 1 : p.likesCount + 1
+        };
+      }
+      return p;
+    }));
+  }
+}
