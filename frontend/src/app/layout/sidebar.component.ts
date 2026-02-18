@@ -1,11 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { AuthPromptDialogComponent } from '../auth/auth-prompt-dialog.component';
 
 import { AvatarComponent } from '../shared/components/avatar/avatar.component';
-import { NotificationService } from '../core/notification.service';
+import { NotificationService } from '../features/notifications/notification.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -39,9 +39,12 @@ import { NotificationService } from '../core/notification.service';
           </span>
         </a>
 
-        <a routerLink="/chat" routerLinkActive="active" class="nav-item">
+        <a routerLink="/chat" routerLinkActive="active" class="nav-item nav-item--chat">
           <i class="pi pi-comments"></i>
           <span>Chat</span>
+          <span *ngIf="unreadMessageCount() > 0" class="badge-count badge-count--chat">
+            {{ unreadMessageCount() }}
+          </span>
         </a>
 
         <button class="nav-item" (click)="showComingSoon('Sage')">
@@ -185,6 +188,9 @@ import { NotificationService } from '../core/notification.service';
     .nav-item--notifications {
       position: relative;
     }
+    .nav-item--chat {
+      position: relative;
+    }
     .badge-count {
       position: absolute;
       top: 8px;
@@ -274,6 +280,13 @@ export class SidebarComponent {
   user = this.authService.currentUser;
   showAuthModal = signal(false);
   toastMessage: string | null = null;
+
+  /** Count unread MESSAGE-type notifications for the Chat badge */
+  unreadMessageCount = computed(() => {
+    return this.notifService.notificationsList().filter(
+      n => n.type === 'MESSAGE' && !n.isRead
+    ).length;
+  });
   private toastTimeout: any;
 
   showComingSoon(name: string) {

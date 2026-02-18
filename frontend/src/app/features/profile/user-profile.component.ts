@@ -12,6 +12,7 @@ import { GardenGridComponent } from '../garden/garden-grid.component';
 import { AddPlantDialogComponent } from '../garden/add-plant-dialog.component';
 import { PlantService, PlantData } from '../garden/plant.service';
 import { PlantDetailsDialogComponent } from '../garden/plant-details-dialog.component';
+import { ChatService } from '../chat/chat.service';
 
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { EditProfileDialogComponent } from './edit-profile-dialog.component';
@@ -60,14 +61,22 @@ import { EditProfileDialogComponent } from './edit-profile-dialog.component';
               >
                 Edit profile
               </button>
-              <button
-                *ngIf="!isOwner()"
-                class="btn btn--filled"
-                [class.btn--following]="isFollowing()"
-                (click)="toggleFollow()"
-              >
-                {{ isFollowing() ? 'Following' : 'Follow' }}
-              </button>
+              <ng-container *ngIf="!isOwner()">
+                <button
+                  class="btn btn--filled"
+                  [class.btn--following]="isFollowing()"
+                  (click)="toggleFollow()"
+                >
+                  {{ isFollowing() ? '✓ Following' : 'Follow' }}
+                </button>
+                <button
+                  *ngIf="isFollowing()"
+                  class="btn btn--message"
+                  (click)="openChat()"
+                >
+                  ✉ Message
+                </button>
+              </ng-container>
             </div>
           </div>
 
@@ -254,6 +263,8 @@ import { EditProfileDialogComponent } from './edit-profile-dialog.component';
 
     .hero__action {
       padding-bottom: 8px;
+      display: flex;
+      gap: 8px;
     }
 
     /* ---- Buttons ---- */
@@ -291,6 +302,14 @@ import { EditProfileDialogComponent } from './edit-profile-dialog.component';
       border-color: #E53E3E;
       color: #E53E3E;
       background: rgba(229,62,62,0.06);
+    }
+    .btn--message {
+      background: var(--trellis-text);
+      color: #fff;
+      border-color: var(--trellis-text);
+    }
+    .btn--message:hover {
+      background: #333;
     }
 
     /* ---- Info ---- */
@@ -418,6 +437,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   private feedService = inject(FeedService);
   private authService = inject(AuthService);
   private dialogService = inject(DialogService);
+  private chatService = inject(ChatService);
   private destroy$ = new Subject<void>();
 
   profile = signal<UserProfile | null>(null);
@@ -482,7 +502,59 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   isFollowing = this.followState;
 
   toggleFollow() {
+<<<<<<< Updated upstream
     this.followState.update(v => !v);
+=======
+    const p = this.profile();
+    if (!p) return;
+
+    if (p.isFollowing) {
+      this.userService.unfollowUser(p.id).subscribe({
+        next: (updatedDTO) => {
+          this.profile.update(curr => curr ? {
+            ...curr,
+            isFollowing: updatedDTO.isFollowing,
+            followerCount: updatedDTO.followerCount,
+            followingCount: updatedDTO.followingCount
+          } : null);
+        }
+      });
+    } else {
+      this.userService.followUser(p.id).subscribe({
+        next: (updatedDTO) => {
+          this.profile.update(curr => curr ? {
+            ...curr,
+            isFollowing: updatedDTO.isFollowing,
+            followerCount: updatedDTO.followerCount,
+            followingCount: updatedDTO.followingCount
+          } : null);
+        },
+        error: (err) => {
+          if (err.status === 409) {
+            // Already following, update UI optimistically
+            this.profile.update(curr => curr ? { ...curr, isFollowing: true } : null);
+          } else {
+            console.error('Follow failed', err);
+          }
+        }
+      });
+    }
+>>>>>>> Stashed changes
+  }
+
+  openChat() {
+    const p = this.profile();
+    console.log('UserProfile: Open chat clicked', p);
+    if (p) {
+      // Map UserProfile to UserSearchResult-like object
+      const userForChat = {
+        id: p.id,
+        username: p.username,
+        fullName: p.fullName,
+        online: false // We don't know online status here, defaults to false or ignored
+      };
+      this.chatService.openFloatingChat(userForChat);
+    }
   }
 
   editProfile() {

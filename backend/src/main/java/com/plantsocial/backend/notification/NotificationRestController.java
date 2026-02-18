@@ -1,7 +1,6 @@
-package com.plantsocial.backend.controller;
+package com.plantsocial.backend.notification;
 
-import com.plantsocial.backend.dto.NotificationDTO;
-import com.plantsocial.backend.service.NotificationService;
+import com.plantsocial.backend.notification.dto.NotificationDTO;
 import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;

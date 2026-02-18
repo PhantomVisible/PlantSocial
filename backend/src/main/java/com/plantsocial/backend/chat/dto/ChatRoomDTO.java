@@ -1,4 +1,4 @@
-package com.plantsocial.backend.dto;
+package com.plantsocial.backend.chat.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;

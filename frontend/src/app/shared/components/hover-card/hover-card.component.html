@@ -1,0 +1,49 @@
+<div class="hover-card">
+  <div *ngIf="loading()" class="hover-card__loading">
+    <i class="pi pi-spin pi-spinner"></i>
+  </div>
+
+  <div *ngIf="!loading() && user()" class="hover-card__content">
+    <div class="hover-card__header">
+      <app-avatar [imageUrl]="resolveImageUrl(user()?.profilePictureUrl)" [name]="user()?.fullName || ''" [size]="50">
+      </app-avatar>
+      <div class="hover-card__info">
+        <h4 class="hover-card__name" (click)="visitProfile()">{{ user()?.fullName }}</h4>
+        <span class="hover-card__username">{{ '@' + user()?.username }}</span>
+      </div>
+    </div>
+
+    <p class="hover-card__bio" *ngIf="user()?.bio">{{ user()?.bio }}</p>
+
+    <div class="hover-card__stats">
+      <div class="stat">
+        <span class="stat-val">{{ user()?.followingCount }}</span>
+        <span class="stat-label">Following</span>
+      </div>
+      <div class="stat">
+        <span class="stat-val">{{ user()?.followerCount }}</span>
+        <span class="stat-label">Followers</span>
+      </div>
+    </div>
+
+    <!-- Action buttons (not shown for own profile) -->
+    <div *ngIf="!isSelf()" class="hover-card__actions">
+      <!-- Not following: single Follow button -->
+      <ng-container *ngIf="!user()!.isFollowing">
+        <button class="action-btn action-btn--follow" (click)="toggleFollow($event)">
+          Follow
+        </button>
+      </ng-container>
+
+      <!-- Following: Following + Message buttons side by side -->
+      <ng-container *ngIf="user()!.isFollowing">
+        <button class="action-btn action-btn--following" (click)="toggleFollow($event)">
+          <i class="pi pi-check"></i> Following
+        </button>
+        <button class="action-btn action-btn--message" (click)="openChat($event)">
+          <i class="pi pi-envelope"></i> Message
+        </button>
+      </ng-container>
+    </div>
+  </div>
+</div>

@@ -1,6 +1,6 @@
-package com.plantsocial.backend.dto;
+package com.plantsocial.backend.notification.dto;
 
-import com.plantsocial.backend.model.NotificationType;
+import com.plantsocial.backend.notification.model.NotificationType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -1,6 +1,6 @@
-package com.plantsocial.backend.repository;
+package com.plantsocial.backend.chat.repository;
 
-import com.plantsocial.backend.model.ChatMessage;
+import com.plantsocial.backend.chat.model.ChatMessage;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

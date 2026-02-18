@@ -36,6 +36,7 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
     <article class="post-card">
       <!-- Header -->
       <div class="post-card__header">
+<<<<<<< Updated upstream
         <a (click)="visitProfile(post.authorUsername)" class="post-card__avatar-link">
           <app-avatar 
             [imageUrl]="resolveImageUrl(post.authorProfilePictureUrl || '')" 
@@ -43,8 +44,26 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
             [size]="42">
           </app-avatar>
         </a>
-        <div class="post-card__meta">
+=======
+        <div class="hover-trigger-zone" (mouseenter)="onAvatarMouseEnter()" (mouseleave)="onAvatarMouseLeave()">
+          <div class="avatar-wrapper">
+            <a (click)="visitProfile(post.authorUsername)" class="post-card__avatar-link">
+              <app-avatar 
+                  [imageUrl]="resolveImageUrl(post.authorProfilePictureUrl || '')" 
+                  [name]="post.authorName" 
+                  [size]="42">
+              </app-avatar>
+            </a>
+          </div>
           <a (click)="visitProfile(post.authorUsername)" class="post-card__author">{{ post.authorName }}</a>
+
+          <!-- Hover Card Overlay -->
+          <div *ngIf="hoverCardVisible()" class="hover-card-popup" (mouseenter)="onCardMouseEnter()" (mouseleave)="onCardMouseLeave()">
+              <app-hover-card [username]="post.authorUsername" [userId]="post.authorId"></app-hover-card>
+          </div>
+        </div>
+>>>>>>> Stashed changes
+        <div class="post-card__meta">
           <span class="post-card__dot">·</span>
           <span class="post-card__time">{{ formatTime(post.createdAt) }}</span>
           
@@ -206,6 +225,28 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
       flex: 1;
       min-width: 0;
     }
+<<<<<<< Updated upstream
+=======
+    
+    .avatar-wrapper {
+        position: relative;
+    }
+
+    .hover-trigger-zone {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .hover-card-popup {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 1000;
+        padding-top: 10px; /* Spacer to bridge the gap for mouseover */
+    }
+>>>>>>> Stashed changes
     .post-card__author {
       font-weight: 600;
       color: var(--trellis-text);

@@ -1,11 +1,8 @@
-package com.plantsocial.backend.model;
+package com.plantsocial.backend.chat.model;
 
 import com.plantsocial.backend.user.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -17,32 +14,30 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "notifications")
+@Table(name = "chat_rooms")
 @EntityListeners(AuditingEntityListener.class)
-public class Notification {
+public class ChatRoom {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(length = 100)
+    private String name;
+
     @Enumerated(EnumType.STRING)
-    private NotificationType type;
-
-    private String content;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id")
-    private User sender;
+    @Column(nullable = false, length = 10)
+    private ChatRoomType type;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recipient_id", nullable = false)
-    private User recipient;
-
-    private UUID relatedId; // ID of the Post, Comment, or ChatRoom
-
-    private boolean isRead;
+    @JoinColumn(name = "created_by")
+    private User createdBy;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    public enum ChatRoomType {
+        PRIVATE, GROUP
+    }
 }

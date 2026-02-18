@@ -1,8 +1,8 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { WebSocketService } from './websocket.service';
-import { AuthService } from '../auth/auth.service';
-import { ToastService } from './toast.service';
+import { WebSocketService } from '../../core/websocket.service';
+import { AuthService } from '../../auth/auth.service';
+import { ToastService } from '../../core/toast.service';
 
 export interface Notification {
     id: string;
@@ -33,10 +33,23 @@ export class NotificationService {
 
     private apiUrl = 'http://localhost:8080/api/v1/notifications';
 
-    init() {
+    private effectRef = effect(() => {
         const user = this.auth.currentUser();
-        if (!user) return;
+        if (user) {
+            console.log('NotificationService: User logged in, initializing...');
+            this.initializeForUser(user);
+        } else {
+            console.log('NotificationService: User logged out, cleaning up...');
+            this.cleanup();
+        }
+    }, { allowSignalWrites: true });
 
+    init() {
+        // The effect handles initialization now.
+        // We can keep this method empty or remove it, but AppComponent calls it.
+    }
+
+    private initializeForUser(user: any) {
         // 1. Load initial unread count
         this.http.get<number>(`${this.apiUrl}/unread-count`).subscribe(count => {
             this.unreadCountSignal.set(count);
@@ -46,9 +59,28 @@ export class NotificationService {
         this.loadNotifications();
 
         // 3. Subscribe to real-time notifications (Observable pattern)
-        this.ws.subscribe<Notification>(`/topic/notifications/${user.id}`).subscribe(notification => {
+        // Ensure we don't have duplicate subscriptions
+        this.cleanupSubscription();
+
+        this.notificationSubscription = this.ws.subscribe<Notification>(`/topic/notifications/${user.id}`).subscribe(notification => {
+            console.log('NotificationService: Received real-time notification', notification);
             this.addRealTimeNotification(notification);
         });
+    }
+
+    private notificationSubscription: any;
+
+    private cleanupSubscription() {
+        if (this.notificationSubscription) {
+            this.notificationSubscription.unsubscribe();
+            this.notificationSubscription = null;
+        }
+    }
+
+    private cleanup() {
+        this.cleanupSubscription();
+        this.notifications.set([]);
+        this.unreadCountSignal.set(0);
     }
 
     loadNotifications() {

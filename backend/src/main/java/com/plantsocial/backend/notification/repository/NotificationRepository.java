@@ -1,6 +1,6 @@
-package com.plantsocial.backend.repository;
+package com.plantsocial.backend.notification.repository;
 
-import com.plantsocial.backend.model.Notification;
+import com.plantsocial.backend.notification.model.Notification;
 import com.plantsocial.backend.user.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

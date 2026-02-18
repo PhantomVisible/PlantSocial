@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy, signal, computed, ViewChild, ElementRef, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, ViewChild, ElementRef, inject, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { ChatService, ChatRoom, ChatMessage, UserSearchResult } from './chat.service';
 import { WebSocketService } from '../../core/websocket.service';
 import { AuthService } from '../../auth/auth.service';
@@ -51,7 +51,13 @@ import { AuthService } from '../../auth/auth.service';
                   <div class="room-name">{{ getRoomDisplayName(room) }}</div>
                   <div class="room-last-msg" *ngIf="room.lastMessage">
                     <span class="msg-sender">{{ room.lastMessage.senderUsername }}:</span>
-                    {{ room.lastMessage.content | slice:0:40 }}{{ (room.lastMessage.content.length || 0) > 40 ? '...' : '' }}
+                    @if (room.lastMessage.messageType === 'IMAGE') {
+                      📷 Photo
+                    } @else if (room.lastMessage.messageType === 'FILE') {
+                      📎 File
+                    } @else {
+                      {{ room.lastMessage.content | slice:0:40 }}{{ (room.lastMessage.content.length || 0) > 40 ? '...' : '' }}
+                    }
                   </div>
                   <div class="room-last-msg" *ngIf="!room.lastMessage">
                     No messages yet
@@ -130,8 +136,9 @@ import { AuthService } from '../../auth/auth.service';
                   }
                   @if (msg.messageType === 'IMAGE' && msg.mediaUrl) {
                     <img [src]="'http://localhost:8080' + msg.mediaUrl" class="message-image" (click)="openImage(msg.mediaUrl!)">
+                  } @else {
+                    <div class="message-text">{{ msg.content }}</div>
                   }
-                  <div class="message-text">{{ msg.content }}</div>
                   <div class="message-time">{{ formatTime(msg.createdAt) }}</div>
                 </div>
               </div>
@@ -896,8 +903,14 @@ export class ChatPageComponent implements OnInit, OnDestroy {
 
   currentUserId = computed(() => this.authService.currentUser()?.id || '');
 
+  private route = inject(ActivatedRoute);
+  private ngZone = inject(NgZone);
+
   ngOnInit(): void {
     console.log('ChatPageComponent initialized');
+    console.log('Current URL (window):', window.location.href);
+    console.log('Snapshot Query Params:', this.route.snapshot.queryParams);
+
     if (!this.authService.isAuthenticated()) {
       console.log('User not authenticated, redirecting to login');
       this.router.navigate(['/auth/login']);
@@ -909,8 +922,53 @@ export class ChatPageComponent implements OnInit, OnDestroy {
     this.chatService.loadRooms();
 
     // Sync filtered rooms when rooms change
-    // We'll poll/check this in a simple way
     setTimeout(() => this.filterRooms(), 1000);
+
+    // Check snapshot first
+    const snapshotUserId = this.route.snapshot.queryParams['userId'];
+    if (snapshotUserId) {
+      console.log('Found userId in snapshot:', snapshotUserId);
+      this.openPrivateChatWithUser(snapshotUserId);
+    }
+
+    // Also subscribe for changes
+    this.route.queryParams.subscribe(params => {
+      const targetUserId = params['userId'];
+      console.log('ChatPage queryParams changed:', params, 'targetUserId:', targetUserId);
+      // Only trigger if we haven't already opened it via snapshot (or if it changed)
+      if (targetUserId && targetUserId !== snapshotUserId) {
+        this.openPrivateChatWithUser(targetUserId);
+      }
+    });
+  }
+
+  /**
+   * Creates or finds a private chat room with the given user,
+   * then selects it to open the conversation.
+   */
+  private openPrivateChatWithUser(userId: string): void {
+    console.log('openPrivateChatWithUser called with:', userId);
+    this.chatService.getOrCreatePrivateRoom(userId).subscribe({
+      next: (room) => {
+        console.log('Private room received:', room.id, room.type);
+        this.ngZone.run(() => {
+          // Select the room directly
+          this.activeRoom.set(room);
+          this.chatService.messages.set([]);
+          this.chatService.loadMessages(room.id);
+          this.chatService.joinRoom(room.id, this.currentUserId(), room);
+          // Reload rooms so the sidebar shows the new room
+          this.chatService.loadRooms();
+          setTimeout(() => {
+            this.filterRooms();
+            this.scrollToBottom();
+          }, 800);
+        });
+      },
+      error: (err) => {
+        console.error('Failed to open private chat:', err);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -934,18 +992,48 @@ export class ChatPageComponent implements OnInit, OnDestroy {
     this.activeRoom.set(room);
     this.chatService.messages.set([]);
     this.chatService.loadMessages(room.id);
-    this.chatService.joinRoom(room.id, this.currentUserId());
+    this.chatService.joinRoom(room.id, this.currentUserId(), room);
 
     // Scroll to bottom after messages load
     setTimeout(() => this.scrollToBottom(), 500);
   }
 
+  isSending = false;
+
   send(): void {
+    if (this.isSending) return;
     const text = this.messageText.trim();
     if (!text || !this.activeRoom()) return;
-    this.chatService.sendMessage(this.activeRoom()!.id, text);
+
+    this.isSending = true;
+    const roomId = this.activeRoom()!.id;
+
+    // Optimistic UI Update (Optional, but good for UX)
+    const tempId = 'temp-' + Date.now();
+    const currentUser = this.authService.currentUser();
+    const tempMsg: ChatMessage = {
+      id: tempId,
+      roomId: roomId,
+      senderId: currentUser?.id || 'unknown',
+      senderUsername: currentUser?.username || 'me',
+      senderFullName: currentUser?.fullName || 'Me',
+      content: text,
+      messageType: 'TEXT',
+      mediaUrl: null,
+      createdAt: new Date().toISOString()
+    };
+
+    // Add temp message immediately
+    this.chatService.messages.update(prev => [...prev, tempMsg]);
+
+    this.chatService.sendMessage(roomId, text);
     this.messageText = '';
     setTimeout(() => this.scrollToBottom(), 100);
+
+    // Release lock after delay
+    setTimeout(() => {
+      this.isSending = false;
+    }, 500);
   }
 
   onTyping(): void {
