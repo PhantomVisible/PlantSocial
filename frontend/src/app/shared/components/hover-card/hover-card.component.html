@@ -26,9 +26,24 @@
       </div>
     </div>
 
-    <p-button *ngIf="!isSelf()" [label]="user()!.isFollowing ? 'Following' : 'Follow'"
-      [styleClass]="user()!.isFollowing ? 'p-button-outlined p-button-secondary' : 'p-button-primary'"
-      (onClick)="toggleFollow($event)" [loading]="loading()" styleClass="w-full text-sm py-1">
-    </p-button>
+    <!-- Action buttons (not shown for own profile) -->
+    <div *ngIf="!isSelf()" class="hover-card__actions">
+      <!-- Not following: single Follow button -->
+      <ng-container *ngIf="!user()!.isFollowing">
+        <button class="action-btn action-btn--follow" (click)="toggleFollow($event)">
+          Follow
+        </button>
+      </ng-container>
+
+      <!-- Following: Following + Message buttons side by side -->
+      <ng-container *ngIf="user()!.isFollowing">
+        <button class="action-btn action-btn--following" (click)="toggleFollow($event)">
+          <i class="pi pi-check"></i> Following
+        </button>
+        <button class="action-btn action-btn--message" (click)="openChat($event)">
+          <i class="pi pi-envelope"></i> Message
+        </button>
+      </ng-container>
+    </div>
   </div>
 </div>

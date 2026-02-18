@@ -1,6 +1,8 @@
 package com.plantsocial.backend.service;
 
 import com.plantsocial.backend.dto.UserHoverCardDTO;
+import com.plantsocial.backend.notification.NotificationService;
+import com.plantsocial.backend.notification.model.NotificationType;
 import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import java.util.UUID;
 public class FollowService {
 
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public UserHoverCardDTO getHoverCard(String username) {
@@ -54,7 +57,17 @@ public class FollowService {
 
         if (!currentUser.getFollowing().contains(targetUser)) {
             currentUser.getFollowing().add(targetUser);
+            targetUser.getFollowers().add(currentUser); // sync both sides
             userRepository.save(currentUser);
+
+            // Notify target user
+            notificationService.createNotification(
+                    targetUser,
+                    currentUser,
+                    NotificationType.FOLLOW,
+                    currentUser.getFullName() + " started following you",
+                    currentUser.getId() // Related ID is the follower's ID (for profile redirection)
+            );
         }
 
         return buildHoverCard(targetUser, currentUser);
@@ -72,6 +85,7 @@ public class FollowService {
 
         if (currentUser.getFollowing().contains(targetUser)) {
             currentUser.getFollowing().remove(targetUser);
+            targetUser.getFollowers().remove(currentUser); // sync both sides
             userRepository.save(currentUser);
         }
 
@@ -84,8 +98,7 @@ public class FollowService {
 
         boolean isFollowing = false;
         if (currentUser != null && !currentUser.getId().equals(targetUser.getId())) {
-            isFollowing = targetUser.getFollowers().stream()
-                    .anyMatch(follower -> follower.getId().equals(currentUser.getId()));
+            isFollowing = targetUser.getFollowers().contains(currentUser);
         }
 
         return UserHoverCardDTO.builder()

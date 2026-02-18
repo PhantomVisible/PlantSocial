@@ -1,4 +1,4 @@
-package com.plantsocial.backend.model;
+package com.plantsocial.backend.chat.model;
 
 import com.plantsocial.backend.user.User;
 import jakarta.persistence.*;

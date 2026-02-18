@@ -8,8 +8,10 @@ import { NewsWidgetComponent } from './shared/components/news-widget/news-widget
 import { TrendsWidgetComponent } from './shared/components/trends-widget/trends-widget.component';
 import { AuthPromptDialogComponent } from './auth/auth-prompt-dialog.component';
 import { AuthGatekeeperService } from './auth/auth-gatekeeper.service';
-import { NotificationService } from './core/notification.service';
+import { NotificationService } from './features/notifications/notification.service';
 import { CommonModule } from '@angular/common';
+import { FloatingChatContainerComponent } from './features/chat/floating-chat/floating-chat-container.component';
+import { ChatService } from './features/chat/chat.service';
 
 @Component({
   selector: 'app-root',
@@ -23,7 +25,8 @@ import { CommonModule } from '@angular/common';
     AuthPromptDialogComponent,
     NewsWidgetComponent,
     TrendsWidgetComponent,
-    WikiSidebarComponent
+    WikiSidebarComponent,
+    FloatingChatContainerComponent
   ],
   template: `
     <app-global-loader />
@@ -51,6 +54,7 @@ import { CommonModule } from '@angular/common';
         <app-wiki-sidebar *ngIf="!isPlantSelected()"></app-wiki-sidebar>
       </aside>
     </div>
+    <app-floating-chat-container></app-floating-chat-container>
   `,
   styles: [`
     .app-layout {
@@ -107,6 +111,7 @@ export class AppComponent implements OnInit {
   title = 'frontend';
   gatekeeper = inject(AuthGatekeeperService);
   notificationService = inject(NotificationService);
+  chatService = inject(ChatService);
 
   route = inject(ActivatedRoute);
   private router = inject(Router);

@@ -1,4 +1,4 @@
-package com.plantsocial.backend.dto;
+package com.plantsocial.backend.chat.dto;
 
 import jakarta.validation.constraints.NotBlank;
 

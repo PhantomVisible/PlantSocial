@@ -1,6 +1,6 @@
-package com.plantsocial.backend.repository;
+package com.plantsocial.backend.chat.repository;
 
-import com.plantsocial.backend.model.ChatRoomMember;
+import com.plantsocial.backend.chat.model.ChatRoomMember;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

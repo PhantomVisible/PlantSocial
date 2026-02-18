@@ -1,4 +1,4 @@
-package com.plantsocial.backend.model;
+package com.plantsocial.backend.notification.model;
 
 public enum NotificationType {
     LIKE,

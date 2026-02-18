@@ -1,9 +1,9 @@
-package com.plantsocial.backend.service;
+package com.plantsocial.backend.notification;
 
-import com.plantsocial.backend.dto.NotificationDTO;
-import com.plantsocial.backend.model.Notification;
-import com.plantsocial.backend.model.NotificationType;
-import com.plantsocial.backend.repository.NotificationRepository;
+import com.plantsocial.backend.notification.dto.NotificationDTO;
+import com.plantsocial.backend.notification.model.Notification;
+import com.plantsocial.backend.notification.model.NotificationType;
+import com.plantsocial.backend.notification.repository.NotificationRepository;
 import com.plantsocial.backend.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,7 +23,12 @@ public class NotificationService {
 
     @Transactional
     public void createNotification(User recipient, User sender, NotificationType type, String content, UUID relatedId) {
+        // Log entry
+        System.out.println(
+                "NotificationService: creating notification type=" + type + " for user=" + recipient.getUsername());
+
         if (recipient.getId().equals(sender.getId()) && type != NotificationType.MESSAGE) {
+            System.out.println("NotificationService: blocked self-notification");
             return; // Don't notify self for likes/comments
         }
 
@@ -58,8 +63,14 @@ public class NotificationService {
     }
 
     private void sendRealTimeNotification(Notification notification) {
-        String destination = "/topic/notifications/" + notification.getRecipient().getId();
-        messagingTemplate.convertAndSend(destination, mapToDTO(notification));
+        try {
+            String destination = "/topic/notifications/" + notification.getRecipient().getId();
+            System.out.println("NotificationService: Sending WS to " + destination);
+            messagingTemplate.convertAndSend(destination, mapToDTO(notification));
+        } catch (Exception e) {
+            System.err.println("NotificationService: Failed to send WS message: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private NotificationDTO mapToDTO(Notification n) {

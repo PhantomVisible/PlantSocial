@@ -34,8 +34,25 @@ public class UserController {
      */
     @GetMapping("/users/{username}")
     public ResponseEntity<UserProfileDTO> getUserProfile(@PathVariable String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+        User user = null;
+
+        // 1. Try finding by username
+        user = userRepository.findByUsername(username).orElse(null);
+
+        // 2. If not found, and it looks like a UUID, try finding by ID
+        if (user == null) {
+            try {
+                UUID userId = UUID.fromString(username);
+                user = userRepository.findById(userId).orElse(null);
+            } catch (IllegalArgumentException e) {
+                // Not a UUID, ignore
+            }
+        }
+
+        // 3. If still not found, return 404
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
 
         long postCount = postRepository.countByAuthorId(user.getId());
         long followerCount = user.getFollowers().size();

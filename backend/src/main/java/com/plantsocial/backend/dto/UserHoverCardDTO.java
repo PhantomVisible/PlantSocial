@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.UUID;
 
 @Data
@@ -20,6 +22,7 @@ public class UserHoverCardDTO {
 
     private long followerCount;
     private long followingCount;
-    @com.fasterxml.jackson.annotation.JsonProperty("isFollowing")
+
+    @JsonProperty("isFollowing")
     private boolean isFollowing;
 }

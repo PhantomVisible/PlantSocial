@@ -1,6 +1,6 @@
-package com.plantsocial.backend.repository;
+package com.plantsocial.backend.chat.repository;
 
-import com.plantsocial.backend.model.ChatRoom;
+import com.plantsocial.backend.chat.model.ChatRoom;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,9 +11,6 @@ import java.util.UUID;
 
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, UUID> {
 
-    /**
-     * Find all rooms a user belongs to, ordered by most recent activity.
-     */
     @Query("""
                 SELECT DISTINCT cr FROM ChatRoom cr
                 JOIN ChatRoomMember crm ON crm.chatRoom = cr
@@ -22,9 +19,6 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, UUID> {
             """)
     List<ChatRoom> findRoomsByUserId(@Param("userId") UUID userId);
 
-    /**
-     * Find existing private room between two users.
-     */
     @Query("""
                 SELECT cr FROM ChatRoom cr
                 WHERE cr.type = 'PRIVATE'

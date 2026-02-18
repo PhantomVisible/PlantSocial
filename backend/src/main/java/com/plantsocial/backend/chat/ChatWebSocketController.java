@@ -1,8 +1,6 @@
-package com.plantsocial.backend.controller;
+package com.plantsocial.backend.chat;
 
-import com.plantsocial.backend.dto.ChatMessageDTO;
-import com.plantsocial.backend.dto.SendMessageRequest;
-import com.plantsocial.backend.service.ChatService;
+import com.plantsocial.backend.chat.dto.SendMessageRequest;
 import com.plantsocial.backend.user.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +43,7 @@ public class ChatWebSocketController {
             return;
         }
 
-        ChatMessageDTO savedMessage = chatService.sendMessage(
+        chatService.sendMessage(
                 UUID.fromString(roomId),
                 sender,
                 request.content(),
@@ -53,8 +51,8 @@ public class ChatWebSocketController {
                 null // media handled via REST upload
         );
 
-        // Broadcast to all subscribers of this room
-        messagingTemplate.convertAndSend("/topic/room/" + roomId, savedMessage);
+        // Note: ChatService.sendMessage() already broadcasts to /topic/room/{roomId}
+        // Do NOT broadcast again here — that causes duplicate messages.
         log.debug("Message sent to room {} by {}", roomId, sender.getUsername());
     }
 

@@ -1,16 +1,16 @@
 import { Component, Input, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ButtonModule } from 'primeng/button';
 import { UserService } from '../../../features/profile/user.service';
 import { UserHoverCard } from '../../../features/profile/user.model';
 import { AvatarComponent } from '../avatar/avatar.component';
 import { AuthService } from '../../../auth/auth.service';
 import { Router } from '@angular/router';
+import { ChatService } from '../../../features/chat/chat.service';
 
 @Component({
   selector: 'app-hover-card',
   standalone: true,
-  imports: [CommonModule, AvatarComponent, ButtonModule],
+  imports: [CommonModule, AvatarComponent],
   templateUrl: './hover-card.component.html',
   styleUrls: ['./hover-card.component.css']
 })
@@ -20,6 +20,7 @@ export class HoverCardComponent implements OnInit {
 
   userService = inject(UserService);
   authService = inject(AuthService);
+  chatService = inject(ChatService);
   router = inject(Router);
 
   user = signal<UserHoverCard | null>(null);
@@ -40,7 +41,6 @@ export class HoverCardComponent implements OnInit {
 
     req$.subscribe({
       next: (data) => {
-        console.log('Hover Card Data:', data);
         this.user.set(data);
         this.loading.set(false);
       },
@@ -53,33 +53,38 @@ export class HoverCardComponent implements OnInit {
     const u = this.user();
     if (!u) return;
 
-    const currentUser = u;
-    // Visually toggle immediately (Optimistic UI) or inside subscription
-    const req$ = currentUser.isFollowing
-      ? this.userService.unfollowUser(currentUser.id)
-      : this.userService.followUser(currentUser.id);
-
-    req$.subscribe({
-      next: () => {
-        // Update the local Signal to flip the boolean and adjust counts
-        this.user.update(curr => {
-          if (!curr) return null;
-          const newStatus = !curr.isFollowing;
-          return {
-            ...curr,
-            isFollowing: newStatus,
-            followerCount: newStatus ? curr.followerCount + 1 : Math.max(0, curr.followerCount - 1),
-            followingCount: curr.followingCount
-          };
-        });
-      },
-      error: () => console.error('Follow action failed')
-    });
+    if (u.isFollowing) {
+      // Unfollow
+      this.userService.unfollowUser(u.id).subscribe((updatedDTO) => {
+        this.user.set(updatedDTO);
+      });
+    } else {
+      // Follow
+      this.userService.followUser(u.id).subscribe((updatedDTO) => {
+        this.user.set(updatedDTO);
+      });
+    }
   }
 
   visitProfile() {
     if (this.user()) {
       this.router.navigate(['/profile', this.user()!.username]);
+    }
+  }
+
+  openChat(event: Event) {
+    event.stopPropagation();
+    const u = this.user();
+    if (u) {
+      console.log('HoverCard: Opening chat with userId:', u.id);
+      // Map UserHoverCard to UserSearchResult-like object
+      const userForChat = {
+        id: u.id,
+        username: u.username,
+        fullName: u.fullName,
+        online: false // We don't know online status here
+      };
+      this.chatService.openFloatingChat(userForChat);
     }
   }
 
