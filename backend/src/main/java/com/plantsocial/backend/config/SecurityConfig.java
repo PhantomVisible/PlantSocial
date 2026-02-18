@@ -33,7 +33,8 @@ public class SecurityConfig {
                                                 .requestMatchers(org.springframework.http.HttpMethod.GET,
                                                                 "/api/v1/posts/**", "/api/v1/users/**",
                                                                 "/api/v1/comments/**", "/api/v1/plants/**",
-                                                                "/api/v1/feed/**", "/api/v1/news/**")
+                                                                "/api/v1/feed/**", "/api/v1/news/**",
+                                                                "/api/v1/trends/**")
                                                 .permitAll()
                                                 .anyRequest().authenticated())
                                 .sessionManagement(session -> session

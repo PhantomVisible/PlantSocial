@@ -577,9 +577,21 @@ export class PostComposerComponent implements OnInit {
     if (plant) {
       this.selectedPlantId.set(plant.id);
       this.selectedPlantNickname.set(plant.nickname);
+
+      // Auto-tag species if verified
+      if (plant.isVerified && plant.species) {
+        // Use the species as the post tag
+        this.plantTag = plant.species;
+        // Trigger validation or just set it? 
+        // Since it comes from PlantNet/Verification, we assume it's a valid plant topic.
+        // We can flash it to show it was added.
+        this.showTagToast(`🏷️ Auto-tagged species: ${plant.species}`);
+      }
     } else {
       this.selectedPlantId.set(null);
       this.selectedPlantNickname.set(null);
+      // Optional: Clear tag if it matched the plant? 
+      // Better to leave it in case they want to keep the tag.
     }
     this.showPlantDropdown.set(false);
   }

@@ -44,7 +44,7 @@ public class NewsService {
                     .queryParam("q", "gardening")
                     .queryParam("language", "en")
                     .queryParam("sortBy", "relevancy")
-                    .queryParam("pageSize", "10")
+                    .queryParam("pageSize", "40")
                     .queryParam("apiKey", apiKey)
                     .toUriString();
 

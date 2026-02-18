@@ -21,4 +21,7 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     Page<Post> findByPlantTagIgnoreCaseOrderByCreatedAtDesc(String plantTag, Pageable pageable);
 
     List<Post> findAllByPlantId(UUID plantId);
+
+    @Query("SELECT p FROM Post p WHERE p.createdAt >= :startDate ORDER BY SIZE(p.likes) DESC")
+    org.springframework.data.domain.Page<Post> findTrendingPosts(java.time.LocalDateTime startDate, Pageable pageable);
 }

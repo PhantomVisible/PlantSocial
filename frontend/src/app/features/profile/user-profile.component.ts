@@ -579,7 +579,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     this.selectedPlantId.set(plant.id);
   }
 
-  onSavePlant(event: { id?: string; nickname: string; species: string; status: string; plantedDate: string; image?: File }) {
+  onSavePlant(event: { id?: string; nickname: string; species: string; status: string; plantedDate: string; isVerified: boolean; image?: File }) {
     if (event.id) {
       // Update
       // For now we don't expose harvestDate in the dialog, so undefined.
@@ -591,7 +591,7 @@ export class UserProfileComponent implements OnInit, OnDestroy {
       });
     } else {
       // Create
-      this.plantService.addPlant(event.nickname, event.species, event.status, event.plantedDate, event.image).subscribe({
+      this.plantService.addPlant(event.nickname, event.species, event.status, event.plantedDate, event.isVerified ?? false, event.image).subscribe({
         next: () => {
           this.showAddPlantDialog.set(false);
           this.loadData(this.profile()!.id);
@@ -609,8 +609,16 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   }
 
   private loadData(userId: string) {
+    // Fix: getUserProfile expects username, not ID.
+    // We assume profile() is already populated if we are refreshing.
+    const username = this.profile()?.username;
+    if (!username) {
+      console.error('Cannot refresh data without username');
+      return;
+    }
+
     forkJoin({
-      profile: this.userService.getUserProfile(userId),
+      profile: this.userService.getUserProfile(username),
       posts: this.userService.getUserPosts(userId),
       plants: this.plantService.getUserPlants(userId)
     }).subscribe({
@@ -618,10 +626,6 @@ export class UserProfileComponent implements OnInit, OnDestroy {
         this.profile.set(profile);
         this.posts.set(posts);
         this.plants.set(plants);
-        // We also need to refresh garden grid... 
-        // GardenGrid handles its own loading via userId input change or init.
-        // If we want it to refresh, we should probably output a "refresh" signal to it or use a shared service state.
-        // Even better: Move state to UserProfile. 
       }
     });
   }

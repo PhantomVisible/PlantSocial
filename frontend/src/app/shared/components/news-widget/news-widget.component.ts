@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NewsService, NewsArticle } from '../../../core/services/news.service';
 
@@ -8,10 +8,18 @@ import { NewsService, NewsArticle } from '../../../core/services/news.service';
   imports: [CommonModule],
   template: `
     <div class="news-widget">
-      <h3 class="news-widget__title">What's Happening</h3>
+      <div class="news-widget__header">
+        <h3 class="news-widget__title">What's Happening</h3>
+        <button *ngIf="showRefresh" 
+                (click)="refreshArticles()" 
+                class="refresh-btn" 
+                title="Refresh news">
+          <i class="pi pi-refresh" [class.pi-spin]="isRefreshing()"></i>
+        </button>
+      </div>
       
       <div class="news-list">
-        <a *ngFor="let article of newsArticles()" 
+        <a *ngFor="let article of displayedArticles()" 
            [href]="article.url" 
            target="_blank" 
            rel="noopener noreferrer" 
@@ -31,7 +39,7 @@ import { NewsService, NewsArticle } from '../../../core/services/news.service';
           </div>
         </a>
 
-        <div *ngIf="newsArticles().length === 0" class="news-empty">
+        <div *ngIf="allArticles.length === 0" class="news-empty">
            Building news feed...
         </div>
       </div>
@@ -46,11 +54,39 @@ import { NewsService, NewsArticle } from '../../../core/services/news.service';
       border: 1px solid var(--surface-border);
     }
 
+    .news-widget__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
     .news-widget__title {
-      margin: 0 0 16px 0;
+      margin: 0;
       font-size: 1.25rem;
       font-weight: 800;
       color: var(--text-color);
+    }
+    
+    .refresh-btn {
+      background: transparent;
+      border: none;
+      color: var(--primary-color);
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background-color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .refresh-btn:hover {
+        background-color: var(--surface-hover);
+    }
+    
+    .refresh-btn i {
+        font-size: 1rem;
     }
 
     .news-list {
@@ -123,17 +159,51 @@ import { NewsService, NewsArticle } from '../../../core/services/news.service';
 })
 export class NewsWidgetComponent implements OnInit {
   private newsService = inject(NewsService);
-  newsArticles = signal<NewsArticle[]>([]);
+
+  // Config
+  @Input() showRefresh: boolean = true;
+
+  // State
+  allArticles: NewsArticle[] = [];
+  displayedArticles = signal<NewsArticle[]>([]);
+  currentIndex: number = 0;
+  batchSize: number = 5;
+  isRefreshing = signal<boolean>(false);
 
   ngOnInit() {
     this.newsService.getTrendingNews().subscribe({
       next: (articles) => {
-        console.log('News Widget received:', articles);
-        // Take top 5
-        this.newsArticles.set(articles.slice(0, 5));
+        console.log('News Widget received:', articles.length, 'articles');
+        this.allArticles = articles;
+        this.refreshArticles();
       },
       error: (err) => console.error('Failed to load news', err)
     });
+  }
+
+  refreshArticles() {
+    if (this.allArticles.length === 0) return;
+
+    // Spin animation trigger
+    this.isRefreshing.set(true);
+    setTimeout(() => this.isRefreshing.set(false), 500); // Stop spin after 500ms
+
+    // Slice next batch
+    const nextIndex = this.currentIndex + this.batchSize;
+
+    if (nextIndex <= this.allArticles.length) {
+      this.displayedArticles.set(this.allArticles.slice(this.currentIndex, nextIndex));
+      this.currentIndex = nextIndex;
+      // If we've reached the end actually, reset for next click
+      if (this.currentIndex >= this.allArticles.length) {
+        this.currentIndex = 0;
+      }
+    } else {
+      // Wrap around handling if logic gets here (e.g. 40 items, index 35 -> takes 5 -> index 40. Next click -> index 0)
+      this.currentIndex = 0;
+      this.displayedArticles.set(this.allArticles.slice(0, this.batchSize));
+      this.currentIndex = this.batchSize;
+    }
   }
 
   getTimeAgo(dateString: string): string {

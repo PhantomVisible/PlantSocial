@@ -37,14 +37,29 @@ public class FeedService {
     private final NotificationService notificationService;
 
     public Page<PostResponse> getFeed(Pageable pageable, String plant) {
+        System.out.println("DEBUG: Entering getFeed");
         User currentUser = getCurrentUser();
+        System.out.println("DEBUG: Current user resolved: " + (currentUser != null ? currentUser.getEmail() : "null"));
+
         Page<Post> posts;
         if (plant != null && !plant.isBlank()) {
+            System.out.println("DEBUG: Fetching posts by plant tag: " + plant);
             posts = postRepository.findByPlantTagIgnoreCaseOrderByCreatedAtDesc(plant.trim(), pageable);
         } else {
+            System.out.println("DEBUG: Fetching all posts");
             posts = postRepository.findAllByOrderByCreatedAtDesc(pageable);
         }
-        return posts.map(post -> mapToPostResponse(post, currentUser));
+        System.out.println("DEBUG: Posts fetched: " + posts.getTotalElements());
+
+        return posts.map(post -> {
+            try {
+                return mapToPostResponse(post, currentUser);
+            } catch (Exception e) {
+                System.out.println("DEBUG: Error mapping post " + post.getId());
+                e.printStackTrace();
+                throw e;
+            }
+        });
     }
 
     public PostResponse getPostById(UUID postId) {

@@ -24,8 +24,9 @@ public class PlantController {
             @RequestParam(value = "species", required = false) String species,
             @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "plantedDate", required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate plantedDate,
+            @RequestParam(value = "isVerified", required = false, defaultValue = "false") boolean isVerified,
             @RequestParam(value = "image", required = false) MultipartFile image) {
-        return ResponseEntity.ok(plantService.addPlant(nickname, species, status, plantedDate, image));
+        return ResponseEntity.ok(plantService.addPlant(nickname, species, status, plantedDate, isVerified, image));
     }
 
     @GetMapping("/user/{userId}")

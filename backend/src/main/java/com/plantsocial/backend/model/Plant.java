@@ -47,6 +47,10 @@ public class Plant {
 
     private java.time.LocalDate harvestDate;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean isVerified = false;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

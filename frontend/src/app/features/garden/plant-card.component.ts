@@ -8,13 +8,20 @@ import { PlantData } from './plant.service';
   imports: [CommonModule],
   template: `
     <div class="plant-card">
-      <div class="plant-card__image" *ngIf="plant.imageUrl">
-        <img [src]="resolveUrl(plant.imageUrl)" alt="" loading="lazy" />
-        <div class="status-dot" [class]="'status--' + plant.status.toLowerCase()"></div>
-      </div>
       <div class="plant-card__image plant-card__image--placeholder" *ngIf="!plant.imageUrl">
         <span class="placeholder-emoji">🌱</span>
         <div class="status-dot" [class]="'status--' + plant.status.toLowerCase()"></div>
+        <div class="verified-badge" *ngIf="plant.isVerified" title="Verified Identity">
+          <i class="pi pi-verified"></i>
+        </div>
+      </div>
+      
+      <div class="plant-card__image" *ngIf="plant.imageUrl">
+        <img [src]="resolveUrl(plant.imageUrl)" alt="" loading="lazy" />
+        <div class="status-dot" [class]="'status--' + plant.status.toLowerCase()"></div>
+        <div class="verified-badge" *ngIf="plant.isVerified" title="Verified Identity">
+          <i class="pi pi-verified"></i>
+        </div>
       </div>
       
       <!-- Owners only: Menu Button -->
@@ -111,7 +118,26 @@ import { PlantData } from './plant.service';
     .status--fruiting { background: #FF9800; }
     .status--harvested { background: #FF5722; }
     .status--dead { background: #9E9E9E; }
+    .status--dead { background: #9E9E9E; }
     .status--alive { background: #4CAF50; }
+
+    /* Verified Badge */
+    .verified-badge {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      color: var(--trellis-green); /* Or a nice blue/gold? Trellis green fits */
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      font-size: 0.9rem;
+      z-index: 5;
+    }
 
     /* Info */
     .plant-card__info {

@@ -24,7 +24,12 @@ public class FeedController {
     public ResponseEntity<Page<PostResponse>> getFeed(
             Pageable pageable,
             @RequestParam(value = "plant", required = false) String plant) {
-        return ResponseEntity.ok(feedService.getFeed(pageable, plant));
+        try {
+            return ResponseEntity.ok(feedService.getFeed(pageable, plant));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

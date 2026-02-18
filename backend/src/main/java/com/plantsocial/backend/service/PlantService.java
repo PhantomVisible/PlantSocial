@@ -33,7 +33,7 @@ public class PlantService {
 
     @Transactional
     public PlantResponse addPlant(String nickname, String species, String status, java.time.LocalDate plantedDate,
-            MultipartFile image) {
+            boolean isVerified, MultipartFile image) {
         User user = getCurrentUser();
 
         String imageUrl = null;
@@ -59,6 +59,7 @@ public class PlantService {
                 .imageUrl(imageUrl)
                 .status(plantStatus)
                 .plantedDate(pDate)
+                .isVerified(isVerified)
                 .build();
         Plant saved = plantRepository.save(plant);
         return mapToResponse(saved);
@@ -136,6 +137,7 @@ public class PlantService {
                 plant.getOwner().getFullName(),
                 plant.getPlantedDate(),
                 plant.getHarvestDate(),
+                plant.isVerified(),
                 plant.getCreatedAt());
     }
 
@@ -229,6 +231,7 @@ public class PlantService {
             username = principal.toString();
         }
         return userRepository.findByUsername(username)
+                .or(() -> userRepository.findByEmail(username))
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 }

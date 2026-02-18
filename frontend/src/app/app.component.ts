@@ -1,10 +1,11 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { RouterOutlet, Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { GlobalLoaderComponent } from './shared/global-loader/global-loader.component';
 import { ToastContainerComponent } from './shared/toast-container/toast-container.component';
 import { SidebarComponent } from './layout/sidebar.component';
 import { WikiSidebarComponent } from './features/feed/wiki-sidebar.component';
 import { NewsWidgetComponent } from './shared/components/news-widget/news-widget.component';
+import { TrendsWidgetComponent } from './shared/components/trends-widget/trends-widget.component';
 import { AuthPromptDialogComponent } from './auth/auth-prompt-dialog.component';
 import { AuthGatekeeperService } from './auth/auth-gatekeeper.service';
 import { NotificationService } from './core/notification.service';
@@ -19,9 +20,10 @@ import { CommonModule } from '@angular/common';
     GlobalLoaderComponent,
     ToastContainerComponent,
     SidebarComponent,
-    WikiSidebarComponent,
+    AuthPromptDialogComponent,
     NewsWidgetComponent,
-    AuthPromptDialogComponent
+    TrendsWidgetComponent,
+    WikiSidebarComponent
   ],
   template: `
     <app-global-loader />
@@ -37,8 +39,16 @@ import { CommonModule } from '@angular/common';
         <router-outlet />
       </main>
       <aside class="app-right">
-        <app-news-widget></app-news-widget>
-        <app-wiki-sidebar></app-wiki-sidebar>
+        <!-- If Filtering: Wiki First, No News -->
+        <app-wiki-sidebar *ngIf="isPlantSelected()"></app-wiki-sidebar>
+
+        <!-- If Normal: News First -->
+        <app-news-widget *ngIf="!isPlantSelected()"></app-news-widget>
+
+        <app-trends-widget></app-trends-widget>
+        
+        <!-- If Normal: Wiki Last (Default Card) -->
+        <app-wiki-sidebar *ngIf="!isPlantSelected()"></app-wiki-sidebar>
       </aside>
     </div>
   `,
@@ -98,7 +108,21 @@ export class AppComponent implements OnInit {
   gatekeeper = inject(AuthGatekeeperService);
   notificationService = inject(NotificationService);
 
+  route = inject(ActivatedRoute);
+  private router = inject(Router);
+  isPlantSelected = signal(false);
+
   ngOnInit() {
     this.notificationService.init();
+
+    // Subscribe to Router events to detect URL changes
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        this.isPlantSelected.set(this.router.url.includes('plant='));
+      }
+    });
+
+    // Initial check (in case of deep link)
+    this.isPlantSelected.set(this.router.url.includes('plant='));
   }
 }
