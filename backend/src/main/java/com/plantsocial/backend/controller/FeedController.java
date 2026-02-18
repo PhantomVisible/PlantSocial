@@ -63,4 +63,10 @@ public class FeedController {
         feedService.likePost(postId);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/{postId}/repost")
+    public ResponseEntity<Void> repostPost(@PathVariable UUID postId) {
+        feedService.repostPost(postId);
+        return ResponseEntity.ok().build();
+    }
 }

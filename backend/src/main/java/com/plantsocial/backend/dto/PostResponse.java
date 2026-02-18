@@ -14,9 +14,12 @@ public record PostResponse(
         LocalDateTime createdAt,
         long likesCount,
         long commentCount,
-        boolean likedByCurrentUser,
+        Boolean likedByCurrentUser,
         UUID plantId,
         String plantNickname,
         String plantTag,
-        String authorProfilePictureUrl) {
+        String authorProfilePictureUrl,
+        PostResponse originalPost,
+        long repostCount,
+        boolean isRepostedByCurrentUser) {
 }

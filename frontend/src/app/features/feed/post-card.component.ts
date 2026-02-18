@@ -9,23 +9,7 @@ import { AuthGatekeeperService } from '../../auth/auth-gatekeeper.service';
 import { WikipediaService } from '../../shared/wikipedia.service';
 import { PlantDetailsDialogComponent } from '../garden/plant-details-dialog.component';
 import { ToastService } from '../../core/toast.service'; // Add this
-
-export interface PostCardData {
-  id: string;
-  authorName: string;
-  authorUsername: string;
-  authorId: string;
-  authorProfilePictureUrl?: string;
-  content: string;
-  imageUrl?: string;
-  createdAt: string;
-  likesCount: number;
-  commentCount: number;
-  likedByCurrentUser: boolean;
-  plantId?: string;
-  plantNickname?: string;
-  plantTag?: string;
-}
+import { Post } from './feed.service'; // Use shared interface
 
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
 
@@ -37,46 +21,58 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, CommentThreadComponent, PlantDetailsDialogComponent, AvatarComponent, HoverCardComponent, LinkifyPipe],
   template: `
-    <article class="post-card">
-      <!-- Header -->
+    <article class="post-card" [class.repost-card]="!!post.originalPost">
+      
+      <!-- Repost Header -->
+      <div *ngIf="post.originalPost" class="repost-header">
+         <i class="pi pi-sync" style="font-size: 0.8rem; transform: rotate(90deg)"></i>
+         <span>Reposted by {{ post.authorUsername }}</span>
+      </div>
+
+      <!-- Header (If repost, show ORIGINAL author) -->
       <div class="post-card__header">
         <div class="avatar-wrapper" (mouseenter)="onAvatarMouseEnter()" (mouseleave)="onAvatarMouseLeave()">
-            <a (click)="visitProfile(post.authorUsername)" class="post-card__avatar-link">
+            <a (click)="visitProfile(displayPost.authorUsername)" class="post-card__avatar-link">
             <app-avatar 
-                [imageUrl]="resolveImageUrl(post.authorProfilePictureUrl || '')" 
-                [name]="post.authorName" 
+                [imageUrl]="resolveImageUrl(displayPost.authorProfilePictureUrl || '')" 
+                [name]="displayPost.authorName" 
                 [size]="42">
             </app-avatar>
             </a>
             
             <!-- Hover Card Overlay -->
             <div *ngIf="hoverCardVisible()" class="hover-card-popup" (mouseenter)="onCardMouseEnter()" (mouseleave)="onCardMouseLeave()">
-                <app-hover-card [username]="post.authorUsername" [userId]="post.authorId"></app-hover-card>
+                <app-hover-card [username]="displayPost.authorUsername" [userId]="displayPost.authorId"></app-hover-card>
             </div>
         </div>
         <div class="post-card__meta">
-          <a (click)="visitProfile(post.authorUsername)" class="post-card__author">{{ post.authorName }}</a>
+          <a (click)="visitProfile(displayPost.authorUsername)" class="post-card__author">{{ displayPost.authorName }}</a>
           <span class="post-card__dot">·</span>
-          <a [routerLink]="['/post', post.id]" class="post-card__time" title="View post">{{ formatTime(post.createdAt) }}</a>
+          <a [routerLink]="['/post', displayPost.id]" class="post-card__time" title="View post">{{ formatTime(displayPost.createdAt) }}</a>
           
           <!-- Plant Badge (from garden) -->
-          <span *ngIf="post.plantNickname" class="post-card__plant-badge" (click)="openPlantDetails($event)">
-            🌿 {{ post.plantNickname }}
+          <span *ngIf="displayPost.plantNickname" class="post-card__plant-badge" (click)="openPlantDetails($event)">
+            🌿 {{ displayPost.plantNickname }}
           </span>
 
           <!-- Plant Tag Badge (free-text, clickable) -->
-          <span *ngIf="post.plantTag" class="post-card__plant-tag" (click)="onTagClick($event)">
-            🏷️ {{ post.plantTag }}
+          <span *ngIf="displayPost.plantTag" class="post-card__plant-tag" (click)="onTagClick($event)">
+            🏷️ {{ displayPost.plantTag }}
           </span>
         </div>
 
-        <!-- Owner Menu -->
+        <!-- Owner Menu (Only for direct posts, or if I own the repost itself?? 
+             Actually if I reposted it, I can delete my repost.
+             If it's a repost, 'post' is the repost wrapper. 'displayPost' is original.
+             The menu should control the WRAPPER (post) generally.
+        -->
         <div *ngIf="isOwner()" class="post-card__menu-wrap">
           <button class="menu-trigger" (click)="toggleMenu($event)" title="Post options">
             <i class="pi pi-ellipsis-v"></i>
           </button>
           <div *ngIf="menuOpen()" class="dropdown-menu">
-            <button class="dropdown-item" (click)="startEdit()">
+            <!-- Cannot edit reposts, only delete -->
+            <button *ngIf="!post.originalPost" class="dropdown-item" (click)="startEdit()">
               <i class="pi pi-pencil"></i> Edit
             </button>
             <button class="dropdown-item dropdown-item--danger" (click)="confirmDelete()">
@@ -88,10 +84,10 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
 
       <!-- Content: Normal -->
       <div class="post-card__content" *ngIf="!isEditing()">
-        <p [innerHTML]="post.content | linkify"></p>
+        <p [innerHTML]="displayPost.content | linkify"></p>
       </div>
 
-      <!-- Content: Edit mode -->
+      <!-- Content: Edit mode (Only for original posts) -->
       <div class="post-card__edit" *ngIf="isEditing()">
         <textarea
           class="edit-textarea"
@@ -127,20 +123,32 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
       </div>
 
       <!-- Image -->
-      <div *ngIf="post.imageUrl" class="post-card__media" (click)="openLightbox()">
-        <img [src]="resolveImageUrl(post.imageUrl)" alt="Plant photo" loading="lazy" />
+      <div *ngIf="displayPost.imageUrl" class="post-card__media" (click)="openLightbox()">
+        <img [src]="resolveImageUrl(displayPost.imageUrl)" alt="Plant photo" loading="lazy" />
       </div>
 
       <!-- Actions -->
       <div class="post-card__actions">
-        <button class="action-btn" [class.liked]="post.likedByCurrentUser" (click)="toggleLike()">
-          <i class="pi" [ngClass]="post.likedByCurrentUser ? 'pi-heart-fill' : 'pi-heart'"></i>
-          <span *ngIf="post.likesCount > 0">{{ post.likesCount }}</span>
+        <!-- Like (Likes the ORIGINAL post if repost?) 
+             Typically X/Reddit: liking a repost likes the ORIGINAL post. 
+             So we use displayPost.id
+        -->
+        <button class="action-btn" [class.liked]="displayPost.likedByCurrentUser" (click)="toggleLike()">
+          <i class="pi" [ngClass]="displayPost.likedByCurrentUser ? 'pi-heart-fill' : 'pi-heart'"></i>
+          <span *ngIf="displayPost.likesCount > 0">{{ displayPost.likesCount }}</span>
         </button>
+        
         <button class="action-btn" [class.active-comments]="isCommentsOpen()" (click)="toggleComments()">
           <i class="pi pi-comment"></i>
-          <span *ngIf="post.commentCount > 0">{{ post.commentCount }}</span>
+          <span *ngIf="displayPost.commentCount > 0">{{ displayPost.commentCount }}</span>
         </button>
+        
+        <!-- Repost Button -->
+        <button class="action-btn" [class.reposted]="isRepostedByMe()" (click)="repost($event)" title="Repost">
+            <i class="pi" [ngClass]="isRepostedByMe() ? 'pi-sync' : 'pi-sync'" [style.color]="isRepostedByMe() ? 'var(--trellis-green)' : ''" style="transform: rotate(90deg)"></i>
+            <span *ngIf="displayPost.repostCount > 0" [style.color]="isRepostedByMe() ? 'var(--trellis-green)' : ''">{{ displayPost.repostCount }}</span>
+        </button>
+
         <button class="action-btn" (click)="sharePost($event)" title="Share link">
           <i class="pi pi-share-alt"></i>
         </button>
@@ -190,6 +198,19 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
     }
     .post-card:hover {
       background: var(--trellis-green-ghost);
+    }
+    
+    .repost-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--trellis-text-secondary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .repost-header i {
+        font-size: 0.9rem;
     }
 
     /* ---------- Header ---------- */
@@ -647,16 +668,23 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
   `]
 })
 export class PostCardComponent {
-  @Input({ required: true }) post!: PostCardData;
-  @Output() onLike = new EventEmitter<PostCardData>();
+  @Input({ required: true }) post!: Post;
+  @Output() onLike = new EventEmitter<Post>();
   @Output() onDelete = new EventEmitter<string>();
   @Output() onEdit = new EventEmitter<{ id: string; content: string; plantTag?: string | null }>();
+  @Output() onRepost = new EventEmitter<string>(); // Emit postId
+
 
   private authService = inject(AuthService);
   private gatekeeper = inject(AuthGatekeeperService);
   private router = inject(Router);
   private wikiService = inject(WikipediaService);
   private toastService = inject(ToastService); // Add this
+
+  // Computed / Getter for displayPost (helps switch between Repost and Original)
+  get displayPost(): Post {
+    return this.post.originalPost || this.post;
+  }
 
   menuOpen = signal(false);
   lightboxOpen = signal(false);
@@ -751,7 +779,8 @@ export class PostCardComponent {
 
   toggleLike() {
     this.gatekeeper.run(() => {
-      this.onLike.emit(this.post);
+      // Emit the CONTENT post (original), not the repost wrapper
+      this.onLike.emit(this.displayPost);
     });
   }
 
@@ -795,32 +824,90 @@ export class PostCardComponent {
     }
   }
 
+  isRepostedByMe(): boolean {
+    // If this card IS a repost (has originalPost), then I am the reposter
+    if (this.post.originalPost) {
+      return this.isOwner();
+    }
+    // Otherwise check the backend flag
+    return this.post.isRepostedByCurrentUser;
+  }
+
+  repost(event: Event) {
+    event.stopPropagation();
+    this.gatekeeper.run(() => {
+      // Optimistic update
+      if (this.post.originalPost) {
+        // This card IS a repost — clicking repost again would undo it
+        // No optimistic update needed here, just emit
+      } else {
+        const wasReposted = this.post.isRepostedByCurrentUser;
+        this.post.repostCount = wasReposted
+          ? Math.max(0, this.post.repostCount - 1)
+          : this.post.repostCount + 1;
+        this.post.isRepostedByCurrentUser = !wasReposted;
+      }
+      this.onRepost.emit(this.displayPost.id);
+    });
+  }
+
   // ---- Edit Tag Autocomplete ----
   private editSearchTimeout: any;
 
   onEditTagSearch() {
     clearTimeout(this.editSearchTimeout);
-    const term = this.editTag.trim();
-    if (term.length < 2) { this.editTagSuggestions.set([]); return; }
+    if (!this.editTag) {
+      this.editTagSuggestions.set([]);
+      return;
+    }
     this.editSearchTimeout = setTimeout(() => {
-      this.wikiService.search(term).subscribe({
-        next: (r) => this.editTagSuggestions.set(r),
-        error: () => this.editTagSuggestions.set([])
+      this.wikiService.search(this.editTag).subscribe(results => {
+        this.editTagSuggestions.set(results);
       });
     }, 300);
   }
 
-  onEditTagBlur() {
-    setTimeout(() => { this.editTagFocused = false; }, 200);
-  }
-
-  selectEditTag(name: string) {
-    this.editTag = name;
+  selectEditTag(tag: string) {
+    this.editTag = tag;
     this.editTagSuggestions.set([]);
     this.editTagFocused = false;
   }
 
-  // ---- Delete ----
+  onEditTagBlur() {
+    setTimeout(() => {
+      this.editTagFocused = false;
+    }, 200);
+  }
+
+  // ---- Utils ----
+  formatTime(dateStr: string): string {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = (now.getTime() - date.getTime()) / 1000;
+
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)}d`;
+    return date.toLocaleDateString();
+  }
+
+  resolveImageUrl(url: string | undefined): string {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `http://localhost:8080${url}`;
+  }
+
+  openLightbox() {
+    if (this.post.imageUrl || (this.post.originalPost && this.post.originalPost.imageUrl)) {
+      this.lightboxOpen.set(true);
+    }
+  }
+  closeLightbox() {
+    this.lightboxOpen.set(false);
+  }
+
+  // Delete flow
   confirmDelete() {
     this.menuOpen.set(false);
     this.deleteConfirmOpen.set(true);
@@ -830,28 +917,7 @@ export class PostCardComponent {
     this.onDelete.emit(this.post.id);
   }
 
-  // ---- Lightbox ----
-  openLightbox() { this.lightboxOpen.set(true); }
-  closeLightbox() { this.lightboxOpen.set(false); }
-
-  // ---- Helpers ----
-  resolveImageUrl(url: string): string {
-    if (url.startsWith('http')) return url;
-    return 'http://localhost:8080' + url;
-  }
   getInitials(name: string): string {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-  }
-  formatTime(dateStr: string): string {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMin = Math.floor(diffMs / 60000);
-    if (diffMin < 1) return 'now';
-    if (diffMin < 60) return diffMin + 'm';
-    const diffHr = Math.floor(diffMin / 60);
-    if (diffHr < 24) return diffHr + 'h';
-    const diffDay = Math.floor(diffHr / 24);
-    return diffDay + 'd';
   }
 }

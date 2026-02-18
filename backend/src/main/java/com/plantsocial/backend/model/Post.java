@@ -40,6 +40,10 @@ public class Post {
     @JoinColumn(name = "plant_id")
     private Plant plant;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "repost_of_id")
+    private Post repostOf;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

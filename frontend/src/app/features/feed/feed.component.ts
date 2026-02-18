@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { PostComposerComponent } from './post-composer.component';
-import { PostCardComponent, PostCardData } from './post-card.component';
+import { PostCardComponent } from './post-card.component';
 import { PostSkeletonComponent } from './post-skeleton.component';
 import { FeedService, Post } from './feed.service';
 import { AuthService } from '../../auth/auth.service';
@@ -51,6 +51,7 @@ import { AuthService } from '../../auth/auth.service';
           (onLike)="toggleLike($event)"
           (onDelete)="deletePost($event)"
           (onEdit)="editPost($event)"
+          (onRepost)="repostPost($event)"
         ></app-post-card>
 
         <div *ngIf="posts().length === 0" class="feed-empty">
@@ -193,25 +194,54 @@ export class FeedComponent implements OnInit, OnDestroy {
   }
 
   toggleLike(post: Post) {
+    // Optimistic update: Find ALL posts that represent the content being liked
+    // The 'post' argument is the CONTENT post (displayPost from card)
+    const targetId = post.id;
+
     this.posts.update(current => current.map(p => {
-      if (p.id === post.id) {
+      // 1. Is this the post itself?
+      if (p.id === targetId) {
         return {
           ...p,
           likedByCurrentUser: !p.likedByCurrentUser,
           likesCount: p.likedByCurrentUser ? p.likesCount - 1 : p.likesCount + 1
         };
       }
+
+      // 2. Is this a repost OF the post?
+      if (p.originalPost && p.originalPost.id === targetId) {
+        return {
+          ...p,
+          originalPost: {
+            ...p.originalPost,
+            likedByCurrentUser: !p.originalPost.likedByCurrentUser,
+            likesCount: p.originalPost.likedByCurrentUser ? p.originalPost.likesCount - 1 : p.originalPost.likesCount + 1
+          }
+        };
+      }
+
       return p;
     }));
 
-    this.feedService.likePost(post.id).subscribe({
+    this.feedService.likePost(targetId).subscribe({
       error: () => {
+        // Revert on error
         this.posts.update(current => current.map(p => {
-          if (p.id === post.id) {
+          if (p.id === targetId) {
             return {
               ...p,
               likedByCurrentUser: !p.likedByCurrentUser,
               likesCount: p.likedByCurrentUser ? p.likesCount - 1 : p.likesCount + 1
+            };
+          }
+          if (p.originalPost && p.originalPost.id === targetId) {
+            return {
+              ...p,
+              originalPost: {
+                ...p.originalPost!,
+                likedByCurrentUser: !p.originalPost!.likedByCurrentUser,
+                likesCount: p.originalPost!.likedByCurrentUser ? p.originalPost!.likesCount - 1 : p.originalPost!.likesCount + 1
+              }
             };
           }
           return p;
@@ -237,6 +267,16 @@ export class FeedComponent implements OnInit, OnDestroy {
         current.map(p => p.id === updated.id ? updated : p)
       ),
       error: (err) => console.error('Failed to edit post', err)
+    });
+  }
+
+  repostPost(postId: string) {
+    this.feedService.repostPost(postId).subscribe({
+      next: () => {
+        // Reload feed to see the new repost at the top
+        this.loadFeed(this.activeFilter());
+      },
+      error: (err) => console.error('Failed to repost', err)
     });
   }
 }

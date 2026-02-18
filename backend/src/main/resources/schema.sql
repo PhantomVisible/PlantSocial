@@ -14,3 +14,8 @@ CREATE TABLE IF NOT EXISTS plants (
 
 -- Simpler, safer column addition (Postgres 9.6+)
 ALTER TABLE plants ADD COLUMN IF NOT EXISTS is_verified BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- Update notifications type check to include REPOST
+ALTER TABLE notifications DROP CONSTRAINT IF EXISTS notifications_type_check;
+ALTER TABLE notifications ADD CONSTRAINT notifications_type_check
+    CHECK (type IN ('LIKE', 'COMMENT', 'FOLLOW', 'MESSAGE', 'REPOST'));

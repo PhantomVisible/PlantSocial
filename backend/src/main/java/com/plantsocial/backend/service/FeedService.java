@@ -25,9 +25,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 @RequiredArgsConstructor
 public class FeedService {
+
+    private static final Logger log = LoggerFactory.getLogger(FeedService.class);
 
     private final PostRepository postRepository;
     private final PostLikeRepository postLikeRepository;
@@ -170,6 +175,11 @@ public class FeedService {
         long commentCount = commentRepository.countByPost(post);
         boolean likedByCurrentUser = currentUser != null && postLikeRepository.existsByPostAndUser(post, currentUser);
 
+        // Repost logic
+        long repostCount = postRepository.countByRepostOfId(post.getId());
+        boolean isRepostedByCurrentUser = currentUser != null
+                && postRepository.existsByAuthorIdAndRepostOfId(currentUser.getId(), post.getId());
+
         UUID plantId = post.getPlant() != null ? post.getPlant().getId() : null;
         String plantNickname = post.getPlant() != null ? post.getPlant().getNickname() : null;
 
@@ -187,6 +197,59 @@ public class FeedService {
                 plantId,
                 plantNickname,
                 post.getPlantTag(),
-                post.getAuthor().getProfilePictureUrl());
+                post.getAuthor().getProfilePictureUrl(),
+                post.getRepostOf() != null ? mapToPostResponse(post.getRepostOf(), currentUser) : null,
+                repostCount,
+                isRepostedByCurrentUser);
+    }
+
+    @Transactional
+    public void repostPost(UUID postId) {
+        User user = getCurrentUser();
+        log.info("repostPost called: postId={}, userId={}", postId, user.getId());
+
+        Post targetPost = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found: " + postId));
+
+        // Flatten reposts: Always repost the ROOT original post
+        Post originalPost = targetPost;
+        while (originalPost.getRepostOf() != null) {
+            originalPost = originalPost.getRepostOf();
+        }
+        log.info("Original post resolved: originalPostId={}", originalPost.getId());
+
+        // Toggle Repost Logic
+        boolean alreadyReposted = postRepository.existsByAuthorIdAndRepostOfId(user.getId(), originalPost.getId());
+        log.info("Already reposted: {}", alreadyReposted);
+
+        if (alreadyReposted) {
+            // Undo repost
+            java.util.Optional<Post> existingRepost = postRepository.findByAuthorIdAndRepostOfId(user.getId(),
+                    originalPost.getId());
+            existingRepost.ifPresent(repost -> {
+                log.info("Deleting repost: repostId={}", repost.getId());
+                postRepository.delete(repost);
+                postRepository.flush();
+            });
+        } else {
+            // Create new repost
+            Post repost = Post.builder()
+                    .author(user)
+                    .repostOf(originalPost)
+                    .build();
+
+            log.info("Saving new repost for originalPostId={}", originalPost.getId());
+            postRepository.save(repost);
+
+            // Notify original author (only if not self-repost)
+            if (!originalPost.getAuthor().getId().equals(user.getId())) {
+                notificationService.createNotification(
+                        originalPost.getAuthor(),
+                        user,
+                        NotificationType.REPOST,
+                        user.getFullName() + " reposted your post",
+                        originalPost.getId());
+            }
+        }
     }
 }

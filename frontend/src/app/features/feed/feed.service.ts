@@ -17,6 +17,9 @@ export interface Post {
   plantId?: string;
   plantNickname?: string;
   plantTag?: string;
+  originalPost?: Post; // Recursively defined
+  repostCount: number;
+  isRepostedByCurrentUser: boolean;
 }
 
 export interface CommentRequest {
@@ -79,6 +82,10 @@ export class FeedService {
 
   likePost(postId: string): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/${postId}/like`, {});
+  }
+
+  repostPost(postId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${postId}/repost`, {});
   }
 
   commentOnPost(postId: string, request: CommentRequest): Observable<void> {
