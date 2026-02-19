@@ -97,6 +97,14 @@ export class AuthService {
         this.router.navigate(['/']);
     }
 
+    forgotPassword(email: string): Observable<void> {
+        return this.http.post<void>(`${this.apiUrl}/forgot-password`, { email });
+    }
+
+    resetPassword(token: string, password: string): Observable<void> {
+        return this.http.post<void>(`${this.apiUrl}/reset-password`, { token, newPassword: password });
+    }
+
     getToken(): string | null {
         if (isPlatformBrowser(this.platformId)) {
             return localStorage.getItem('token');

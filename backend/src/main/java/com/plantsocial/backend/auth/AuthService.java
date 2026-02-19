@@ -62,4 +62,36 @@ public class AuthService {
         }
         return claims;
     }
+
+    public void requestPasswordReset(ForgotPasswordRequest request) {
+        var user = repository.findByEmail(request.email())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        String token = java.util.UUID.randomUUID().toString();
+        user.setResetPasswordToken(token);
+        user.setResetPasswordTokenExpiry(java.time.LocalDateTime.now().plusHours(1));
+        repository.save(user);
+
+        // Mock Email
+        System.out.println("==========================================");
+        System.out.println("PASSWORD RESET REQUEST");
+        System.out.println("Email: " + user.getEmail());
+        System.out.println("Token: " + token);
+        System.out.println("Link: http://localhost:4200/reset-password?token=" + token);
+        System.out.println("==========================================");
+    }
+
+    public void resetPassword(ResetPasswordRequest request) {
+        var user = repository.findByResetPasswordToken(request.token())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid token"));
+
+        if (user.getResetPasswordTokenExpiry().isBefore(java.time.LocalDateTime.now())) {
+            throw new IllegalArgumentException("Token expired");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        user.setResetPasswordToken(null);
+        user.setResetPasswordTokenExpiry(null);
+        repository.save(user);
+    }
 }

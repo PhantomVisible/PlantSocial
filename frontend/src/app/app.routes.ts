@@ -15,6 +15,8 @@ export const routes: Routes = [
     { path: 'post/:id', loadComponent: () => import('./features/feed/post-detail.component').then(m => m.PostDetailComponent) },
     { path: 'auth/login', component: LoginComponent, canActivate: [guestGuard] },
     { path: 'auth/register', component: RegisterComponent, canActivate: [guestGuard] },
+    { path: 'forgot-password', loadComponent: () => import('./auth/forgot-password.component').then(m => m.ForgotPasswordComponent) },
+    { path: 'reset-password', loadComponent: () => import('./auth/reset-password.component').then(m => m.ResetPasswordComponent) },
     { path: 'profile/:username', component: UserProfileComponent },
     { path: 'chat', component: ChatPageComponent, canActivate: [authGuard] },
     { path: 'notifications', component: NotificationsPageComponent, canActivate: [authGuard] },

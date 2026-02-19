@@ -16,6 +16,7 @@ import { AuthFormComponent } from './auth-form.component';
           [mode]="activeMode()"
           (authSuccess)="close.emit()"
           (footerNav)="toggleMode()"
+          (forgotPasswordClick)="close.emit()"
         ></app-auth-form>
       </div>
     </div>

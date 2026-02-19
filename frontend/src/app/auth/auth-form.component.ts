@@ -110,7 +110,10 @@ import { AuthService } from './auth.service';
         <!-- Error Banner -->
         <div *ngIf="errorMessage()" class="error-banner">
           <i class="pi pi-exclamation-triangle"></i>
-          {{ errorMessage() }}
+          <div class="error-content">
+            {{ errorMessage() }}
+            <a *ngIf="mode === 'login'" routerLink="/forgot-password" (click)="forgotPasswordClick.emit()" class="error-link">Forgot Password?</a>
+          </div>
         </div>
 
         <!-- Submit -->
@@ -301,6 +304,21 @@ import { AuthService } from './auth.service';
       margin-bottom: 16px;
       animation: shake 0.3s ease;
     }
+    .error-content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+    .error-link {
+        color: #b91c1c;
+        text-decoration: underline;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .error-link:hover {
+        color: #991b1b;
+    }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
       25% { transform: translateX(-4px); }
@@ -379,6 +397,7 @@ export class AuthFormComponent implements OnInit, OnChanges {
   @Input() hideFooter = false;
   @Output() footerNav = new EventEmitter<void>();
   @Output() authSuccess = new EventEmitter<void>();
+  @Output() forgotPasswordClick = new EventEmitter<void>();
 
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);

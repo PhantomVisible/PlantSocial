@@ -57,6 +57,12 @@ public class User implements UserDetails {
 
     private String coverPictureUrl;
 
+    @JsonIgnore
+    private String resetPasswordToken;
+
+    @JsonIgnore
+    private LocalDateTime resetPasswordTokenExpiry;
+
     @Column(nullable = false, unique = true)
     private String username;
 

@@ -17,6 +17,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByUsername(String username);
 
+    Optional<User> findByResetPasswordToken(String token);
+
     @Query("""
                 SELECT u FROM User u
                 WHERE (LOWER(u.username) LIKE LOWER(CONCAT('%', :q, '%'))
