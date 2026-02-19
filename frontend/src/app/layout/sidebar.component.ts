@@ -32,20 +32,20 @@ import { NotificationService } from '../features/notifications/notification.serv
           <span>Explore</span>
         </a>
 
-        <a *ngIf="user()" routerLink="/notifications" routerLinkActive="active" class="nav-item nav-item--notifications">
-          <i class="pi pi-bell"></i>
-          <span>Notifications</span>
-          <span *ngIf="notifService.unreadCount() > 0" class="badge-count">
-            {{ notifService.unreadCount() }}
+        <a *ngIf="user()" routerLink="/notifications" routerLinkActive="active" class="nav-item">
+          <span class="icon-wrap">
+            <i class="pi pi-bell"></i>
+            <span *ngIf="notifService.unreadCount() > 0" class="badge-count">{{ notifService.unreadCount() }}</span>
           </span>
+          <span>Notifications</span>
         </a>
 
-        <a *ngIf="user()" routerLink="/chat" routerLinkActive="active" class="nav-item nav-item--chat">
-          <i class="pi pi-comments"></i>
-          <span>Chat</span>
-          <span *ngIf="unreadMessageCount() > 0" class="badge-count badge-count--chat">
-            {{ unreadMessageCount() }}
+        <a *ngIf="user()" routerLink="/chat" routerLinkActive="active" class="nav-item">
+          <span class="icon-wrap">
+            <i class="pi pi-comments"></i>
+            <span *ngIf="unreadMessageCount() > 0" class="badge-count">{{ unreadMessageCount() }}</span>
           </span>
+          <span>Chat</span>
         </a>
 
         <button class="nav-item" (click)="plantDoctor.open()">
@@ -197,28 +197,38 @@ import { NotificationService } from '../features/notifications/notification.serv
     .nav-item--signup i { color: #fff; }
     .nav-item--signup:hover { background: var(--xyla-green-dark); }
 
-    .nav-item--notifications {
-      position: relative;
-    }
+    .nav-item--notifications,
     .nav-item--chat {
-      position: relative;
+      /* no longer needed — badges are anchored to .icon-wrap */
     }
+
+    .icon-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
     .badge-count {
       position: absolute;
-      top: 8px;
-      left: 28px;
+      top: -6px;
+      right: -8px;
       background: #EF4444;
       color: #fff;
-      font-size: 0.7rem;
+      font-size: 0.62rem;
       font-weight: 700;
-      min-width: 18px;
-      height: 18px;
-      border-radius: 9px;
+      min-width: 16px;
+      height: 16px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0 4px;
+      padding: 0 3px;
       border: 2px solid #fff;
+      line-height: 1;
     }
 
     .sidebar__bottom {

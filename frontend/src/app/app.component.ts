@@ -167,7 +167,7 @@ export class AppComponent implements OnInit {
       if (event instanceof NavigationEnd) {
         this.isPlantSelected.set(this.router.url.includes('plant='));
         const url = this.router.url;
-        this.isFullWidthRoute.set(url.startsWith('/chat') || url.startsWith('/notifications'));
+        this.isFullWidthRoute.set(url.startsWith('/chat'));
         this.isAuthRoute.set(url.startsWith('/auth'));
       }
     });
