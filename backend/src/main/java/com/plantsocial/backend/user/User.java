@@ -89,6 +89,15 @@ public class User implements UserDetails {
     @Builder.Default
     private java.util.Set<User> followers = new java.util.HashSet<>();
 
+    @JsonIgnore
+    private String verificationCode;
+
+    @JsonIgnore
+    private LocalDateTime verificationCodeExpiresAt;
+
+    @Builder.Default
+    private boolean enabled = false;
+
     // UserDetails Implementation
 
     @Override
@@ -121,6 +130,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 }

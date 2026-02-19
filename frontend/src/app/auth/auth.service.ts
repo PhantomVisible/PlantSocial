@@ -105,6 +105,10 @@ export class AuthService {
         return this.http.post<void>(`${this.apiUrl}/reset-password`, { token, newPassword: password });
     }
 
+    verify(email: string, code: string): Observable<void> {
+        return this.http.post<void>(`${this.apiUrl}/verify`, { email, code });
+    }
+
     getToken(): string | null {
         if (isPlatformBrowser(this.platformId)) {
             return localStorage.getItem('token');

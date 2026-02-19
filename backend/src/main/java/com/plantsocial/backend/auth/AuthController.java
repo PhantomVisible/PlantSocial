@@ -38,4 +38,10 @@ public class AuthController {
         service.resetPassword(request);
         return ResponseEntity.accepted().build();
     }
+
+    @PostMapping("/verify")
+    public ResponseEntity<Void> verify(@Valid @RequestBody VerifyAccountRequest request) {
+        service.verifyAccount(request);
+        return ResponseEntity.accepted().build();
+    }
 }

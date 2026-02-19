@@ -29,25 +29,43 @@ public class AuthService {
             throw new IllegalArgumentException("Username already taken");
         }
 
+        String code = String.format("%06d", new java.util.Random().nextInt(999999));
+
         var user = User.builder()
                 .fullName(request.fullName())
                 .username(request.username())
                 .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
                 .role(Role.USER)
+                .verificationCode(code)
+                .verificationCodeExpiresAt(java.time.LocalDateTime.now().plusMinutes(15))
+                .enabled(false)
                 .build();
         repository.save(user);
+
+        // Mock Email
+        System.out.println("==========================================");
+        System.out.println("VERIFICATION CODE for " + user.getEmail());
+        System.out.println("Code: " + code);
+        System.out.println("==========================================");
+
         var jwtToken = jwtService.generateToken(buildClaims(user), user);
         return new AuthenticationResponse(jwtToken);
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        var user = repository.findByEmail(request.email())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (!user.isEnabled()) {
+            throw new IllegalArgumentException("Account not verified. Please verify your email.");
+        }
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.email(),
                         request.password()));
-        var user = repository.findByEmail(request.email())
-                .orElseThrow();
+
         var jwtToken = jwtService.generateToken(buildClaims(user), user);
         return new AuthenticationResponse(jwtToken);
     }
@@ -92,6 +110,28 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         user.setResetPasswordToken(null);
         user.setResetPasswordTokenExpiry(null);
+        repository.save(user);
+    }
+
+    public void verifyAccount(VerifyAccountRequest request) {
+        var user = repository.findByEmail(request.email())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (user.isEnabled()) {
+            return; // Already verified
+        }
+
+        if (request.code() == null || !request.code().equals(user.getVerificationCode())) {
+            throw new IllegalArgumentException("Invalid verification code");
+        }
+
+        if (user.getVerificationCodeExpiresAt().isBefore(java.time.LocalDateTime.now())) {
+            throw new IllegalArgumentException("Verification code expired");
+        }
+
+        user.setEnabled(true);
+        user.setVerificationCode(null);
+        user.setVerificationCodeExpiresAt(null);
         repository.save(user);
     }
 }

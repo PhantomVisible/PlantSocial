@@ -1,11 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { AuthFormComponent } from '../auth-form.component';
+import { VerificationComponent } from '../verification.component';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, AuthFormComponent],
+  imports: [CommonModule, AuthFormComponent, VerificationComponent],
   template: `
     <div class="auth-page">
       <!-- Left: Brand Panel -->
@@ -20,7 +22,18 @@ import { AuthFormComponent } from '../auth-form.component';
 
       <!-- Right: Form Panel -->
       <div class="form-panel">
-        <app-auth-form mode="register"></app-auth-form>
+        <app-auth-form 
+            *ngIf="!isVerifying()"
+            mode="register" 
+            (registerSuccess)="onRegisterSuccess($event)"
+        ></app-auth-form>
+
+        <app-verification
+            *ngIf="isVerifying()"
+            [email]="registeredEmail()"
+            (verifySuccess)="onVerifySuccess()"
+            (cancel)="isVerifying.set(false)"
+        ></app-verification>
       </div>
     </div>
   `,
@@ -123,4 +136,17 @@ import { AuthFormComponent } from '../auth-form.component';
     }
   `]
 })
-export class RegisterComponent { }
+export class RegisterComponent {
+  isVerifying = signal(false);
+  registeredEmail = signal('');
+  private router = inject(Router);
+
+  onRegisterSuccess(email: string) {
+    this.registeredEmail.set(email);
+    this.isVerifying.set(true);
+  }
+
+  onVerifySuccess() {
+    this.router.navigate(['/auth/login'], { queryParams: { verified: true } });
+  }
+}

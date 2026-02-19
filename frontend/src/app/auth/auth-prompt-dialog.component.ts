@@ -1,23 +1,42 @@
 import { Component, Output, EventEmitter, Input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthFormComponent } from './auth-form.component';
+import { VerificationComponent } from './verification.component'; // Import
 
 @Component({
   selector: 'app-auth-prompt-dialog',
   standalone: true,
-  imports: [CommonModule, AuthFormComponent],
+  imports: [CommonModule, AuthFormComponent, VerificationComponent],
   template: `
     <div class="glass-overlay" (click)="close.emit()" [@.disabled]="true">
       <div class="glass-card" (click)="$event.stopPropagation()">
         <button class="close-btn" (click)="close.emit()">
           <i class="pi pi-times"></i>
         </button>
-        <app-auth-form
-          [mode]="activeMode()"
-          (authSuccess)="close.emit()"
-          (footerNav)="toggleMode()"
-          (forgotPasswordClick)="close.emit()"
-        ></app-auth-form>
+        
+        <ng-container [ngSwitch]="activeMode()">
+            <app-auth-form
+              *ngSwitchCase="'login'"
+              mode="login"
+              (authSuccess)="close.emit()"
+              (footerNav)="activeMode.set('register')"
+              (forgotPasswordClick)="close.emit()"
+            ></app-auth-form>
+
+            <app-auth-form
+              *ngSwitchCase="'register'"
+              mode="register"
+              (registerSuccess)="onRegisterSuccess($event)"
+              (footerNav)="activeMode.set('login')"
+            ></app-auth-form>
+
+            <app-verification
+                *ngSwitchCase="'verify'"
+                [email]="registeredEmail()"
+                (verifySuccess)="onVerifySuccess()"
+                (cancel)="activeMode.set('login')"
+            ></app-verification>
+        </ng-container>
       </div>
     </div>
   `,
@@ -84,6 +103,7 @@ import { AuthFormComponent } from './auth-form.component';
       justify-content: center;
       font-size: 0.85rem;
       transition: all 0.15s ease;
+      z-index: 10;
     }
     .close-btn:hover {
       background: rgba(0, 0, 0, 0.1);
@@ -99,9 +119,24 @@ import { AuthFormComponent } from './auth-form.component';
 export class AuthPromptDialogComponent {
   @Output() close = new EventEmitter<void>();
 
-  activeMode = signal<'login' | 'register'>('login');
+  activeMode = signal<'login' | 'register' | 'verify'>('login');
+  registeredEmail = signal('');
 
   toggleMode() {
     this.activeMode.update(m => m === 'login' ? 'register' : 'login');
+  }
+
+  onRegisterSuccess(email: string) {
+    this.registeredEmail.set(email);
+    this.activeMode.set('verify');
+  }
+
+  onVerifySuccess() {
+    // Maybe show toast? Or just auto-login if backend returned token?
+    // Wait, verify endpoint currently just enables account. User needs to login.
+    this.activeMode.set('login');
+    // Ideally we would pre-fill email in login form.
+    // Or we can modify verify endpoint to return token to auto-login.
+    // For now, redirect to login is fine.
   }
 }

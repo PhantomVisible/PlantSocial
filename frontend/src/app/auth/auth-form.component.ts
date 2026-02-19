@@ -397,6 +397,7 @@ export class AuthFormComponent implements OnInit, OnChanges {
   @Input() hideFooter = false;
   @Output() footerNav = new EventEmitter<void>();
   @Output() authSuccess = new EventEmitter<void>();
+  @Output() registerSuccess = new EventEmitter<string>();
   @Output() forgotPasswordClick = new EventEmitter<void>();
 
   private fb = inject(FormBuilder);
@@ -466,7 +467,11 @@ export class AuthFormComponent implements OnInit, OnChanges {
     action$.subscribe({
       next: () => {
         this.loading.set(false);
-        this.authSuccess.emit();
+        if (this.mode === 'login') {
+          this.authSuccess.emit();
+        } else {
+          this.registerSuccess.emit(this.form.get('email')?.value);
+        }
       },
       error: (err: any) => {
         this.loading.set(false);
