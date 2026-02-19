@@ -8,23 +8,26 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
     return next(req).pipe(
         catchError((error: HttpErrorResponse) => {
-            let message = 'An unexpected error occurred.';
+            const msg = error.error?.message;
 
             if (error.status === 0 || error.status === 503) {
-                message = 'Server is unreachable. Please try again later.';
-                toast.showError(message);
-            } else if (error.status === 409) {
-                message = error.error?.message || 'A conflict occurred.';
-                toast.showError(message);
+                toast.showError('Server is unreachable. Please try again later.');
+            } else if (error.status === 400) {
+                toast.showError(msg || 'Bad Request. Please check your input.');
             } else if (error.status === 401) {
-                message = error.error?.message || 'Invalid email or password.';
-                toast.showError(message);
+                toast.showError(msg || 'Unauthorized or Session Expired.');
+            } else if (error.status === 403) {
+                toast.showError('Access denied. You don\'t have permission to do that.');
+            } else if (error.status === 409) {
+                toast.showError(msg || 'A conflict occurred.');
             } else if (error.status === 500) {
-                message = error.error?.message || 'Something went wrong. Please try again later.';
-                toast.showError(message);
+                toast.showError('Server Error: The Xyla API is currently down.');
+            } else if (error.status >= 400) {
+                // Generic fallback for any other 4xx/5xx not explicitly handled
+                toast.showError(msg || `Request failed (${error.status}).`);
             }
-            // 400 validation errors are passed through to components for field-level handling
 
+            // Re-throw so components can still run local cleanup (stop spinners etc.)
             return throwError(() => error);
         })
     );

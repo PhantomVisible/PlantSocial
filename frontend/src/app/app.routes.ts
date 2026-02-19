@@ -9,16 +9,16 @@ import { authGuard } from './auth/auth.guard';
 import { guestGuard } from './auth/guest.guard';
 
 export const routes: Routes = [
-    { path: '', component: FeedComponent },
-    { path: 'feed', component: FeedComponent },
-    { path: 'explore', loadComponent: () => import('./features/explore/explore.component').then(m => m.ExploreComponent) },
-    { path: 'post/:id', loadComponent: () => import('./features/feed/post-detail.component').then(m => m.PostDetailComponent) },
-    { path: 'auth/login', component: LoginComponent, canActivate: [guestGuard] },
-    { path: 'auth/register', component: RegisterComponent, canActivate: [guestGuard] },
-    { path: 'forgot-password', loadComponent: () => import('./auth/forgot-password.component').then(m => m.ForgotPasswordComponent) },
-    { path: 'reset-password', loadComponent: () => import('./auth/reset-password.component').then(m => m.ResetPasswordComponent) },
-    { path: 'profile/:username', component: UserProfileComponent },
-    { path: 'chat', component: ChatPageComponent, canActivate: [authGuard] },
-    { path: 'notifications', component: NotificationsPageComponent, canActivate: [authGuard] },
+    { path: '', component: FeedComponent, data: { animation: 'FeedPage' } },
+    { path: 'feed', component: FeedComponent, data: { animation: 'FeedPage' } },
+    { path: 'explore', loadComponent: () => import('./features/explore/explore.component').then(m => m.ExploreComponent), data: { animation: 'ExplorePage' } },
+    { path: 'post/:id', loadComponent: () => import('./features/feed/post-detail.component').then(m => m.PostDetailComponent), data: { animation: 'PostPage' } },
+    { path: 'auth/login', component: LoginComponent, canActivate: [guestGuard], data: { animation: 'LoginPage' } },
+    { path: 'auth/register', component: RegisterComponent, canActivate: [guestGuard], data: { animation: 'RegisterPage' } },
+    { path: 'forgot-password', loadComponent: () => import('./auth/forgot-password.component').then(m => m.ForgotPasswordComponent), data: { animation: 'ForgotPage' } },
+    { path: 'reset-password', loadComponent: () => import('./auth/reset-password.component').then(m => m.ResetPasswordComponent), data: { animation: 'ResetPage' } },
+    { path: 'profile/:username', component: UserProfileComponent, data: { animation: 'ProfilePage' } },
+    { path: 'chat', component: ChatPageComponent, canActivate: [authGuard], data: { animation: 'ChatPage' } },
+    { path: 'notifications', component: NotificationsPageComponent, canActivate: [authGuard], data: { animation: 'NotificationsPage' } },
     { path: '**', redirectTo: '' }
 ];

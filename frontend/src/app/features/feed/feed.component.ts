@@ -8,6 +8,7 @@ import { PostCardComponent } from './post-card.component';
 import { PostSkeletonComponent } from './post-skeleton.component';
 import { FeedService, Post } from './feed.service';
 import { AuthService } from '../../auth/auth.service';
+import { ToastService } from '../../core/toast.service';
 
 @Component({
   selector: 'app-feed',
@@ -46,7 +47,7 @@ import { AuthService } from '../../auth/auth.service';
       <!-- Post List -->
       <div *ngIf="!isLoading()" class="feed-list">
         <app-post-card
-          *ngFor="let post of posts()"
+          *ngFor="let post of posts(); trackBy: trackByPostId"
           [post]="post"
           (onLike)="toggleLike($event)"
           (onDelete)="deletePost($event)"
@@ -148,6 +149,7 @@ export class FeedComponent implements OnInit, OnDestroy {
   public authService = inject(AuthService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private toastService = inject(ToastService);
 
   posts = signal<Post[]>([]);
   isLoading = signal(true);
@@ -188,6 +190,7 @@ export class FeedComponent implements OnInit, OnDestroy {
     this.feedService.createPost(event.content, event.file, event.plantId, event.plantTag).subscribe({
       next: (newPost) => {
         this.posts.update(current => [newPost, ...current]);
+        this.toastService.showSuccess('Harvest shared! 🌿');
       },
       error: (err) => console.error('Failed to create post', err)
     });
@@ -248,6 +251,10 @@ export class FeedComponent implements OnInit, OnDestroy {
         }));
       }
     });
+  }
+
+  trackByPostId(_index: number, post: Post): string {
+    return post.id;
   }
 
   logout() {

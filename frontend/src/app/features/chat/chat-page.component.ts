@@ -248,15 +248,34 @@ import { AuthService } from '../../auth/auth.service';
   `,
   styles: [`
     /* ─── Layout ──────────────────────────────────────────────── */
+    :host {
+      display: flex;
+      flex: 1;
+      min-width: 0;
+      align-items: stretch;
+      justify-content: center;
+      height: 100vh;
+      padding: 1.5rem 1.5rem;
+      box-sizing: border-box;
+      background: var(--trellis-bg, #f0f4f0);
+      overflow: hidden;
+    }
+
     .chat-container {
       display: flex;
-      height: 100vh;
-      background: #f8faf8;
+      width: 100%;
+      max-width: 1300px;
+      height: 100%;
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.10), 0 1px 4px rgba(0,0,0,0.06);
     }
 
     /* ─── Sidebar ─────────────────────────────────────────────── */
     .chat-sidebar {
       width: 340px;
+      flex-shrink: 0;
       border-right: 1px solid #e8ece8;
       display: flex;
       flex-direction: column;
@@ -404,8 +423,10 @@ import { AuthService } from '../../auth/auth.service';
     /* ─── Chat Main ───────────────────────────────────────────── */
     .chat-main {
       flex: 1;
+      min-width: 0;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
       background: #fafcfa;
     }
 

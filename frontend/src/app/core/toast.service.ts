@@ -31,7 +31,7 @@ export class ToastService {
         const id = this.nextId++;
         this.messages.update(msgs => [...msgs, { id, severity, message }]);
 
-        // Auto-dismiss after 5 seconds
-        setTimeout(() => this.dismiss(id), 5000);
+        // Auto-dismiss after 3 seconds
+        setTimeout(() => this.dismiss(id), 3000);
     }
 }

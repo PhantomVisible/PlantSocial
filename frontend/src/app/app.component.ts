@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { RouterOutlet, Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { RouterOutlet, Router, ActivatedRoute, NavigationEnd, RouterLink } from '@angular/router';
+import { slideInAnimation } from './core/route-animations';
 import { GlobalLoaderComponent } from './shared/global-loader/global-loader.component';
 import { ToastContainerComponent } from './shared/toast-container/toast-container.component';
 import { SidebarComponent } from './layout/sidebar.component';
@@ -19,6 +20,7 @@ import { PlantDoctorService } from './features/plant-doctor/plant-doctor.service
 @Component({
   selector: 'app-root',
   standalone: true,
+  animations: [slideInAnimation],
   imports: [
     CommonModule,
     RouterOutlet,
@@ -40,10 +42,14 @@ import { PlantDoctorService } from './features/plant-doctor/plant-doctor.service
       (close)="gatekeeper.showPrompt.set(false)"
     ></app-auth-prompt-dialog>
 
-    <div class="app-layout" [class.app-layout--auth]="isAuthRoute()">
+    <div class="app-layout" [class.app-layout--auth]="isAuthRoute()" [class.app-layout--fullwidth]="isFullWidthRoute()">
       <app-sidebar *ngIf="!isAuthRoute()" class="app-sidebar"></app-sidebar>
-      <main class="app-main" [class.app-main--full]="isAuthRoute()">
-        <router-outlet />
+      <main class="app-main" [class.app-main--full]="isFullWidthRoute() || isAuthRoute()"
+            style="position: relative; overflow: hidden;">
+        <div [@routeAnimations]="getRouteAnimationData(outlet)"
+             style="position: relative; width: 100%; height: 100%;">
+          <router-outlet #outlet="outlet" />
+        </div>
       </main>
       <aside class="app-right" *ngIf="!isFullWidthRoute() && !isAuthRoute()">
         <!-- If Filtering: Wiki First, No News -->
@@ -85,6 +91,8 @@ import { PlantDoctorService } from './features/plant-doctor/plant-doctor.service
       max-width: 100%;
       border: none;
       background: transparent;
+      display: flex;
+      overflow: hidden;
     }
 
     .app-layout--auth {
@@ -99,10 +107,21 @@ import { PlantDoctorService } from './features/plant-doctor/plant-doctor.service
 
     /* Center the feed column in remaining space */
     @media (min-width: 1101px) {
-      .app-layout {
+      .app-layout:not(.app-layout--fullwidth) {
         max-width: 1200px;
+        width: 100%;
         margin: 0 auto;
       }
+
+      .app-main:not(.app-main--full) {
+        max-width: 600px;
+      }
+    }
+
+    /* Full-width routes (chat, notifications) span the whole viewport */
+    .app-layout--fullwidth {
+      width: 100%;
+      max-width: 100vw;
     }
 
     @media (max-width: 1100px) {
@@ -155,5 +174,9 @@ export class AppComponent implements OnInit {
 
     // Initial check (in case of deep link)
     this.isPlantSelected.set(this.router.url.includes('plant='));
+  }
+
+  getRouteAnimationData(outlet: RouterOutlet) {
+    return outlet?.activatedRouteData?.['animation'];
   }
 }

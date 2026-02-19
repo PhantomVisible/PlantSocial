@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, signal, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal, inject, OnChanges, SimpleChanges, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -140,7 +140,6 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
         -->
         <button class="action-btn like-btn" 
                 [class.liked]="displayPost.likedByCurrentUser" 
-                [class.like-pop]="likeAnimating()"
                 (click)="toggleLike()">
           <span class="like-icon-wrap">
             <i class="pi" [ngClass]="displayPost.likedByCurrentUser ? 'pi-heart-fill' : 'pi-heart'"></i>
@@ -910,7 +909,7 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
     }
   `]
 })
-export class PostCardComponent {
+export class PostCardComponent implements OnChanges {
   @Input({ required: true }) post!: Post;
   @Output() onLike = new EventEmitter<Post>();
   @Output() onDelete = new EventEmitter<string>();
@@ -922,7 +921,29 @@ export class PostCardComponent {
   private gatekeeper = inject(AuthGatekeeperService);
   private router = inject(Router);
   private wikiService = inject(WikipediaService);
-  private toastService = inject(ToastService); // Add this
+  private toastService = inject(ToastService);
+  private el = inject(ElementRef);
+
+  private prevLiked = false;
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['post']) {
+      const nowLiked = this.displayPost.likedByCurrentUser;
+      if (nowLiked && !this.prevLiked) {
+        this.triggerLikeAnimation();
+      }
+      this.prevLiked = nowLiked;
+    }
+  }
+
+  private triggerLikeAnimation() {
+    const btn: HTMLElement | null = this.el.nativeElement.querySelector('.like-btn');
+    if (!btn) return;
+    btn.classList.remove('like-pop');
+    void btn.offsetWidth; // force reflow to restart animation
+    btn.classList.add('like-pop');
+    setTimeout(() => btn.classList.remove('like-pop'), 650);
+  }
 
   // Computed / Getter for displayPost (helps switch between Repost and Original)
   get displayPost(): Post {
@@ -1020,14 +1041,10 @@ export class PostCardComponent {
     return !!user && user.id === this.post.authorId;
   }
 
-  likeAnimating = signal(false);
-
   toggleLike() {
     this.gatekeeper.run(() => {
-      // Trigger bounce animation
-      this.likeAnimating.set(true);
-      setTimeout(() => this.likeAnimating.set(false), 500);
       // Emit the CONTENT post (original), not the repost wrapper
+      // Animation is triggered via ngOnChanges when likedByCurrentUser flips
       this.onLike.emit(this.displayPost);
     });
   }

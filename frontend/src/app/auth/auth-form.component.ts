@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AuthService } from './auth.service';
+import { ToastService } from '../core/toast.service';
 
 @Component({
   selector: 'app-auth-form',
@@ -406,6 +407,7 @@ export class AuthFormComponent implements OnInit, OnChanges {
 
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  private toastService = inject(ToastService);
 
   loading = signal(false);
   errorMessage = signal<string | null>(null);
@@ -452,19 +454,15 @@ export class AuthFormComponent implements OnInit, OnChanges {
 
     let action$;
     if (this.mode === 'login') {
-      console.log('Logging in with form value:', this.form.value);
       action$ = this.authService.login(this.form.value);
     } else {
       const val = this.form.getRawValue();
-      console.log('FORM RAW VALUE:', val);
-
       const request = {
         fullName: val.fullName,
         username: val.username,
         email: val.email,
         password: val.password
       };
-      console.log('HTTP PAYLOAD SENDING (Component):', request);
       action$ = this.authService.register(request);
     }
 
@@ -479,16 +477,12 @@ export class AuthFormComponent implements OnInit, OnChanges {
       },
       error: (err: any) => {
         this.loading.set(false);
-        console.error(`${this.mode} failed`, err);
-        // Log the error response body if available
-        if (err.error) {
-          console.error('Error details:', err.error);
+        if (this.mode === 'login') {
+          this.toastService.showError('Invalid credentials. Please try again.');
+          this.errorMessage.set('Invalid email or password. Please try again.');
+        } else {
+          this.errorMessage.set('Registration failed. This email or username may already be taken.');
         }
-        this.errorMessage.set(
-          this.mode === 'login'
-            ? 'Invalid email or password. Please try again.'
-            : 'Registration failed. This email or username may already be taken.'
-        );
       }
     });
   }
