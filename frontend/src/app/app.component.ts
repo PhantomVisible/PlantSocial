@@ -40,12 +40,12 @@ import { PlantDoctorService } from './features/plant-doctor/plant-doctor.service
       (close)="gatekeeper.showPrompt.set(false)"
     ></app-auth-prompt-dialog>
 
-    <div class="app-layout">
-      <app-sidebar class="app-sidebar"></app-sidebar>
-      <main class="app-main">
+    <div class="app-layout" [class.app-layout--auth]="isAuthRoute()">
+      <app-sidebar *ngIf="!isAuthRoute()" class="app-sidebar"></app-sidebar>
+      <main class="app-main" [class.app-main--full]="isAuthRoute()">
         <router-outlet />
       </main>
-      <aside class="app-right" *ngIf="!isFullWidthRoute()">
+      <aside class="app-right" *ngIf="!isFullWidthRoute() && !isAuthRoute()">
         <!-- If Filtering: Wiki First, No News -->
         <app-wiki-sidebar *ngIf="isPlantSelected()"></app-wiki-sidebar>
 
@@ -79,6 +79,16 @@ import { PlantDoctorService } from './features/plant-doctor/plant-doctor.service
       border-left: 1px solid var(--trellis-border-light);
       border-right: 1px solid var(--trellis-border-light);
       background: var(--trellis-white);
+    }
+
+    .app-main--full {
+      max-width: 100%;
+      border: none;
+      background: transparent;
+    }
+
+    .app-layout--auth {
+      justify-content: center;
     }
 
     .app-right {
@@ -128,6 +138,7 @@ export class AppComponent implements OnInit {
   private router = inject(Router);
   isPlantSelected = signal(false);
   isFullWidthRoute = signal(false);
+  isAuthRoute = signal(false);
 
   ngOnInit() {
     this.notificationService.init();
@@ -138,6 +149,7 @@ export class AppComponent implements OnInit {
         this.isPlantSelected.set(this.router.url.includes('plant='));
         const url = this.router.url;
         this.isFullWidthRoute.set(url.startsWith('/chat') || url.startsWith('/notifications'));
+        this.isAuthRoute.set(url.startsWith('/auth'));
       }
     });
 

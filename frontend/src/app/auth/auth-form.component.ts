@@ -11,8 +11,8 @@ import { AuthService } from './auth.service';
   template: `
     <div class="auth-form">
       <!-- Header -->
-      <div class="auth-header">
-        <span class="auth-icon">🌿</span>
+      <div class="auth-header" *ngIf="!hideHeader">
+        <img src="assets/logo.png" alt="Xyla" class="auth-logo">
         <h2 class="auth-title">{{ mode === 'login' ? 'Welcome back' : 'Join the garden' }}</h2>
         <p class="auth-subtitle">{{ mode === 'login' ? 'Sign in to your community' : 'Create your free account' }}</p>
       </div>
@@ -155,10 +155,13 @@ import { AuthService } from './auth.service';
       text-align: center;
       margin-bottom: 28px;
     }
-    .auth-icon {
-      font-size: 2.5rem;
+    .auth-logo {
+      width: 56px;
+      height: 56px;
+      object-fit: contain;
       display: block;
-      margin-bottom: 12px;
+      margin: 0 auto 12px;
+      border-radius: 12px;
     }
     .auth-title {
       font-family: 'Playfair Display', serif;
@@ -395,6 +398,7 @@ import { AuthService } from './auth.service';
 export class AuthFormComponent implements OnInit, OnChanges {
   @Input() mode: 'login' | 'register' = 'login';
   @Input() hideFooter = false;
+  @Input() hideHeader = false;
   @Output() footerNav = new EventEmitter<void>();
   @Output() authSuccess = new EventEmitter<void>();
   @Output() registerSuccess = new EventEmitter<string>();

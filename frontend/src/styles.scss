@@ -1,5 +1,5 @@
-/* ===== Trellis Design System ===== */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* ===== Xyla Design System ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 /* PrimeNG base */
 @import "primeng/resources/themes/lara-light-green/theme.css";
@@ -9,42 +9,61 @@
 
 /* ===== Design Tokens ===== */
 :root {
-  /* Primary greens */
-  --trellis-green-darkest: #1B4332;
-  --trellis-green-dark: #2D6A4F;
-  --trellis-green: #40916C;
-  --trellis-green-light: #52B788;
-  --trellis-green-pale: #D8F3DC;
-  --trellis-green-ghost: #F0FFF4;
+  /* Brand Colors — Xyla Green */
+  --xyla-green: #00C853;
+  --xyla-green-dark: #009624;
+  --xyla-green-light: #69F0AE;
+  --xyla-green-pale: #E8F5E9;
+  --xyla-green-ghost: #F1F8E9;
 
-  /* Neutrals (FB-inspired) */
-  --trellis-bg: #F0F2F5;
+  /* Legacy aliases (backward-compat with component styles) */
+  --trellis-green-darkest: #004D25;
+  --trellis-green-dark: var(--xyla-green-dark);
+  --trellis-green: var(--xyla-green);
+  --trellis-green-light: var(--xyla-green-light);
+  --trellis-green-pale: var(--xyla-green-pale);
+  --trellis-green-ghost: var(--xyla-green-ghost);
+
+  /* Surfaces */
+  --trellis-bg: #F4F6F8;
   --trellis-white: #FFFFFF;
-  --trellis-border: #CED4DA;
-  --trellis-border-light: #E4E6EB;
+  --trellis-border: #D1D5DB;
+  --trellis-border-light: #E5E7EB;
 
-  /* Text */
-  --trellis-text: #1C1E21;
-  --trellis-text-secondary: #65676B;
-  --trellis-text-hint: #8A8D91;
+  /* Text — softer, no pure black */
+  --trellis-text: #2E384D;
+  --trellis-text-secondary: #8798AD;
+  --trellis-text-hint: #8798AD;
 
   /* Accent */
   --trellis-danger: #E74C3C;
-  --trellis-leaf: #40916C;
+  --trellis-leaf: var(--xyla-green);
 
-  /* Shadows */
-  --trellis-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
-  --trellis-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.12);
-  --trellis-shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
+  /* Shadows — softer, modern */
+  --trellis-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --trellis-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --trellis-shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.05);
 
-  /* Radius */
-  --trellis-radius-sm: 6px;
-  --trellis-radius-md: 8px;
-  --trellis-radius-lg: 12px;
-  --trellis-radius-xl: 16px;
+  /* Radius — rounder, friendlier */
+  --trellis-radius-sm: 8px;
+  --trellis-radius-md: 12px;
+  --trellis-radius-lg: 16px;
+  --trellis-radius-xl: 20px;
 
   /* Transitions */
   --trellis-transition: all 0.2s ease;
+
+  /* New brand tokens */
+  --primary-color: var(--xyla-green);
+  --primary-hover: var(--xyla-green-dark);
+  --accent-bg: var(--xyla-green-pale);
+  --text-main: #2E384D;
+  --text-secondary: #8798AD;
+  --surface-card: #FFFFFF;
+  --surface-ground: #F4F6F8;
+  --border-radius-lg: 12px;
+  --border-radius-sm: 8px;
+  --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 /* ===== Global Reset ===== */
@@ -65,19 +84,19 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background-color: var(--trellis-bg);
-  color: var(--trellis-text);
+  background-color: var(--surface-ground);
+  color: var(--text-main);
   line-height: 1.5;
 }
 
 a {
-  color: var(--trellis-green-dark);
+  color: var(--xyla-green-dark);
   text-decoration: none;
   transition: var(--trellis-transition);
 }
 
 a:hover {
-  color: var(--trellis-green);
+  color: var(--xyla-green);
 }
 
 /* ===== Scrollbar ===== */
@@ -86,7 +105,7 @@ a:hover {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--trellis-bg);
+  background: var(--surface-ground);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -95,37 +114,65 @@ a:hover {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--trellis-text-hint);
+  background: var(--text-secondary);
 }
 
 /* ===== PrimeNG Overrides ===== */
 .p-button {
   font-family: 'Inter', sans-serif;
   font-weight: 600;
-  border-radius: var(--trellis-radius-sm);
+  border-radius: var(--border-radius-sm);
   transition: var(--trellis-transition);
+  background: var(--primary-color);
+  border: 1px solid var(--primary-color);
+}
+
+.p-button:enabled:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
 }
 
 .p-inputtext {
   font-family: 'Inter', sans-serif;
-  border-radius: var(--trellis-radius-sm);
+  border-radius: var(--border-radius-sm);
   border-color: var(--trellis-border);
 }
 
 .p-inputtext:focus {
-  border-color: var(--trellis-green);
-  box-shadow: 0 0 0 2px var(--trellis-green-pale);
+  border-color: var(--xyla-green);
+  box-shadow: 0 0 0 2px var(--xyla-green-pale);
 }
 
 .p-card {
-  border-radius: var(--trellis-radius-md);
-  box-shadow: var(--trellis-shadow-sm);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-soft);
   border: 1px solid var(--trellis-border-light);
 }
 
 /* Utility */
-.trellis-container {
+.xyla-container {
   max-width: 600px;
   margin: 0 auto;
   padding: 0 16px;
+}
+
+/* ===== Global Button Juice ===== */
+button,
+.p-button,
+[role="button"] {
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+button:active,
+.p-button:active,
+[role="button"]:active {
+  transform: scale(0.96) !important;
+}
+
+/* Smooth hover for all interactive elements */
+a,
+button,
+.p-button,
+[role="button"] {
+  transition: all 0.2s ease;
 }

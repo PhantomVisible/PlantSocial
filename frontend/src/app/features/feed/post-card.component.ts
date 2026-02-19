@@ -138,8 +138,13 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
              Typically X/Reddit: liking a repost likes the ORIGINAL post. 
              So we use displayPost.id
         -->
-        <button class="action-btn" [class.liked]="displayPost.likedByCurrentUser" (click)="toggleLike()">
-          <i class="pi" [ngClass]="displayPost.likedByCurrentUser ? 'pi-heart-fill' : 'pi-heart'"></i>
+        <button class="action-btn like-btn" 
+                [class.liked]="displayPost.likedByCurrentUser" 
+                [class.like-pop]="likeAnimating()"
+                (click)="toggleLike()">
+          <span class="like-icon-wrap">
+            <i class="pi" [ngClass]="displayPost.likedByCurrentUser ? 'pi-heart-fill' : 'pi-heart'"></i>
+          </span>
           <span *ngIf="displayPost.likesCount > 0">{{ displayPost.likesCount }}</span>
         </button>
         
@@ -571,8 +576,91 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
     .action-btn.liked { color: #E53E3E; }
     .action-btn.liked:hover { background: #FFF5F5; color: #C53030; }
 
+    /* ===== Like Bounce + Particle Animation ===== */
+    .like-btn {
+      overflow: visible !important;
+      position: relative;
+    }
+    .like-icon-wrap {
+      display: inline-flex;
+      position: relative;
+      overflow: visible;
+      z-index: 1;
+    }
+
+    /* Bounce on the heart icon */
+    .like-btn.like-pop .like-icon-wrap i {
+      animation: like-bounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    /* Particle ring using box-shadow dots */
+    .like-btn.like-pop.liked .like-icon-wrap::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 4px;
+      height: 4px;
+      margin: -2px 0 0 -2px;
+      border-radius: 50%;
+      z-index: 10;
+      pointer-events: none;
+      box-shadow:
+        0 -14px 0 0 #ff6b6b,
+        10px -10px 0 0 #ffa502,
+        14px 0 0 0 #ff4757,
+        10px 10px 0 0 #ff6348,
+        0 14px 0 0 #ee5a24,
+        -10px 10px 0 0 #f368e0,
+        -14px 0 0 0 #ff9ff3,
+        -10px -10px 0 0 #ffc048;
+      animation: like-particles 0.6s ease-out forwards;
+    }
+
+    /* Expanding ring behind heart */
+    .like-btn.like-pop.liked .like-icon-wrap::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 30px;
+      height: 30px;
+      margin: -15px 0 0 -15px;
+      border-radius: 50%;
+      border: 2px solid rgba(229, 62, 62, 0.4);
+      z-index: 0;
+      pointer-events: none;
+      animation: like-ring 0.5s ease-out forwards;
+    }
+
+    @keyframes like-bounce {
+      0%   { transform: scale(1); }
+      15%  { transform: scale(0.7); }
+      40%  { transform: scale(1.5); }
+      65%  { transform: scale(0.9); }
+      85%  { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes like-particles {
+      0%   { transform: scale(0.3); opacity: 1; }
+      40%  { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1.8); opacity: 0; }
+    }
+
+    @keyframes like-ring {
+      0%   { transform: scale(0.3); opacity: 0.8; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+
     /* Comment icon — highlighted when thread open */
     .action-btn.active-comments { color: var(--trellis-green); }
+
+    /* Button press-down effect for all action buttons */
+    .action-btn:active {
+      transform: scale(0.9);
+      transition: transform 0.08s ease;
+    }
 
     /* ===== LIGHTBOX ===== */
     .lightbox-overlay {
@@ -932,8 +1020,13 @@ export class PostCardComponent {
     return !!user && user.id === this.post.authorId;
   }
 
+  likeAnimating = signal(false);
+
   toggleLike() {
     this.gatekeeper.run(() => {
+      // Trigger bounce animation
+      this.likeAnimating.set(true);
+      setTimeout(() => this.likeAnimating.set(false), 500);
       // Emit the CONTENT post (original), not the repost wrapper
       this.onLike.emit(this.displayPost);
     });

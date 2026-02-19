@@ -2,7 +2,7 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
-import { AuthPromptDialogComponent } from '../auth/auth-prompt-dialog.component';
+import { AuthPromptDialogComponent } from '../features/auth/auth-prompt-dialog.component';
 import { PlantDoctorService } from '../features/plant-doctor/plant-doctor.service';
 
 import { AvatarComponent } from '../shared/components/avatar/avatar.component';
@@ -15,9 +15,9 @@ import { NotificationService } from '../features/notifications/notification.serv
   template: `
     <nav class="sidebar">
       <!-- Logo -->
-      <div class="sidebar__logo">
-        <span class="logo-icon">🌿</span>
-        <span class="logo-text">Trellis</span>
+      <div class="sidebar__logo" routerLink="/feed">
+        <img src="assets/logo.png" alt="Xyla" class="logo-img">
+        <span class="logo-text">Xyla</span>
       </div>
 
       <!-- Nav Items -->
@@ -82,11 +82,11 @@ import { NotificationService } from '../features/notifications/notification.serv
           </div>
         </ng-container>
         <ng-template #guestBlock>
-          <button class="nav-item" (click)="showAuthModal.set(true)">
+          <button class="nav-item" (click)="openAuth('login')">
             <i class="pi pi-sign-in"></i>
             <span>Log In</span>
           </button>
-          <button class="nav-item nav-item--signup" (click)="showAuthModal.set(true)">
+          <button class="nav-item nav-item--signup" routerLink="/auth/register">
             <i class="pi pi-user-plus"></i>
             <span>Sign Up</span>
           </button>
@@ -102,6 +102,7 @@ import { NotificationService } from '../features/notifications/notification.serv
     <!-- Auth Modal -->
     <app-auth-prompt-dialog
       *ngIf="showAuthModal()"
+      [initialView]="authInitialView()"
       (close)="showAuthModal.set(false)"
     ></app-auth-prompt-dialog>
 
@@ -125,12 +126,21 @@ import { NotificationService } from '../features/notifications/notification.serv
       align-items: center;
       gap: 10px;
       padding: 8px 14px 20px;
+      cursor: pointer;
     }
-    .logo-icon { font-size: 1.8rem; }
+    .logo-img {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      object-fit: contain;
+      background: #fff;
+      padding: 2px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
     .logo-text {
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       font-weight: 800;
-      color: var(--trellis-green);
+      color: var(--xyla-green);
       letter-spacing: -0.5px;
     }
 
@@ -178,14 +188,14 @@ import { NotificationService } from '../features/notifications/notification.serv
     .nav-item--logout:hover i { color: #E53E3E; }
 
     .nav-item--signup {
-      background: var(--trellis-green);
+      background: var(--xyla-green);
       color: #fff !important;
       font-weight: 600;
       justify-content: center;
       margin-top: 4px;
     }
     .nav-item--signup i { color: #fff; }
-    .nav-item--signup:hover { background: var(--trellis-green-dark); }
+    .nav-item--signup:hover { background: var(--xyla-green-dark); }
 
     .nav-item--notifications {
       position: relative;
@@ -283,7 +293,13 @@ export class SidebarComponent implements OnInit {
   private router = inject(Router);
   user = this.authService.currentUser;
   showAuthModal = signal(false);
+  authInitialView = signal<'prompt' | 'login' | 'register'>('prompt');
   toastMessage: string | null = null;
+
+  openAuth(view: 'prompt' | 'login' | 'register') {
+    this.authInitialView.set(view);
+    this.showAuthModal.set(true);
+  }
 
   /** Count unread MESSAGE-type notifications for the Chat badge */
   unreadMessageCount = computed(() => {

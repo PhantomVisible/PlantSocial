@@ -1,39 +1,38 @@
 import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthFormComponent } from '../auth-form.component';
 import { VerificationComponent } from '../verification.component';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, AuthFormComponent, VerificationComponent],
+  imports: [CommonModule, RouterModule, AuthFormComponent, VerificationComponent],
   template: `
     <div class="auth-page">
-      <!-- Left: Brand Panel -->
-      <div class="brand-panel">
-        <div class="brand-bg"></div>
-        <div class="brand-content">
-          <span class="brand-leaf">🌱</span>
-          <h1>Start growing<br>with us.</h1>
-          <p>Join a thriving community of plant enthusiasts. Share tips, get inspired, grow together.</p>
-        </div>
-      </div>
-
-      <!-- Right: Form Panel -->
       <div class="form-panel">
-        <app-auth-form 
-            *ngIf="!isVerifying()"
-            mode="register" 
-            (registerSuccess)="onRegisterSuccess($event)"
-        ></app-auth-form>
+        <div class="form-wrapper">
+          <a routerLink="/feed" class="reg-logo-link">
+            <img src="assets/logo.png" alt="Xyla" class="reg-logo">
+          </a>
+          <h1 class="reg-title">Create your account</h1>
+          <p class="reg-subtitle">Join Xyla to like posts, share your garden, and connect with other plant lovers.</p>
 
-        <app-verification
-            *ngIf="isVerifying()"
-            [email]="registeredEmail()"
-            (verifySuccess)="onVerifySuccess()"
-            (cancel)="isVerifying.set(false)"
-        ></app-verification>
+          <app-auth-form 
+              *ngIf="!isVerifying()"
+              mode="register" 
+              [hideFooter]="false"
+              [hideHeader]="true"
+              (registerSuccess)="onRegisterSuccess($event)"
+          ></app-auth-form>
+
+          <app-verification
+              *ngIf="isVerifying()"
+              [email]="registeredEmail()"
+              (verifySuccess)="onVerifySuccess()"
+              (cancel)="isVerifying.set(false)"
+          ></app-verification>
+        </div>
       </div>
     </div>
   `,
@@ -41,98 +40,55 @@ import { VerificationComponent } from '../verification.component';
     .auth-page {
       display: flex;
       min-height: 100vh;
-      width: 100vw;
-      overflow: hidden;
+      width: 100%;
+      background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f0f9ff 100%);
       font-family: 'Inter', sans-serif;
-    }
-
-    .brand-panel {
-      width: 50%;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-    .brand-bg {
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(135deg, #1a2e05 0%, #365314 40%, #3f6212 70%, #4d7c0f 100%);
-    }
-    .brand-bg::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(circle at 30% 70%, rgba(255,255,255,0.06) 0%, transparent 50%),
-        radial-gradient(circle at 70% 30%, rgba(255,255,255,0.04) 0%, transparent 50%);
-    }
-    .brand-bg::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04' fill-rule='evenodd'%3E%3Ccircle cx='20' cy='20' r='3'/%3E%3C/g%3E%3C/svg%3E");
-    }
-    .brand-content {
-      position: relative;
-      z-index: 2;
-      color: #fff;
-      padding: 48px;
-      max-width: 440px;
-    }
-    .brand-leaf {
-      font-size: 3.5rem;
-      display: block;
-      margin-bottom: 20px;
-    }
-    .brand-content h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 2.8rem;
-      font-weight: 800;
-      line-height: 1.15;
-      margin: 0 0 16px;
-      letter-spacing: -0.5px;
-    }
-    .brand-content p {
-      font-size: 1.05rem;
-      line-height: 1.6;
-      opacity: 0.8;
-      margin: 0;
-      font-weight: 300;
+      overflow-x: hidden;
     }
 
     .form-panel {
-      width: 50%;
+      width: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #fafbfc;
-      padding: 32px;
+      padding: 40px 24px;
     }
 
-    @media (max-width: 900px) {
-      .auth-page {
-        flex-direction: column;
-      }
-      .brand-panel {
-        width: 100%;
-        min-height: 200px;
-        max-height: 30vh;
-      }
-      .brand-content {
-        padding: 24px;
-      }
-      .brand-content h1 {
-        font-size: 1.6rem;
-      }
-      .brand-content p {
-        display: none;
-      }
-      .form-panel {
-        width: 100%;
-        padding: 24px 16px;
-      }
+    .form-wrapper {
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+    }
+
+    .reg-logo-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      transition: transform 0.15s ease;
+    }
+    .reg-logo-link:hover {
+      transform: scale(1.05);
+    }
+
+    .reg-logo {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      border-radius: 14px;
+    }
+
+    .reg-title {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--text-main, #2E384D);
+      margin: 0 0 8px;
+      letter-spacing: -0.3px;
+    }
+
+    .reg-subtitle {
+      font-size: 0.92rem;
+      color: var(--text-secondary, #8798AD);
+      margin: 0 0 28px;
+      line-height: 1.5;
     }
   `]
 })

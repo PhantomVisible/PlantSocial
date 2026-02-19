@@ -1,30 +1,77 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, Input, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { AuthFormComponent } from '../../auth/auth-form.component';
+import { VerificationComponent } from '../../auth/verification.component';
 
 @Component({
-    selector: 'app-auth-prompt-dialog',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
+  selector: 'app-auth-prompt-dialog',
+  standalone: true,
+  imports: [CommonModule, AuthFormComponent, VerificationComponent],
+  template: `
     <div class="dialog-overlay" (click)="close.emit()">
-      <div class="dialog" (click)="$event.stopPropagation()">
+      <div class="dialog" [class.dialog--form]="view() !== 'prompt'" (click)="$event.stopPropagation()">
         <button class="dialog__close" (click)="close.emit()">&times;</button>
         
-        <div class="dialog__icon">🌿</div>
-        <h2 class="dialog__title">Start growing with us</h2>
-        <p class="dialog__text">
-          Join Trellis to like posts, share your garden, and connect with other plant lovers.
-        </p>
-        
-        <div class="dialog__actions">
-          <button class="btn btn--login" (click)="navigate('/auth/login')">Log in</button>
-          <button class="btn btn--signup" (click)="navigate('/auth/register')">Sign up</button>
-        </div>
+        <!-- Prompt View -->
+        <ng-container *ngIf="view() === 'prompt'">
+          <img src="assets/logo.png" alt="Xyla" class="dialog__logo">
+          <h2 class="dialog__title">Start growing with us</h2>
+          <p class="dialog__text">
+            Join Xyla to like posts, share your garden, and connect with other plant lovers.
+          </p>
+          
+          <div class="dialog__actions">
+            <button class="btn btn--login" (click)="view.set('login')">Log in</button>
+            <button class="btn btn--signup" (click)="view.set('register')">Sign up</button>
+          </div>
+        </ng-container>
+
+        <!-- Login Form View -->
+        <ng-container *ngIf="view() === 'login'">
+          <img src="assets/logo.png" alt="Xyla" class="dialog__logo dialog__logo--sm">
+          <h2 class="dialog__title">Welcome back</h2>
+          <p class="dialog__text">Sign in to your community</p>
+          <app-auth-form
+            mode="login"
+            [hideFooter]="true"
+            [hideHeader]="true"
+            (authSuccess)="close.emit()"
+            (footerNav)="view.set('register')"
+          ></app-auth-form>
+          <p class="dialog__footer">
+            Don't have an account? <a (click)="view.set('register')">Sign up</a>
+          </p>
+        </ng-container>
+
+        <!-- Register Form View -->
+        <ng-container *ngIf="view() === 'register'">
+          <img src="assets/logo.png" alt="Xyla" class="dialog__logo dialog__logo--sm">
+          <h2 class="dialog__title">Join the garden</h2>
+          <p class="dialog__text">Create your free account</p>
+          <app-auth-form
+            mode="register"
+            [hideFooter]="true"
+            [hideHeader]="true"
+            (registerSuccess)="onRegisterSuccess($event)"
+            (footerNav)="view.set('login')"
+          ></app-auth-form>
+          <p class="dialog__footer">
+            Already have an account? <a (click)="view.set('login')">Sign in</a>
+          </p>
+        </ng-container>
+
+        <!-- Verification View -->
+        <ng-container *ngIf="view() === 'verify'">
+          <app-verification
+            [email]="registeredEmail"
+            (verified)="close.emit()"
+          ></app-verification>
+        </ng-container>
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .dialog-overlay {
       position: fixed;
       inset: 0;
@@ -48,6 +95,11 @@ import { Router } from '@angular/router';
       position: relative;
       animation: slide-up 0.2s ease;
       box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .dialog--form {
+      max-width: 440px;
     }
     @keyframes slide-up { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
@@ -61,11 +113,20 @@ import { Router } from '@angular/router';
       color: var(--trellis-text-hint);
       cursor: pointer;
       line-height: 1;
+      z-index: 1;
     }
 
-    .dialog__icon {
-      font-size: 3rem;
+    .dialog__logo {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
       margin-bottom: 16px;
+      border-radius: 14px;
+    }
+    .dialog__logo--sm {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 10px;
     }
     .dialog__title {
       font-size: 1.5rem;
@@ -77,6 +138,7 @@ import { Router } from '@angular/router';
       color: var(--trellis-text-secondary);
       margin: 0 0 24px;
       line-height: 1.5;
+      font-size: 0.9rem;
     }
 
     .dialog__actions {
@@ -113,15 +175,42 @@ import { Router } from '@angular/router';
       background: var(--trellis-green-ghost);
       border-color: var(--trellis-green);
     }
+
+    .dialog__footer {
+      margin: 16px 0 0;
+      font-size: 0.88rem;
+      color: var(--trellis-text-secondary);
+    }
+    .dialog__footer a {
+      color: var(--trellis-green);
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .dialog__footer a:hover {
+      text-decoration: underline;
+    }
   `]
 })
-export class AuthPromptDialogComponent {
-    @Output() close = new EventEmitter<void>();
+export class AuthPromptDialogComponent implements OnInit {
+  @Input() initialView: 'prompt' | 'login' | 'register' = 'prompt';
+  @Output() close = new EventEmitter<void>();
 
-    constructor(private router: Router) { }
+  view = signal<'prompt' | 'login' | 'register' | 'verify'>('prompt');
+  registeredEmail = '';
 
-    navigate(path: string) {
-        this.router.navigate([path]);
-        this.close.emit();
-    }
+  constructor(private router: Router) { }
+
+  ngOnInit() {
+    this.view.set(this.initialView);
+  }
+
+  navigate(path: string) {
+    this.router.navigate([path]);
+    this.close.emit();
+  }
+
+  onRegisterSuccess(email: string) {
+    this.registeredEmail = email;
+    this.view.set('verify');
+  }
 }

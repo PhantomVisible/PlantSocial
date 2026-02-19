@@ -12,7 +12,7 @@ import { AuthFormComponent } from '../auth-form.component';
       <div class="brand-panel">
         <div class="brand-bg"></div>
         <div class="brand-content">
-          <span class="brand-leaf">🌿</span>
+          <img src="assets/logo.png" alt="Xyla" class="brand-logo">
           <h1>Cultivate your<br>community.</h1>
           <p>Share your garden journey with thousands of plant lovers around the world.</p>
         </div>
@@ -71,10 +71,13 @@ import { AuthFormComponent } from '../auth-form.component';
       padding: 48px;
       max-width: 440px;
     }
-    .brand-leaf {
-      font-size: 3.5rem;
+    .brand-logo {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
       display: block;
       margin-bottom: 20px;
+      border-radius: 16px;
       filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
     }
     .brand-content h1 {
