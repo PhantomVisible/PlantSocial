@@ -10,6 +10,7 @@ import { WikipediaService } from '../../shared/wikipedia.service';
 import { PlantDetailsDialogComponent } from '../garden/plant-details-dialog.component';
 import { ToastService } from '../../core/toast.service'; // Add this
 import { Post } from './feed.service'; // Use shared interface
+import { ReportService } from '../../core/services/report.service'; // Add this
 
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
 
@@ -21,7 +22,7 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule, CommentThreadComponent, PlantDetailsDialogComponent, AvatarComponent, HoverCardComponent, LinkifyPipe],
   template: `
-    <article class="post-card" [class.repost-card]="!!post.originalPost">
+    <article class="post-card" [class.repost-card]="!!post.originalPost" *ngIf="!postHidden()">
       
       <!-- Repost Header -->
       <div *ngIf="post.originalPost" class="repost-header">
@@ -66,17 +67,21 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
              If it's a repost, 'post' is the repost wrapper. 'displayPost' is original.
              The menu should control the WRAPPER (post) generally.
         -->
-        <div *ngIf="isOwner()" class="post-card__menu-wrap">
+        <div class="post-card__menu-wrap">
           <button class="menu-trigger" (click)="toggleMenu($event)" title="Post options">
             <i class="pi pi-ellipsis-v"></i>
           </button>
           <div *ngIf="menuOpen()" class="dropdown-menu">
             <!-- Cannot edit reposts, only delete -->
-            <button *ngIf="!post.originalPost" class="dropdown-item" (click)="startEdit()">
+            <button *ngIf="!post.originalPost && isOwner()" class="dropdown-item" (click)="startEdit()">
               <i class="pi pi-pencil"></i> Edit
             </button>
-            <button class="dropdown-item dropdown-item--danger" (click)="confirmDelete()">
+            <button *ngIf="isOwner()" class="dropdown-item dropdown-item--danger" (click)="confirmDelete()">
               <i class="pi pi-trash"></i> Delete
+            </button>
+            
+            <button *ngIf="!isOwner()" class="dropdown-item dropdown-item--danger" (click)="openReportDialog()">
+                <i class="pi pi-flag"></i> Report
             </button>
           </div>
         </div>
@@ -185,6 +190,49 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
       [plantId]="selectedPlantId()!"
       (close)="closePlantDetails()"
     ></app-plant-details-dialog>
+    <!-- ===== REPORT DIALOG ===== -->
+    <div *ngIf="reportDialogOpen()" class="confirm-overlay" (click)="reportDialogOpen.set(false)">
+      <div class="confirm-dialog report-dialog" (click)="$event.stopPropagation()">
+        <h3>Report Post</h3>
+        <p>Why are you reporting this post?</p>
+        
+        <div class="report-form">
+            <div class="form-group">
+                <label>Reason</label>
+                <select [ngModel]="reportReason()" (ngModelChange)="reportReason.set($event)" class="form-select">
+                    <option *ngFor="let r of reportReasons" [value]="r.value">{{ r.label }}</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Description (Optional)</label>
+                <textarea 
+                    [ngModel]="reportDescription()" 
+                    (ngModelChange)="reportDescription.set($event)"
+                    class="form-input" 
+                    rows="3" 
+                    placeholder="Please provide more details...">
+                </textarea>
+            </div>
+
+            <div class="form-group block-user-row">
+                <label class="block-checkbox-label">
+                    <input type="checkbox" [ngModel]="blockUser()" (ngModelChange)="blockUser.set($event)" />
+                    <span>Also block this user</span>
+                </label>
+                <small class="block-hint">You won't see their posts or messages anymore.</small>
+            </div>
+        </div>
+
+        <div class="confirm-actions">
+          <button class="confirm-btn confirm-btn--delete" (click)="submitReport()" [disabled]="isReporting()">
+            <span *ngIf="!isReporting()">Submit Report</span>
+            <span *ngIf="isReporting()">Submitting...</span>
+          </button>
+          <button class="confirm-btn confirm-btn--cancel" (click)="reportDialogOpen.set(false)">Cancel</button>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
     /* ===========================
@@ -292,6 +340,48 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
       background: var(--trellis-green-pale);
       color: var(--trellis-green-dark);
     }
+
+    /* Report Dialog Styles */
+    .report-dialog {
+        width: 100%;
+        max-width: 500px;
+    }
+    .report-form {
+        margin: 20px 0;
+        text-align: left;
+    }
+    .form-group {
+        margin-bottom: 16px;
+    }
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--trellis-text);
+        font-size: 0.9rem;
+    }
+    .form-select, .form-input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--trellis-border);
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 0.95rem;
+        background: var(--trellis-bg-secondary);
+        color: var(--trellis-text);
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-select:focus, .form-input:focus {
+        border-color: var(--trellis-green);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+        background: var(--trellis-white);
+    }
+    .form-input {
+        resize: vertical;
+        min-height: 80px;
+    }
+
     .post-card__plant-tag {
       display: inline-flex;
       align-items: center;
@@ -573,6 +663,41 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
     .confirm-btn--cancel { background: var(--trellis-border-light); color: var(--trellis-text-secondary); }
     .confirm-btn--cancel:hover { background: #e0e0e0; }
 
+    /* Report Dialog Specifics */
+    .report-dialog {
+        text-align: left;
+        width: 400px;
+        max-width: 90vw;
+    }
+    .report-form {
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .report-select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--trellis-border-light);
+        border-radius: 8px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9rem;
+        outline: none;
+    }
+    .report-textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--trellis-border-light);
+        border-radius: 8px;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9rem;
+        resize: vertical;
+        outline: none;
+    }
+    .report-textarea:focus, .report-select:focus {
+        border-color: var(--trellis-green);
+    }
+
     /* ===== EDIT MODE ===== */
     .post-card__edit { padding: 0 20px 12px; }
     .edit-textarea {
@@ -666,6 +791,35 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
     .edit-btn--save:disabled { opacity: 0.5; cursor: not-allowed; }
     .edit-btn--cancel { background: var(--trellis-border-light); color: var(--trellis-text-secondary); }
     .edit-btn--cancel:hover { background: #e0e0e0; }
+
+    /* Block checkbox in Report Dialog */
+    .block-user-row {
+      margin-top: 4px;
+      padding-top: 12px;
+      border-top: 1px solid var(--trellis-border-light);
+    }
+    .block-checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--trellis-text);
+    }
+    .block-checkbox-label input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--trellis-green);
+      cursor: pointer;
+    }
+    .block-hint {
+      display: block;
+      margin-top: 4px;
+      margin-left: 24px;
+      font-size: 0.78rem;
+      color: var(--trellis-text-hint);
+    }
   `]
 })
 export class PostCardComponent {
@@ -798,6 +952,55 @@ export class PostCardComponent {
       this.selectedPlantId.set(this.post.plantId);
       this.showPlantDetails.set(true);
     }
+  }
+
+  // ---- REPORTING ----
+  reportDialogOpen = signal(false);
+  reportReason = signal<string>('SPAM');
+  reportDescription = signal('');
+  isReporting = signal(false);
+  blockUser = signal(false);
+  postHidden = signal(false);
+
+  reportReasons = [
+    { label: 'Spam', value: 'SPAM' },
+    { label: 'Hate Speech', value: 'HATE_SPEECH' },
+    { label: 'Harassment', value: 'HARASSMENT' },
+    { label: 'Misinformation', value: 'MISINFORMATION' },
+    { label: 'Other', value: 'OTHER' }
+  ];
+
+  private reportService = inject(ReportService);
+
+  openReportDialog() {
+    this.menuOpen.set(false);
+    this.reportReason.set('SPAM');
+    this.reportDescription.set('');
+    this.blockUser.set(false);
+    this.reportDialogOpen.set(true);
+  }
+
+  submitReport() {
+    if (this.isReporting()) return;
+
+    this.isReporting.set(true);
+    this.reportService.reportPost(this.displayPost.id, this.reportReason(), this.reportDescription(), this.blockUser())
+      .subscribe({
+        next: () => {
+          const msg = this.blockUser()
+            ? 'Report submitted and user blocked.'
+            : 'Report submitted. Thank you for keeping our community safe.';
+          this.toastService.showSuccess(msg);
+          this.reportDialogOpen.set(false);
+          this.isReporting.set(false);
+          this.postHidden.set(true);
+        },
+        error: (err) => {
+          console.error('Report error', err);
+          this.toastService.showError('Failed to submit report. You may have already reported this post.');
+          this.isReporting.set(false);
+        }
+      });
   }
 
   closePlantDetails() {

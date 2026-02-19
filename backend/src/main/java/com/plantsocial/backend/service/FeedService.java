@@ -1,5 +1,6 @@
 package com.plantsocial.backend.service;
 
+import com.plantsocial.backend.block.BlockService;
 import com.plantsocial.backend.dto.PostResponse;
 import com.plantsocial.backend.model.Plant;
 import com.plantsocial.backend.model.Post;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Set;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -41,41 +43,47 @@ public class FeedService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
     private final NotificationService notificationService;
-
-    public Page<PostResponse> getFeed(Pageable pageable, String plant, String query) {
-        System.out.println("DEBUG: Entering getFeed");
-        User currentUser = getCurrentUser();
-        System.out.println("DEBUG: Current user resolved: " + (currentUser != null ? currentUser.getEmail() : "null"));
-
-        Page<Post> posts;
-        if (query != null && !query.isBlank()) {
-            System.out.println("DEBUG: Searching posts by query: " + query);
-            posts = postRepository.findByContentContainingIgnoreCaseOrderByCreatedAtDesc(query.trim(), pageable);
-        } else if (plant != null && !plant.isBlank()) {
-            System.out.println("DEBUG: Fetching posts by plant tag: " + plant);
-            posts = postRepository.findByPlantTagIgnoreCaseOrderByCreatedAtDesc(plant.trim(), pageable);
-        } else {
-            System.out.println("DEBUG: Fetching all posts");
-            posts = postRepository.findAllByOrderByCreatedAtDesc(pageable);
-        }
-        System.out.println("DEBUG: Posts fetched: " + posts.getTotalElements());
-
-        return posts.map(post -> {
-            try {
-                return mapToPostResponse(post, currentUser);
-            } catch (Exception e) {
-                System.out.println("DEBUG: Error mapping post " + post.getId());
-                e.printStackTrace();
-                throw e;
-            }
-        });
-    }
+    private final BlockService blockService;
 
     public PostResponse getPostById(UUID postId) {
         User currentUser = getCurrentUser();
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
         return mapToPostResponse(post, currentUser);
+    }
+
+    public Page<PostResponse> getFeed(Pageable pageable, String plant, String query) {
+        User currentUser = getCurrentUser();
+
+        // Get blocked user IDs for the current user (mutual blocking)
+        Set<UUID> blockedIds = Set.of();
+        if (currentUser != null) {
+            blockedIds = blockService.getMutualBlockedUserIds(currentUser.getId());
+        }
+
+        Page<Post> posts;
+        if (query != null && !query.isBlank()) {
+            posts = blockedIds.isEmpty()
+                    ? postRepository.findByContentContainingIgnoreCaseOrderByCreatedAtDesc(query.trim(), pageable)
+                    : postRepository.findByContentExcludingBlocked(query.trim(), blockedIds, pageable);
+        } else if (plant != null && !plant.isBlank()) {
+            posts = blockedIds.isEmpty()
+                    ? postRepository.findByPlantTagIgnoreCaseOrderByCreatedAtDesc(plant.trim(), pageable)
+                    : postRepository.findByPlantTagExcludingBlocked(plant.trim(), blockedIds, pageable);
+        } else {
+            posts = blockedIds.isEmpty()
+                    ? postRepository.findAllByOrderByCreatedAtDesc(pageable)
+                    : postRepository.findAllByAuthorIdNotIn(blockedIds, pageable);
+        }
+
+        return posts.map(post -> {
+            try {
+                return mapToPostResponse(post, currentUser);
+            } catch (Exception e) {
+                log.error("Error mapping post {}", post.getId(), e);
+                throw e;
+            }
+        });
     }
 
     @Transactional

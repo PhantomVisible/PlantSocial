@@ -12,6 +12,9 @@ import { GardenGridComponent } from '../garden/garden-grid.component';
 import { AddPlantDialogComponent } from '../garden/add-plant-dialog.component';
 import { PlantService, PlantData } from '../garden/plant.service';
 import { PlantDetailsDialogComponent } from '../garden/plant-details-dialog.component';
+import { ChatService } from '../chat/chat.service';
+import { BlockService } from '../../core/services/block.service';
+import { ToastService } from '../../core/toast.service';
 
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { EditProfileDialogComponent } from './edit-profile-dialog.component';
@@ -72,6 +75,27 @@ import { EditProfileDialogComponent } from './edit-profile-dialog.component';
               >
                 {{ isFollowing() ? 'Following' : 'Follow' }}
               </button>
+              <button
+                *ngIf="!isOwner() && isFollowing()"
+                class="btn btn--message"
+                (click)="openChat()"
+                title="Send a message"
+              >
+                <i class="pi pi-envelope"></i> Message
+              </button>
+
+              <!-- Three-dot menu for non-owner profiles -->
+              <div *ngIf="!isOwner()" class="profile-menu-wrap">
+                <button class="btn-icon" (click)="toggleProfileMenu($event)" title="More options">
+                  <i class="pi pi-ellipsis-v"></i>
+                </button>
+                <div *ngIf="profileMenuOpen()" class="profile-dropdown">
+                  <button class="profile-dropdown__item profile-dropdown__item--danger" (click)="toggleBlock()">
+                    <i class="pi" [ngClass]="isBlocked() ? 'pi-lock-open' : 'pi-ban'"></i>
+                    {{ isBlocked() ? 'Unblock @' + profile()!.username : 'Block @' + profile()!.username }}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -269,6 +293,9 @@ import { EditProfileDialogComponent } from './edit-profile-dialog.component';
 
     .hero__action {
       padding-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     /* ---- Buttons ---- */
@@ -306,6 +333,85 @@ import { EditProfileDialogComponent } from './edit-profile-dialog.component';
       border-color: #E53E3E;
       color: #E53E3E;
       background: rgba(229,62,62,0.06);
+    }
+    .btn--message {
+      background: transparent;
+      color: var(--trellis-green);
+      border-color: var(--trellis-green);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 8px;
+    }
+    .btn--message:hover {
+      background: var(--trellis-green);
+      color: #fff;
+    }
+    .btn--message i {
+      font-size: 0.85rem;
+    }
+
+    /* ---- Profile 3-dot Menu ---- */
+    .profile-menu-wrap {
+      position: relative;
+    }
+    .btn-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--trellis-border-light);
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      color: var(--trellis-text-secondary);
+    }
+    .btn-icon:hover {
+      background: var(--trellis-green-ghost);
+      border-color: var(--trellis-green);
+      color: var(--trellis-text);
+    }
+    .profile-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 4px;
+      min-width: 200px;
+      background: var(--trellis-white);
+      border: 1px solid var(--trellis-border-light);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      z-index: 200;
+      overflow: hidden;
+    }
+    .profile-dropdown__item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      background: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.1s ease;
+      color: var(--trellis-text);
+    }
+    .profile-dropdown__item:hover {
+      background: var(--trellis-green-ghost);
+    }
+    .profile-dropdown__item--danger {
+      color: #E53E3E;
+    }
+    .profile-dropdown__item--danger:hover {
+      background: rgba(229,62,62,0.06);
+    }
+    .profile-dropdown__item i {
+      font-size: 0.95rem;
     }
 
     /* ---- Info ---- */
@@ -433,6 +539,9 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   private feedService = inject(FeedService);
   private authService = inject(AuthService);
   private dialogService = inject(DialogService);
+  private chatService = inject(ChatService);
+  private blockService = inject(BlockService);
+  private toastService = inject(ToastService);
   private destroy$ = new Subject<void>();
 
   profile = signal<UserProfile | null>(null);
@@ -443,6 +552,8 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   showAddPlantDialog = signal(false);
   plantToEdit = signal<PlantData | undefined>(undefined);
   selectedPlantId = signal<string | null>(null);
+  profileMenuOpen = signal(false);
+  isBlocked = signal(false);
   private followState = signal(false);
   private plantService = inject(PlantService);
 
@@ -496,6 +607,10 @@ export class UserProfileComponent implements OnInit, OnDestroy {
           this.posts.set(posts);
           this.plants.set(plants);
           this.loading.set(false);
+          // Check block status for non-owner profiles
+          if (!this.isOwner() && profile) {
+            this.checkBlockStatus(profile.id);
+          }
         },
         error: () => this.loading.set(false)
       });
@@ -513,6 +628,53 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   }
 
   isFollowing = computed(() => this.profile()?.isFollowing ?? false);
+
+  openChat() {
+    const p = this.profile();
+    if (!p) return;
+    const userForChat = {
+      id: p.id,
+      username: p.username,
+      fullName: p.fullName,
+      online: false
+    };
+    this.chatService.openFloatingChat(userForChat);
+  }
+
+  toggleProfileMenu(event: Event) {
+    event.stopPropagation();
+    this.profileMenuOpen.update(v => !v);
+  }
+
+  toggleBlock() {
+    const p = this.profile();
+    if (!p) return;
+    this.profileMenuOpen.set(false);
+
+    if (this.isBlocked()) {
+      this.blockService.unblockUser(p.id).subscribe({
+        next: () => {
+          this.isBlocked.set(false);
+          this.toastService.showSuccess(`@${p.username} has been unblocked.`);
+        }
+      });
+    } else {
+      this.blockService.blockUser(p.id).subscribe({
+        next: () => {
+          this.isBlocked.set(true);
+          this.toastService.showSuccess(`@${p.username} has been blocked. Their posts are now hidden from your feed.`);
+          this.router.navigate(['/feed']);
+        }
+      });
+    }
+  }
+
+  private checkBlockStatus(userId: string) {
+    this.blockService.getBlockStatus(userId).subscribe({
+      next: (res) => this.isBlocked.set(res.blocked),
+      error: () => this.isBlocked.set(false)
+    });
+  }
 
   toggleFollow() {
     const p = this.profile();
