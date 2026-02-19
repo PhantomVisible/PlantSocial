@@ -24,6 +24,9 @@ export class LinkifyPipe implements PipeTransform {
             return `<a href="/explore?q=${tag}" class="link-hashtag" onclick="event.stopPropagation()">#${tag}</a>`;
         });
 
+        // 3. Bold: **text** -> <strong>text</strong>
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
         return this.sanitizer.bypassSecurityTrustHtml(html);
     }
 }

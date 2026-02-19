@@ -375,6 +375,7 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
       line-height: 1.55;
       color: var(--trellis-text);
       word-wrap: break-word;
+      white-space: pre-wrap;
     }
 
     /* Interactive Links - Need ::ng-deep because they are injected via innerHTML */

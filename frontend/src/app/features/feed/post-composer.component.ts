@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { PlantService, PlantData } from '../garden/plant.service';
 import { AuthService } from '../../auth/auth.service';
 import { WikipediaService } from '../../shared/wikipedia.service';
+import { PlantDoctorService } from '../plant-doctor/plant-doctor.service';
 
 @Component({
   selector: 'app-post-composer',
@@ -58,6 +59,9 @@ import { WikipediaService } from '../../shared/wikipedia.service';
           <div class="composer__icons">
             <button class="icon-btn" title="Add image" (click)="fileInput.click()">
               <i class="pi pi-image"></i>
+            </button>
+            <button class="icon-btn" title="Ask Plant Doctor" (click)="plantDoctor.open('post-compose')">
+              <i class="pi pi-heart"></i>
             </button>
             <button class="icon-btn" title="Add location">
               <i class="pi pi-map-marker"></i>
@@ -478,6 +482,7 @@ export class PostComposerComponent implements OnInit {
   private plantService = inject(PlantService);
   private authService = inject(AuthService);
   private wikiService = inject(WikipediaService);
+  plantDoctor = inject(PlantDoctorService);
 
   myPlants = signal<PlantData[]>([]);
   showPlantDropdown = signal(false);
@@ -493,6 +498,67 @@ export class PostComposerComponent implements OnInit {
         next: (plants) => this.myPlants.set(plants)
       });
     }
+
+    // Subscribe to Plant Doctor diagnosis results (Post Compose Mode)
+    this.plantDoctor.diagnosisResult.subscribe(text => {
+      this.content = this.content ? this.content + '\n\n' + text : text;
+      this.resizeTextarea();
+    });
+
+    // Check for Share Draft (Share from Dialog Mode)
+    const draft = this.plantDoctor.shareDraft();
+    if (draft) {
+      this.content = draft.content;
+
+      if (draft.plantTag) {
+        this.plantTag = draft.plantTag;
+        // Validate/Set tag without API call since we trust the source (sort of)
+        // Or just set it and let user change it.
+      }
+
+      if (draft.plantId) {
+        // We need to match it to myPlants
+        // Since myPlants loads async, we might need to wait or just set ID.
+        // For now, let's just set the ID and let the template resolve it once plants load.
+        this.selectedPlantId.set(draft.plantId);
+        // We can try to find nickname if plants are already loaded (unlikely on fresh nav)
+        this.plantService.getUserPlants(user?.id || '').subscribe(plants => {
+          this.myPlants.set(plants);
+          const p = plants.find(pl => pl.id === draft.plantId);
+          if (p) {
+            this.selectedPlantNickname.set(p.nickname);
+          }
+        });
+      }
+
+      if (draft.imageBlob) {
+        // Convert to File if possible, or just use Blob
+        if (draft.imageBlob instanceof File) {
+          this.selectedFile = draft.imageBlob;
+        } else {
+          this.selectedFile = new File([draft.imageBlob], 'diagnosis.jpg', { type: draft.imageBlob.type });
+        }
+
+        // Preview
+        const reader = new FileReader();
+        reader.onload = (e) => this.previewUrl = e.target?.result as string;
+        reader.readAsDataURL(this.selectedFile);
+      }
+
+      // Clear draft to avoid re-populating on future visits
+      this.plantDoctor.shareDraft.set(null);
+      this.resizeTextarea();
+    }
+  }
+
+  resizeTextarea() {
+    setTimeout(() => {
+      const textarea = document.querySelector('.composer__input') as HTMLTextAreaElement;
+      if (textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+      }
+    }, 0);
   }
 
   autoResize(event: Event) {
@@ -616,6 +682,7 @@ export class PostComposerComponent implements OnInit {
       this.selectedPlantId.set(null);
       this.selectedPlantNickname.set(null);
       this.plantTag = '';
+      this.resizeTextarea();
     }
   }
 

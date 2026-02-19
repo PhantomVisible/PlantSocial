@@ -13,6 +13,8 @@ import { NotificationService } from './features/notifications/notification.servi
 import { CommonModule } from '@angular/common';
 import { FloatingChatContainerComponent } from './features/chat/floating-chat/floating-chat-container.component';
 import { ChatService } from './features/chat/chat.service';
+import { PlantDoctorDialogComponent } from './features/plant-doctor/plant-doctor-dialog.component';
+import { PlantDoctorService } from './features/plant-doctor/plant-doctor.service';
 
 @Component({
   selector: 'app-root',
@@ -27,7 +29,8 @@ import { ChatService } from './features/chat/chat.service';
     NewsWidgetComponent,
     TrendsWidgetComponent,
     WikiSidebarComponent,
-    FloatingChatContainerComponent
+    FloatingChatContainerComponent,
+    PlantDoctorDialogComponent
   ],
   template: `
     <app-global-loader />
@@ -56,6 +59,11 @@ import { ChatService } from './features/chat/chat.service';
       </aside>
     </div>
     <app-floating-chat-container *ngIf="authService.currentUser()"></app-floating-chat-container>
+    
+    <app-plant-doctor-dialog 
+      *ngIf="plantDoctor.isOpen()" 
+      (close)="plantDoctor.close()"
+    ></app-plant-doctor-dialog>
   `,
   styles: [`
     .app-layout {
@@ -114,6 +122,7 @@ export class AppComponent implements OnInit {
   notificationService = inject(NotificationService);
   chatService = inject(ChatService);
   authService = inject(AuthService);
+  plantDoctor = inject(PlantDoctorService);
 
   route = inject(ActivatedRoute);
   private router = inject(Router);

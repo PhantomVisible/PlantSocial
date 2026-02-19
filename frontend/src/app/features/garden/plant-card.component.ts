@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, inject, signal, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PlantData } from './plant.service';
+import { PlantDoctorService } from '../plant-doctor/plant-doctor.service';
 
 @Component({
   selector: 'app-plant-card',
@@ -51,6 +52,15 @@ import { PlantData } from './plant.service';
           </button>
         </div>
       </div>
+
+      <!-- Diagnose Button -->
+      <button 
+        class="doctor-btn" 
+        (click)="onDiagnose($event)"
+        title="Diagnose with Plant Doctor"
+      >
+        <i class="pi pi-heart"></i>
+      </button>
 
       <div class="plant-card__info">
         <span class="plant-card__name">{{ plant.nickname }}</span>
@@ -250,6 +260,30 @@ import { PlantData } from './plant.service';
     .delete-item:hover {
         background: #ffebee;
     }
+
+    /* Doctor Button */
+    .doctor-btn {
+      position: absolute;
+      top: 8px;
+      right: 44px; /* Left of menu button */
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(4px);
+      border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transition: all 0.2s ease;
+      color: var(--trellis-green);
+      z-index: 10;
+    }
+    .plant-card:hover .doctor-btn, .doctor-btn:hover { opacity: 1; }
+    .doctor-btn:hover {
+      background: #fff;
+      transform: scale(1.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
   `]
 })
 export class PlantCardComponent {
@@ -260,10 +294,16 @@ export class PlantCardComponent {
 
   menuOpen = signal(false);
   private elementRef = inject(ElementRef);
+  private plantDoctor = inject(PlantDoctorService);
 
   resolveUrl(url: string): string {
     if (url.startsWith('http')) return url;
     return 'http://localhost:8080' + url;
+  }
+
+  onDiagnose(event: Event) {
+    event.stopPropagation();
+    this.plantDoctor.open('standalone', this.plant);
   }
 
   toggleMenu() {

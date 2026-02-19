@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { AuthPromptDialogComponent } from '../auth/auth-prompt-dialog.component';
+import { PlantDoctorService } from '../features/plant-doctor/plant-doctor.service';
 
 import { AvatarComponent } from '../shared/components/avatar/avatar.component';
 import { NotificationService } from '../features/notifications/notification.service';
@@ -47,9 +48,9 @@ import { NotificationService } from '../features/notifications/notification.serv
           </span>
         </a>
 
-        <button class="nav-item" (click)="showComingSoon('Sage')">
-          <i class="pi pi-sparkles"></i>
-          <span>Sage</span>
+        <button class="nav-item" (click)="plantDoctor.open()">
+          <i class="pi pi-heart"></i>
+          <span>Plant Doctor</span>
           <span class="badge-ai">AI</span>
         </button>
 
@@ -103,6 +104,7 @@ import { NotificationService } from '../features/notifications/notification.serv
       *ngIf="showAuthModal()"
       (close)="showAuthModal.set(false)"
     ></app-auth-prompt-dialog>
+
   `,
   styles: [`
     .sidebar {
@@ -277,6 +279,7 @@ import { NotificationService } from '../features/notifications/notification.serv
 export class SidebarComponent implements OnInit {
   authService = inject(AuthService);
   notifService = inject(NotificationService);
+  plantDoctor = inject(PlantDoctorService);
   private router = inject(Router);
   user = this.authService.currentUser;
   showAuthModal = signal(false);
