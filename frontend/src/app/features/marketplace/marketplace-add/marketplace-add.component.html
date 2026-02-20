@@ -97,7 +97,7 @@
         <div class="preview-sidebar" *ngIf="previewData" @fadeIn>
             <div class="preview-card">
                 <div class="preview-image">
-                    <img [src]="listingForm.get('imageUrl')?.value || '/assets/placeholder-plant.jpg'" class="main-img"
+                    <img [src]="getImageUrl(listingForm.get('imageUrl')?.value)" class="main-img"
                         onerror="this.src='/assets/placeholder-plant.jpg'">
 
                     <div class="image-override-overlay" *ngIf="creationMode === 'link'">
@@ -142,3 +142,24 @@
 
     </div>
 </div>
+
+<!-- Payment Simulation Modal -->
+<p-dialog [(visible)]="showPaymentModal" [modal]="true" [closable]="false" [showHeader]="false">
+    <div class="payment-simulation-modal">
+        <div class="simulation-content" *ngIf="paymentStatus === 'processing'">
+            <div class="spinner-wrapper">
+                <i class="pi pi-spin pi-spinner"></i>
+            </div>
+            <h3>Processing Payment</h3>
+            <p>Simulating secure transaction with Stripe...</p>
+        </div>
+
+        <div class="simulation-content success" *ngIf="paymentStatus === 'success'">
+            <div class="success-icon-wrapper">
+                <i class="pi pi-check"></i>
+            </div>
+            <h3>Payment Successful!</h3>
+            <p>Your listing is now active.</p>
+        </div>
+    </div>
+</p-dialog>

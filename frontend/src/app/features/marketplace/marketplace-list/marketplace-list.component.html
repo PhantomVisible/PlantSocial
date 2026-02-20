@@ -19,7 +19,7 @@
 <div class="listings-grid" *ngIf="!loading()">
     <div class="listing-card" *ngFor="let item of listings()" [routerLink]="['/marketplace/listing', item.id]">
         <div class="image-wrapper">
-            <img [src]="item.imageUrl || '/assets/placeholder-plant.jpg'" [alt]="item.title"
+            <img [src]="getImageUrl(item.imageUrl)" [alt]="item.title"
                 onerror="this.src='/assets/placeholder-plant.jpg'">
             <div class="price-badge">{{ item.pricePerDay | currency:'USD' }}<small>/day</small></div>
         </div>

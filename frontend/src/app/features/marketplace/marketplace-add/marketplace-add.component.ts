@@ -18,6 +18,7 @@ import { trigger, style, animate, transition } from '@angular/animations';
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
+        DialogModule,
         ButtonModule,
         InputTextModule,
         SliderModule,
@@ -131,8 +132,13 @@ export class MarketplaceAddComponent {
         this.createListing(false);
     }
 
+    showPaymentModal = false;
+    paymentStatus: 'processing' | 'success' = 'processing';
+
     payAndList() {
         if (this.listingForm.invalid) return;
+        this.showPaymentModal = true;
+        this.paymentStatus = 'processing';
         this.createListing(true);
     }
 
@@ -158,10 +164,18 @@ export class MarketplaceAddComponent {
 
                 if (processPayment) {
                     this.marketplaceService.processPayment(listing.id).subscribe({
-                        next: navigateHome,
+                        next: () => {
+                            this.paymentStatus = 'success';
+                            setTimeout(() => {
+                                this.showPaymentModal = false;
+                                navigateHome();
+                            }, 1500); // Wait 1.5s to show success before navigating
+                        },
                         error: (err) => {
                             console.error('Payment failed', err);
-                            navigateHome();
+                            this.showPaymentModal = false;
+                            alert('Payment failed. Please try again.');
+                            this.isSubmitting = false;
                         }
                     });
                 } else {
@@ -171,6 +185,7 @@ export class MarketplaceAddComponent {
             error: (err) => {
                 console.error('Creation failed', err);
                 this.isSubmitting = false;
+                this.showPaymentModal = false;
             }
         });
     }
@@ -189,5 +204,13 @@ export class MarketplaceAddComponent {
             },
             error: (err) => console.error('Upload failed', err)
         });
+    }
+
+    getImageUrl(url: string | null | undefined): string {
+        if (!url) return '/assets/placeholder-plant.jpg';
+        if (url.startsWith('/images/')) {
+            return `http://localhost:8080${url}`;
+        }
+        return url;
     }
 }

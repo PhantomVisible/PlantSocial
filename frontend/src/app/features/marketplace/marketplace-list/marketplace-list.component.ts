@@ -47,4 +47,12 @@ export class MarketplaceListComponent implements OnInit {
     this.viewMode = mode;
     this.loadListings();
   }
+
+  getImageUrl(url: string | null | undefined): string {
+    if (!url) return '/assets/placeholder-plant.jpg';
+    if (url.startsWith('/images/')) {
+      return `http://localhost:8080${url}`;
+    }
+    return url;
+  }
 }

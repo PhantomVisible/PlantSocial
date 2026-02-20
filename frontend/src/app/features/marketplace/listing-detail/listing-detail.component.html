@@ -11,15 +11,14 @@
             <div class="image-section">
                 <!-- Main Image -->
                 <div class="main-view">
-                    <img [src]="selectedImage() || item.imageUrl || '/assets/placeholder-plant.jpg'" [alt]="item.title"
-                        class="main-image">
+                    <img [src]="getImageUrl(selectedImage() || item.imageUrl)" [alt]="item.title" class="main-image">
                 </div>
 
                 <!-- Thumbnails -->
                 <div class="thumbnails-row" *ngIf="getAllImages(item).length > 1">
                     <div *ngFor="let img of getAllImages(item)" class="thumb-item"
                         [class.active]="selectedImage() === img" (click)="selectImage(img)">
-                        <img [src]="img" [alt]="item.title">
+                        <img [src]="getImageUrl(img)" [alt]="item.title">
                     </div>
                 </div>
             </div>
@@ -96,3 +95,24 @@
     <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
     <p>Loading details...</p>
 </div>
+
+<!-- Modern Delete Confirmation Dialog -->
+<p-dialog [(visible)]="showDeleteModal" [modal]="true" [closable]="false" [showHeader]="false"
+    styleClass="luxury-dialog">
+    <div class="delete-confirmation-modal">
+        <div class="warning-icon-wrapper">
+            <i class="pi pi-exclamation-triangle"></i>
+        </div>
+        <h3>Delete Listing?</h3>
+        <p>This action cannot be undone. Are you sure you want to permanently delete this listing from the marketplace?
+        </p>
+
+        <div class="dialog-actions">
+            <button pButton class="p-button-text p-button-secondary" label="Cancel" (click)="cancelDelete()"
+                [disabled]="isDeleting()"></button>
+            <button pButton class="p-button-danger" [label]="isDeleting() ? 'Deleting...' : 'Yes, Delete'"
+                [icon]="isDeleting() ? 'pi pi-spin pi-spinner' : 'pi pi-trash'" (click)="confirmDelete()"
+                [disabled]="isDeleting()"></button>
+        </div>
+    </div>
+</p-dialog>

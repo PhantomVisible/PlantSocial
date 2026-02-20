@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MarketplaceService, ListingResponse } from '../marketplace.service';
 import { AuthService } from '../../../auth/auth.service';
-
+import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-listing-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, DialogModule, ButtonModule],
   templateUrl: './listing-detail.component.html',
   styleUrl: './listing-detail.component.scss'
 })
@@ -88,18 +89,34 @@ export class ListingDetailComponent implements OnInit {
     }
   }
 
+  showDeleteModal = signal<boolean>(false);
+  isDeleting = signal<boolean>(false);
+
   deleteListing() {
-    if (confirm('Are you sure you want to delete this listing?')) {
-      const id = this.listing()?.id;
-      if (id) {
-        this.marketplaceService.deleteListing(id).subscribe({
-          next: () => {
-            alert('Listing deleted.');
-            this.router.navigate(['/marketplace']);
-          },
-          error: (err) => console.error('Delete failed', err)
-        });
-      }
+    this.showDeleteModal.set(true);
+  }
+
+  cancelDelete() {
+    this.showDeleteModal.set(false);
+  }
+
+  confirmDelete() {
+    const id = this.listing()?.id;
+    if (id) {
+      this.isDeleting.set(true);
+      this.marketplaceService.deleteListing(id).subscribe({
+        next: () => {
+          this.isDeleting.set(false);
+          this.showDeleteModal.set(false);
+          this.router.navigate(['/marketplace']);
+        },
+        error: (err) => {
+          console.error('Delete failed', err);
+          this.isDeleting.set(false);
+          this.showDeleteModal.set(false);
+          alert('Delete failed. Please try again.');
+        }
+      });
     }
   }
 
@@ -120,5 +137,13 @@ export class ListingDetailComponent implements OnInit {
       images.push(...item.additionalImages);
     }
     return images;
+  }
+
+  getImageUrl(url: string | null | undefined): string {
+    if (!url) return '/assets/placeholder-plant.jpg';
+    if (url.startsWith('/images/')) {
+      return `http://localhost:8080${url}`;
+    }
+    return url;
   }
 }

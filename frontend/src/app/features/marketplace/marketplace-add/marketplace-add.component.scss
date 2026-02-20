@@ -426,19 +426,21 @@ $shadow-lg: 0 16px 48px rgba(27, 94, 32, 0.08);
             // Overlay for Manual Upload on Link Mode
             .image-override-overlay {
                 position: absolute;
-                bottom: 20px;
-                left: 20px;
-                right: 20px;
-                z-index: 2;
+                bottom: 16px;
+                left: 16px;
+                right: 16px;
+                z-index: 10;
 
                 .upload-row.mini {
-                    background: rgba(255, 255, 255, 0.9);
-                    backdrop-filter: blur(12px);
-                    padding: 8px;
-                    border-radius: 16px;
+                    background: rgba(255, 255, 255, 0.85);
+                    backdrop-filter: blur(16px);
+                    padding: 6px;
+                    border-radius: 20px;
                     display: flex;
                     align-items: center;
-                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+                    gap: 8px;
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+                    border: 1px solid rgba(255, 255, 255, 0.4);
 
                     input[type="text"] {
                         flex: 1;
@@ -448,23 +450,31 @@ $shadow-lg: 0 16px 48px rgba(27, 94, 32, 0.08);
                         outline: none;
                         font-size: 0.9rem;
                         color: $text;
+                        font-weight: 500;
                     }
 
                     .btn-icon {
-                        background: $primary;
+                        background: $text;
                         color: white;
                         border: none;
-                        width: 36px;
-                        height: 36px;
-                        border-radius: 12px;
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 16px;
                         display: flex;
                         align-items: center;
                         justify-content: center;
                         cursor: pointer;
-                        transition: all 0.2s;
+                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+                        i {
+                            font-size: 1.1rem;
+                        }
 
                         &:hover {
-                            transform: scale(1.1);
+                            transform: scale(1.05) translateY(-2px);
+                            background: black;
+                            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
                         }
                     }
                 }
