@@ -1,0 +1,37 @@
+<div class="marketplace-container">
+    <div class="header">
+        <h1>Marketplace</h1>
+        <button class="create-btn" routerLink="/marketplace/add">
+            <i class="pi pi-plus"></i> List Your Plant
+        </button>
+    </div>
+</div>
+
+<div *ngIf="loading()" class="loading">
+    <p>Loading market data...</p>
+</div>
+
+<div *ngIf="!loading() && listings().length === 0" class="empty-state">
+    <i class="pi pi-shopping-bag"></i>
+    <p>No active listings. Be the first to sell!</p>
+</div>
+
+<div class="listings-grid" *ngIf="!loading()">
+    <div class="listing-card" *ngFor="let item of listings()" [routerLink]="['/marketplace/listing', item.id]">
+        <div class="image-wrapper">
+            <img [src]="item.imageUrl || '/assets/placeholder-plant.jpg'" [alt]="item.title"
+                onerror="this.src='/assets/placeholder-plant.jpg'">
+            <div class="price-badge">{{ item.pricePerDay | currency:'USD' }}<small>/day</small></div>
+        </div>
+        <div class="card-content">
+            <h3>{{ item.title }}</h3>
+            <div class="seller-row">
+                <span class="seller">&#64;{{ item.userHandle }}</span>
+                <span class="verified-badge"><i class="pi pi-check-circle"></i></span>
+            </div>
+            <div class="meta-row">
+                <span class="duration"><i class="pi pi-calendar"></i> {{ item.durationDays }} days</span>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,144 @@
+<div class="add-container">
+    <div class="page-header">
+        <button class="back-btn" (click)="cancel()">
+            <i class="pi pi-arrow-left"></i> Back
+        </button>
+        <div class="header-content">
+            <h2>List Your Plant</h2>
+            <p>Share with the community</p>
+        </div>
+    </div>
+
+    <div class="content-wrapper" [formGroup]="listingForm">
+
+        <!-- Left Column: Inputs -->
+        <div class="input-section">
+            <div class="card basic-info">
+                <h3>1. Product Link</h3>
+                <div class="magic-section">
+                    <label>Paste a link from a store</label>
+                    <div class="magic-input-wrapper" [class.focused]="isInputFocused">
+                        <i class="pi pi-link input-icon"></i>
+                        <input type="text" pInputText formControlName="productUrl" placeholder="https://amazon.com/..."
+                            (focus)="isInputFocused = true" (blur)="isInputFocused = false">
+
+                        <button type="button" class="fetch-pill" (click)="fetchPreview()"
+                            [disabled]="isFetchingPreview || !listingForm.get('productUrl')?.value"
+                            [class.loading]="isFetchingPreview">
+                            <i class="pi" [class.pi-bolt]="!isFetchingPreview" [class.pi-spin]="isFetchingPreview"
+                                [class.pi-spinner]="isFetchingPreview"></i>
+                            <span>{{ isFetchingPreview ? 'Fetching...' : 'Auto-Fill' }}</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manual Mode: Main Image Input -->
+            <div class="card basic-info" *ngIf="creationMode === 'manual'">
+                <h3>1. Main Photo</h3>
+                <div class="field-group">
+                    <label>Image Source</label>
+                    <div class="upload-row">
+                        <input type="text" pInputText formControlName="imageUrl" placeholder="Paste URL..."
+                            class="flex-grow">
+                        <input #mainFileInput type="file" (change)="onFileSelected($event, true)" style="display: none"
+                            accept="image/*">
+                        <button type="button" class="btn-upload" (click)="mainFileInput.click()">
+                            <i class="pi pi-upload"></i> Upload
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card details-info" *ngIf="previewData" @fadeIn>
+                <h3>2. Details & Gallery</h3>
+
+                <div class="field-group">
+                    <label>Title</label>
+                    <input type="text" pInputText formControlName="title" class="full-width">
+                </div>
+
+                <div class="field-group">
+                    <label>Description</label>
+                    <textarea pInputTextarea formControlName="description" rows="4"
+                        placeholder="Tell us about the condition, etc..." class="custom-textarea"></textarea>
+                </div>
+
+                <!-- Gallery -->
+                <div class="field-group gallery-group">
+                    <div class="group-header">
+                        <label>Additional Photos</label>
+                        <div class="header-actions">
+                            <button type="button" class="btn-add-mini" (click)="addAdditionalImage()">
+                                <i class="pi pi-link"></i> URL
+                            </button>
+                            <input #addFileInput type="file" (change)="onFileSelected($event, false)"
+                                style="display: none" accept="image/*">
+                            <button type="button" class="btn-add-mini" (click)="addFileInput.click()">
+                                <i class="pi pi-upload"></i> PC
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="gallery-inputs" formArrayName="additionalImages">
+                        <div *ngFor="let control of additionalImages.controls; let i=index" class="gallery-row">
+                            <i class="pi pi-image"></i>
+                            <input type="text" pInputText [formControlName]="i" placeholder="Image URL...">
+                            <button type="button" class="btn-remove-mini" (click)="removeAdditionalImage(i)">
+                                <i class="pi pi-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Preview & Actions -->
+        <div class="preview-sidebar" *ngIf="previewData" @fadeIn>
+            <div class="preview-card">
+                <div class="preview-image">
+                    <img [src]="listingForm.get('imageUrl')?.value || '/assets/placeholder-plant.jpg'" class="main-img"
+                        onerror="this.src='/assets/placeholder-plant.jpg'">
+
+                    <div class="image-override-overlay" *ngIf="creationMode === 'link'">
+                        <div class="upload-row mini">
+                            <input type="text" formControlName="imageUrl" placeholder="Change URL">
+                            <button type="button" class="btn-icon" (click)="overrideFileInput.click()">
+                                <i class="pi pi-upload"></i>
+                            </button>
+                            <input #overrideFileInput type="file" (change)="onFileSelected($event, true)"
+                                style="display: none" accept="image/*">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preview-content">
+                    <h4>{{ listingForm.get('title')?.value }}</h4>
+
+                    <div class="duration-control">
+                        <div class="slider-header">
+                            <label>Duration</label>
+                            <span class="badge">{{ listingForm.get('durationDays')?.value }} Days</span>
+                        </div>
+                        <p-slider formControlName="durationDays" [min]="1" [max]="30"></p-slider>
+                    </div>
+
+                    <div class="cost-summary">
+                        <span>Total Cost</span>
+                        <span class="price">{{ totalCost | currency:'USD' }}</span>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn-primary" (click)="payAndList()" [disabled]="listingForm.invalid || isSubmitting">
+                        Pay & Activate
+                    </button>
+                    <button class="btn-secondary" (click)="saveDraft()" [disabled]="isSubmitting">
+                        Save Draft
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

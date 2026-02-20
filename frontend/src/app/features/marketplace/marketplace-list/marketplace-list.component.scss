@@ -1,0 +1,203 @@
+.marketplace-container {
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 16px;
+
+    h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #1a1a1a;
+        margin: 0;
+    }
+
+    .actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .tabs {
+        display: flex;
+        background: #f0f0f0;
+        padding: 4px;
+        border-radius: 12px;
+        gap: 4px;
+
+        button {
+            border: none;
+            background: transparent;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
+
+            &:hover {
+                color: #333;
+            }
+
+            &.active {
+                background: white;
+                color: #2e7d32;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            }
+        }
+    }
+
+    .create-btn {
+        background: #2e7d32;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 24px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s;
+        font-size: 1rem;
+
+        &:hover {
+            background: #1b5e20;
+        }
+    }
+}
+
+.loading,
+.empty-state {
+    text-align: center;
+    padding: 60px;
+    color: #666;
+
+    i {
+        font-size: 3rem;
+        margin-bottom: 16px;
+        display: block;
+        opacity: 0.5;
+    }
+}
+
+.listings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 24px;
+}
+
+.listing-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+
+    &:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+        border-color: rgba(46, 125, 50, 0.2);
+
+        .image-wrapper img {
+            transform: scale(1.05);
+        }
+    }
+
+    .image-wrapper {
+        height: 220px;
+        background: #f5f5f5;
+        position: relative;
+        overflow: hidden;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .price-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #2e7d32;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(4px);
+
+            small {
+                font-size: 0.75rem;
+                font-weight: 400;
+                color: #666;
+            }
+        }
+    }
+
+    .card-content {
+        padding: 20px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+
+        h3 {
+            font-size: 1.15rem;
+            margin: 0 0 8px;
+            color: #1a1a1a;
+            font-weight: 700;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .seller-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 12px;
+
+            .seller {
+                font-size: 0.9rem;
+                color: #555;
+                font-weight: 500;
+            }
+
+            .verified-badge {
+                color: #2196f3;
+                font-size: 0.9rem;
+            }
+        }
+
+        .meta-row {
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px dashed #eee;
+            display: flex;
+            align-items: center;
+            color: #888;
+            font-size: 0.85rem;
+
+            i {
+                margin-right: 6px;
+            }
+        }
+    }
+}

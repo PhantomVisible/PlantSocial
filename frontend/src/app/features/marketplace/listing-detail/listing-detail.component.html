@@ -1,0 +1,98 @@
+<div class="detail-container" *ngIf="listing() as item">
+    <div class="header-nav">
+        <a routerLink="/marketplace" class="back-link">
+            <i class="pi pi-arrow-left"></i> Back to Marketplace
+        </a>
+    </div>
+
+    <div class="content-grid">
+        <!-- Left Column: Image & Description -->
+        <div class="left-detail-col">
+            <div class="image-section">
+                <!-- Main Image -->
+                <div class="main-view">
+                    <img [src]="selectedImage() || item.imageUrl || '/assets/placeholder-plant.jpg'" [alt]="item.title"
+                        class="main-image">
+                </div>
+
+                <!-- Thumbnails -->
+                <div class="thumbnails-row" *ngIf="getAllImages(item).length > 1">
+                    <div *ngFor="let img of getAllImages(item)" class="thumb-item"
+                        [class.active]="selectedImage() === img" (click)="selectImage(img)">
+                        <img [src]="img" [alt]="item.title">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description Section -->
+            <div class="description-section" *ngIf="item.description">
+                <h3>Description</h3>
+                <div class="desc-content">{{ item.description }}</div>
+            </div>
+        </div>
+
+        <!-- Sticky Product Card Column -->
+        <div class="info-sidebar">
+            <div class="product-card">
+                <!-- Status Badge -->
+                <div class="status-badge" [ngClass]="item.status.toLowerCase()">
+                    {{ item.status.replace('_', ' ') }}
+                </div>
+
+                <!-- Title & Seller -->
+                <h1>{{ item.title }}</h1>
+
+                <div class="seller-info">
+                    <span class="label">Listed by</span>
+                    <span class="value">{{ item.userHandle }}</span>
+                    <span class="date">Created {{ item.createdAt | date:'mediumDate' }}</span>
+                </div>
+
+                <!-- Details Box -->
+                <div class="details-box">
+                    <div class="detail-row">
+                        <span class="label">Duration</span>
+                        <span class="value md">{{ item.durationDays }} Days</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="label">Total Cost</span>
+                        <span class="value lg">{{ (item.durationDays * 5) | currency:'USD' }}</span>
+                    </div>
+
+                    <div *ngIf="item.expiryDate" class="detail-row expiry">
+                        <span class="label">Expires</span>
+                        <div class="expiry-value">
+                            <span class="date">{{ item.expiryDate | date:'MMM d, y' }}</span>
+                            <span class="time">{{ item.expiryDate | date:'h:mm a' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="actions">
+                    <!-- Owner Actions -->
+                    <ng-container *ngIf="isOwner()">
+                        <button *ngIf="item.status === 'PENDING_PAYMENT'" (click)="handlePayment()"
+                            class="btn-activate">
+                            Pay & Activate
+                        </button>
+                        <button (click)="deleteListing()" class="btn-delete-ghost">
+                            <i class="pi pi-trash"></i> Delete Listing
+                        </button>
+                    </ng-container>
+
+                    <!-- Public Actions -->
+                    <a [href]="item.productUrl" target="_blank" class="btn-visit">
+                        Visit Product Page <i class="pi pi-external-link"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="loading()" class="loading-state">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+    <p>Loading details...</p>
+</div>

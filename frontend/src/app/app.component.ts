@@ -13,6 +13,7 @@ import { NotificationService } from './features/notifications/notification.servi
 import { CommonModule } from '@angular/common';
 import { FloatingChatContainerComponent } from './features/chat/floating-chat/floating-chat-container.component';
 import { ChatService } from './features/chat/chat.service';
+import { ShopService } from './features/shop/shop.service';
 
 @Component({
   selector: 'app-root',
@@ -39,7 +40,7 @@ import { ChatService } from './features/chat/chat.service';
 
     <div class="app-layout">
       <app-sidebar class="app-sidebar"></app-sidebar>
-      <main class="app-main">
+      <main class="app-main" [class.full-width]="isFullWidthRoute()">
         <router-outlet />
       </main>
       <aside class="app-right" *ngIf="!isFullWidthRoute()">
@@ -71,6 +72,12 @@ import { ChatService } from './features/chat/chat.service';
       border-left: 1px solid var(--trellis-border-light);
       border-right: 1px solid var(--trellis-border-light);
       background: var(--trellis-white);
+      transition: max-width 0.3s ease;
+    }
+
+    .app-main.full-width {
+      max-width: 1000px; // Increased width
+      border-right: none;
     }
 
     .app-right {
@@ -82,7 +89,7 @@ import { ChatService } from './features/chat/chat.service';
     /* Center the feed column in remaining space */
     @media (min-width: 1101px) {
       .app-layout {
-        max-width: 1200px;
+        max-width: 1400px; // Increased container max-width
         margin: 0 auto;
       }
     }
@@ -114,6 +121,7 @@ export class AppComponent implements OnInit {
   notificationService = inject(NotificationService);
   chatService = inject(ChatService);
   authService = inject(AuthService);
+  shopService = inject(ShopService);
 
   route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -122,17 +130,29 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.notificationService.init();
+    this.shopService.loadCart();
 
     // Subscribe to Router events to detect URL changes
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        this.isPlantSelected.set(this.router.url.includes('plant='));
-        const url = this.router.url;
-        this.isFullWidthRoute.set(url.startsWith('/chat') || url.startsWith('/notifications'));
+        this.updateRouteState();
       }
     });
 
-    // Initial check (in case of deep link)
-    this.isPlantSelected.set(this.router.url.includes('plant='));
+    // Initial check
+    this.updateRouteState();
+  }
+
+  private updateRouteState() {
+    const url = this.router.url;
+    this.isPlantSelected.set(url.includes('plant='));
+
+    // Updated to include marketplace in full width
+    this.isFullWidthRoute.set(
+      url.startsWith('/chat') ||
+      url.startsWith('/notifications') ||
+      url.startsWith('/shop') ||
+      url.startsWith('/marketplace')
+    );
   }
 }

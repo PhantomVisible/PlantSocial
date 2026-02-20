@@ -6,6 +6,7 @@ import { AuthPromptDialogComponent } from '../auth/auth-prompt-dialog.component'
 
 import { AvatarComponent } from '../shared/components/avatar/avatar.component';
 import { NotificationService } from '../features/notifications/notification.service';
+import { ShopService } from '../features/shop/shop.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -30,6 +31,21 @@ import { NotificationService } from '../features/notifications/notification.serv
           <i class="pi pi-search"></i>
           <span>Explore</span>
         </a>
+
+        <a routerLink="/marketplace" routerLinkActive="active" class="nav-item nav-item--shop">
+          <i class="pi pi-shopping-bag"></i>
+          <span>Marketplace</span>
+        </a>
+
+        <!-- Cart temporarily hidden implementation of Marketplace is direct pay
+        <a *ngIf="shopService.cartItemCount() > 0" routerLink="/shop/cart" routerLinkActive="active" class="nav-item nav-item--cart">
+          <i class="pi pi-shopping-cart"></i>
+          <span>Cart</span>
+          <span class="badge-count badge-count--cart">
+            {{ shopService.cartItemCount() }}
+          </span>
+        </a>
+        -->
 
         <a *ngIf="user()" routerLink="/notifications" routerLinkActive="active" class="nav-item nav-item--notifications">
           <i class="pi pi-bell"></i>
@@ -277,6 +293,7 @@ import { NotificationService } from '../features/notifications/notification.serv
 export class SidebarComponent implements OnInit {
   authService = inject(AuthService);
   notifService = inject(NotificationService);
+  shopService = inject(ShopService);
   private router = inject(Router);
   user = this.authService.currentUser;
   showAuthModal = signal(false);

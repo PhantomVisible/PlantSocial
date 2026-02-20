@@ -23,6 +23,10 @@ export class ToastService {
         this.addMessage('info', message);
     }
 
+    showWarn(message: string) {
+        this.addMessage('warn', message);
+    }
+
     dismiss(id: number) {
         this.messages.update(msgs => msgs.filter(m => m.id !== id));
     }

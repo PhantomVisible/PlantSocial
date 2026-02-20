@@ -18,5 +18,17 @@ export const routes: Routes = [
     { path: 'profile/:username', component: UserProfileComponent },
     { path: 'chat', component: ChatPageComponent, canActivate: [authGuard] },
     { path: 'notifications', component: NotificationsPageComponent, canActivate: [authGuard] },
+    { path: 'shop', loadComponent: () => import('./features/shop/shop-page.component').then(m => m.ShopPageComponent) },
+    { path: 'shop/product/:slug', loadComponent: () => import('./features/shop/product-detail.component').then(m => m.ProductDetailComponent) },
+    { path: 'shop/cart', loadComponent: () => import('./features/shop/cart.component').then(m => m.CartComponent), canActivate: [authGuard] },
+    { path: 'shop/checkout', loadComponent: () => import('./features/shop/checkout.component').then(m => m.CheckoutComponent), canActivate: [authGuard] },
+    { path: 'shop/orders', loadComponent: () => import('./features/shop/order-history.component').then(m => m.OrderHistoryComponent), canActivate: [authGuard] },
+    { path: 'shop/order-confirmation/:id', loadComponent: () => import('./features/shop/order-confirmation.component').then(m => m.OrderConfirmationComponent), canActivate: [authGuard] },
+
+    // Marketplace Routes
+    { path: 'marketplace', loadComponent: () => import('./features/marketplace/marketplace-list/marketplace-list.component').then(m => m.MarketplaceListComponent) },
+    { path: 'marketplace/add', loadComponent: () => import('./features/marketplace/marketplace-add/marketplace-add.component').then(m => m.MarketplaceAddComponent), canActivate: [authGuard] },
+    { path: 'marketplace/create', loadComponent: () => import('./features/marketplace/listing-create/listing-create.component').then(m => m.ListingCreateComponent), canActivate: [authGuard] },
+    { path: 'marketplace/listing/:id', loadComponent: () => import('./features/marketplace/listing-detail/listing-detail.component').then(m => m.ListingDetailComponent) },
     { path: '**', redirectTo: '' }
 ];
