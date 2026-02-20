@@ -5,10 +5,10 @@ import { Product, ShopService } from './shop.service';
 import { ProductCardComponent } from './product-card.component';
 
 @Component({
-    selector: 'app-product-detail',
-    standalone: true,
-    imports: [CommonModule, RouterModule, ProductCardComponent],
-    template: `
+  selector: 'app-product-detail',
+  standalone: true,
+  imports: [CommonModule, RouterModule, ProductCardComponent],
+  template: `
     <div class="detail" *ngIf="product()">
       <!-- Breadcrumbs -->
       <div class="detail__breadcrumbs">
@@ -122,7 +122,7 @@ import { ProductCardComponent } from './product-card.component';
       <div class="loader-spinner"></div>
     </div>
   `,
-    styles: [`
+  styles: [`
     .detail { padding: 0 24px 40px; }
 
     .detail__breadcrumbs {
@@ -134,7 +134,7 @@ import { ProductCardComponent } from './product-card.component';
       color: #888;
     }
     .detail__breadcrumbs a {
-      color: var(--trellis-green, #2e7d32);
+      color: var(--primary-color);
       text-decoration: none;
       font-weight: 500;
     }
@@ -181,7 +181,7 @@ import { ProductCardComponent } from './product-card.component';
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1.5px;
-      color: var(--trellis-green, #2e7d32);
+      color: var(--primary-color);
       opacity: 0.7;
     }
     .detail__name {
@@ -243,7 +243,7 @@ import { ProductCardComponent } from './product-card.component';
       font-size: 0.85rem;
       color: #666;
     }
-    .meta-item i { color: var(--trellis-green, #2e7d32); font-size: 0.9rem; }
+    .meta-item i { color: var(--primary-color); font-size: 0.9rem; }
     .out-of-stock { color: #E53E3E; }
 
     /* ── Actions ─────── */
@@ -283,7 +283,7 @@ import { ProductCardComponent } from './product-card.component';
       flex: 1;
       padding: 0 24px;
       height: 44px;
-      background: var(--trellis-green, #2e7d32);
+      background: var(--primary-color);
       color: #fff;
       border: none;
       border-radius: 12px;
@@ -297,7 +297,7 @@ import { ProductCardComponent } from './product-card.component';
       transition: all 0.2s ease;
       font-family: 'Inter', sans-serif;
     }
-    .add-to-cart-btn:hover:not(:disabled) { background: #1b5e20; transform: translateY(-1px); }
+    .add-to-cart-btn:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-1px); }
     .add-to-cart-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .detail__shipping {
@@ -316,7 +316,7 @@ import { ProductCardComponent } from './product-card.component';
       font-size: 0.85rem;
       color: #555;
     }
-    .shipping-item i { color: var(--trellis-green, #2e7d32); }
+    .shipping-item i { color: var(--primary-color); }
 
     /* ── Tabs ─────────── */
     .detail__tabs {
@@ -344,8 +344,8 @@ import { ProductCardComponent } from './product-card.component';
     .tab-btn:hover { color: #555; }
     .tab-btn.active {
       background: #fff;
-      color: var(--trellis-green, #2e7d32);
-      box-shadow: inset 0 -2px 0 var(--trellis-green, #2e7d32);
+      color: var(--primary-color);
+      box-shadow: inset 0 -2px 0 var(--primary-color);
     }
     .tab-content {
       padding: 24px;
@@ -381,7 +381,7 @@ import { ProductCardComponent } from './product-card.component';
       width: 40px;
       height: 40px;
       border: 3px solid rgba(0,0,0,0.08);
-      border-top-color: var(--trellis-green, #2e7d32);
+      border-top-color: var(--primary-color);
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
@@ -398,49 +398,49 @@ import { ProductCardComponent } from './product-card.component';
   `]
 })
 export class ProductDetailComponent implements OnInit {
-    private route = inject(ActivatedRoute);
-    shop = inject(ShopService);
+  private route = inject(ActivatedRoute);
+  shop = inject(ShopService);
 
-    product = signal<Product | null>(null);
-    relatedProducts = signal<Product[]>([]);
-    quantity = signal(1);
-    activeTab = signal('desc');
+  product = signal<Product | null>(null);
+  relatedProducts = signal<Product[]>([]);
+  quantity = signal(1);
+  activeTab = signal('desc');
 
-    ngOnInit() {
-        this.route.paramMap.subscribe(params => {
-            const slug = params.get('slug');
-            if (slug) {
-                this.shop.getProductBySlug(slug).subscribe(p => {
-                    this.product.set(p);
-                    this.quantity.set(1);
-                    // Load related products from same category
-                    this.shop.getProducts({ category: p.category }).subscribe(all => {
-                        this.relatedProducts.set(all.filter(x => x.slug !== p.slug).slice(0, 4));
-                    });
-                });
-            }
+  ngOnInit() {
+    this.route.paramMap.subscribe(params => {
+      const slug = params.get('slug');
+      if (slug) {
+        this.shop.getProductBySlug(slug).subscribe(p => {
+          this.product.set(p);
+          this.quantity.set(1);
+          // Load related products from same category
+          this.shop.getProducts({ category: p.category }).subscribe(all => {
+            this.relatedProducts.set(all.filter(x => x.slug !== p.slug).slice(0, 4));
+          });
         });
-    }
+      }
+    });
+  }
 
-    increaseQty() {
-        if (this.quantity() < this.product()!.stock) {
-            this.quantity.update(q => q + 1);
-        }
+  increaseQty() {
+    if (this.quantity() < this.product()!.stock) {
+      this.quantity.update(q => q + 1);
     }
+  }
 
-    decreaseQty() {
-        if (this.quantity() > 1) {
-            this.quantity.update(q => q - 1);
-        }
+  decreaseQty() {
+    if (this.quantity() > 1) {
+      this.quantity.update(q => q - 1);
     }
+  }
 
-    addToCart() {
-        this.shop.addToCart(this.product()!.id, this.quantity());
-    }
+  addToCart() {
+    this.shop.addToCart(this.product()!.id, this.quantity());
+  }
 
-    getStars(rating: number): string {
-        const full = Math.floor(rating);
-        const half = rating % 1 >= 0.5 ? 1 : 0;
-        return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(5 - full - half);
-    }
+  getStars(rating: number): string {
+    const full = Math.floor(rating);
+    const half = rating % 1 >= 0.5 ? 1 : 0;
+    return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(5 - full - half);
+  }
 }

@@ -4,10 +4,10 @@ import { RouterModule } from '@angular/router';
 import { Product, ShopService } from './shop.service';
 
 @Component({
-    selector: 'app-product-card',
-    standalone: true,
-    imports: [CommonModule, RouterModule],
-    template: `
+  selector: 'app-product-card',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  template: `
     <a [routerLink]="['/shop/product', product.slug]" class="product-card">
       <div class="product-card__image-wrap">
         <img [src]="shop.getProductImage(product.imageUrl)" [alt]="product.name" class="product-card__image" />
@@ -34,13 +34,14 @@ import { Product, ShopService } from './shop.service';
       </div>
     </a>
   `,
-    styles: [`
+  styles: [`
     .product-card {
       display: flex;
       flex-direction: column;
-      border-radius: 16px;
-      background: #fff;
-      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 12px;
+      background: var(--surface-card);
+      border: none;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
       overflow: hidden;
       text-decoration: none;
       color: inherit;
@@ -49,8 +50,7 @@ import { Product, ShopService } from './shop.service';
     }
     .product-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 12px 40px rgba(46, 125, 50, 0.12);
-      border-color: rgba(46, 125, 50, 0.15);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
     }
 
     .product-card__image-wrap {
@@ -181,18 +181,18 @@ import { Product, ShopService } from './shop.service';
   `]
 })
 export class ProductCardComponent {
-    @Input({ required: true }) product!: Product;
-    shop = inject(ShopService);
+  @Input({ required: true }) product!: Product;
+  shop = inject(ShopService);
 
-    quickAdd(event: Event) {
-        event.preventDefault();
-        event.stopPropagation();
-        this.shop.addToCart(this.product.id);
-    }
+  quickAdd(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.shop.addToCart(this.product.id);
+  }
 
-    getStars(rating: number): string {
-        const full = Math.floor(rating);
-        const half = rating % 1 >= 0.5 ? 1 : 0;
-        return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(5 - full - half);
-    }
+  getStars(rating: number): string {
+    const full = Math.floor(rating);
+    const half = rating % 1 >= 0.5 ? 1 : 0;
+    return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(5 - full - half);
+  }
 }
