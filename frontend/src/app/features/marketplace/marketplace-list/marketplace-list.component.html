@@ -1,8 +1,8 @@
 <div class="marketplace-container">
     <div class="header">
         <h1>Marketplace</h1>
-        <button class="create-btn" routerLink="/marketplace/add">
-            <i class="pi pi-plus"></i> List Your Plant
+        <button class="create-btn" (click)="createListing()">
+            <i class="pi pi-plus"></i> List Your Plant Product
         </button>
     </div>
 </div>
@@ -20,7 +20,7 @@
     <div class="listing-card" *ngFor="let item of listings()" [routerLink]="['/marketplace/listing', item.id]">
         <div class="image-wrapper">
             <img [src]="getImageUrl(item.imageUrl)" [alt]="item.title"
-                onerror="this.src='/assets/placeholder-plant.jpg'">
+                onerror="this.src='/assets/placeholder-plant.jpg'" referrerpolicy="no-referrer">
             <div class="price-badge">{{ item.pricePerDay | currency:'USD' }}<small>/day</small></div>
         </div>
         <div class="card-content">

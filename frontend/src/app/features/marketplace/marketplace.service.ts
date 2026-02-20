@@ -33,6 +33,7 @@ export interface ListingResponse {
 export interface ProductPreviewDTO {
     title: string;
     imageUrl: string;
+    description?: string;
     url: string;
 }
 

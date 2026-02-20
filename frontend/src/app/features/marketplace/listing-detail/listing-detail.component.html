@@ -11,14 +11,15 @@
             <div class="image-section">
                 <!-- Main Image -->
                 <div class="main-view">
-                    <img [src]="getImageUrl(selectedImage() || item.imageUrl)" [alt]="item.title" class="main-image">
+                    <img [src]="getImageUrl(selectedImage() || item.imageUrl)" [alt]="item.title" class="main-image"
+                        referrerpolicy="no-referrer">
                 </div>
 
                 <!-- Thumbnails -->
                 <div class="thumbnails-row" *ngIf="getAllImages(item).length > 1">
                     <div *ngFor="let img of getAllImages(item)" class="thumb-item"
                         [class.active]="selectedImage() === img" (click)="selectImage(img)">
-                        <img [src]="getImageUrl(img)" [alt]="item.title">
+                        <img [src]="getImageUrl(img)" [alt]="item.title" referrerpolicy="no-referrer">
                     </div>
                 </div>
             </div>

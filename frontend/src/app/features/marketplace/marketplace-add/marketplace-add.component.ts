@@ -116,7 +116,8 @@ export class MarketplaceAddComponent {
                 this.previewData = data;
                 this.listingForm.patchValue({
                     title: data.title,
-                    imageUrl: data.imageUrl
+                    imageUrl: data.imageUrl,
+                    description: data.description || ''
                 });
                 this.isFetchingPreview = false;
             },

@@ -4,8 +4,8 @@
             <i class="pi pi-arrow-left"></i> Back
         </button>
         <div class="header-content">
-            <h2>List Your Plant</h2>
-            <p>Share with the community</p>
+            <h2>List Your Product</h2>
+            <p>Share your product with the community</p>
         </div>
     </div>
 
@@ -18,7 +18,6 @@
                 <div class="magic-section">
                     <label>Paste a link from a store</label>
                     <div class="magic-input-wrapper" [class.focused]="isInputFocused">
-                        <i class="pi pi-link input-icon"></i>
                         <input type="text" pInputText formControlName="productUrl" placeholder="https://amazon.com/..."
                             (focus)="isInputFocused = true" (blur)="isInputFocused = false">
 
@@ -98,7 +97,7 @@
             <div class="preview-card">
                 <div class="preview-image">
                     <img [src]="getImageUrl(listingForm.get('imageUrl')?.value)" class="main-img"
-                        onerror="this.src='/assets/placeholder-plant.jpg'">
+                        onerror="this.src='/assets/placeholder-plant.jpg'" referrerpolicy="no-referrer">
 
                     <div class="image-override-overlay" *ngIf="creationMode === 'link'">
                         <div class="upload-row mini">

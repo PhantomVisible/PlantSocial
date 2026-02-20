@@ -153,16 +153,12 @@ $shadow-lg: 0 16px 48px rgba(27, 94, 32, 0.08);
                 box-shadow: 0 8px 32px rgba($primary, 0.1);
             }
 
-            .input-icon {
-                padding-left: 20px;
-                color: $primary;
-                font-size: 1.4rem;
-            }
-
             input {
-                width: 100%;
+                flex: 1;
+                min-width: 0;
                 border: none;
                 padding: 20px;
+                padding-right: 16px;
                 font-size: 1.2rem;
                 outline: none;
                 color: $text;
@@ -731,16 +727,12 @@ $shadow-lg: 0 16px 48px rgba(27, 94, 32, 0.08);
                 box-shadow: 0 4px 12px rgba($primary, 0.15);
             }
 
-            .input-icon {
-                padding-left: 16px;
-                color: $text-secondary;
-                font-size: 1.2rem;
-            }
-
             input {
-                width: 100%;
+                flex: 1;
+                min-width: 0;
                 border: none;
                 padding: 16px;
+                padding-right: 16px;
                 font-size: 1.1rem;
                 outline: none;
                 color: $text;

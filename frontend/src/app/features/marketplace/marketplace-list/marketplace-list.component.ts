@@ -1,7 +1,8 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { MarketplaceService, ListingResponse } from '../marketplace.service';
+import { AuthGatekeeperService } from '../../../auth/auth-gatekeeper.service';
 
 @Component({
   selector: 'app-marketplace-list',
@@ -15,7 +16,11 @@ export class MarketplaceListComponent implements OnInit {
   loading = signal<boolean>(true);
   viewMode: 'market' | 'my-listings' = 'market';
 
-  constructor(private marketplaceService: MarketplaceService) { }
+  constructor(
+    private marketplaceService: MarketplaceService,
+    private router: Router,
+    private gatekeeper: AuthGatekeeperService
+  ) { }
 
   ngOnInit(): void {
     this.loadListings();
@@ -46,6 +51,12 @@ export class MarketplaceListComponent implements OnInit {
   setViewMode(mode: 'market' | 'my-listings') {
     this.viewMode = mode;
     this.loadListings();
+  }
+
+  createListing() {
+    this.gatekeeper.run(() => {
+      this.router.navigate(['/marketplace/add']);
+    });
   }
 
   getImageUrl(url: string | null | undefined): string {
