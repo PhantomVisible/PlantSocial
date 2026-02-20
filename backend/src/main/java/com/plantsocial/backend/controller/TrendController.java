@@ -18,7 +18,8 @@ public class TrendController {
     private final TrendService trendService;
 
     @GetMapping
-    public ResponseEntity<List<TrendDTO>> getTrendingTopics() {
-        return ResponseEntity.ok(trendService.getTrendingTopics());
+    public ResponseEntity<List<TrendDTO>> getTrendingTopics(
+            @org.springframework.web.bind.annotation.RequestParam(required = false) String tag) {
+        return ResponseEntity.ok(trendService.getTrendingTopics(tag));
     }
 }

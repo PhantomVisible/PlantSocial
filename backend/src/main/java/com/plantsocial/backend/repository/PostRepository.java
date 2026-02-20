@@ -15,42 +15,49 @@ import java.util.UUID;
 
 public interface PostRepository extends JpaRepository<Post, UUID> {
 
-    @Query("SELECT p FROM Post p ORDER BY p.createdAt DESC")
-    Page<Post> findAllByOrderByCreatedAtDesc(Pageable pageable);
+        @Query("SELECT p FROM Post p ORDER BY p.createdAt DESC")
+        Page<Post> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
-    @Query("SELECT p FROM Post p ORDER BY p.createdAt DESC")
-    List<Post> findAllByAuthorIdIn(List<UUID> authorIds, Pageable pageable);
+        @Query("SELECT p FROM Post p ORDER BY p.createdAt DESC")
+        List<Post> findAllByAuthorIdIn(List<UUID> authorIds, Pageable pageable);
 
-    @Query("SELECT p FROM Post p WHERE p.author.id NOT IN :blockedIds")
-    Page<Post> findAllByAuthorIdNotIn(@Param("blockedIds") Set<UUID> blockedIds, Pageable pageable);
+        @Query("SELECT p FROM Post p WHERE p.author.id NOT IN :blockedIds")
+        Page<Post> findAllByAuthorIdNotIn(@Param("blockedIds") Set<UUID> blockedIds, Pageable pageable);
 
-    List<Post> findByAuthorIdOrderByCreatedAtDesc(UUID authorId);
+        List<Post> findByAuthorIdOrderByCreatedAtDesc(UUID authorId);
 
-    long countByAuthorId(UUID authorId);
+        long countByAuthorId(UUID authorId);
 
-    Page<Post> findByPlantTagIgnoreCaseOrderByCreatedAtDesc(String plantTag, Pageable pageable);
+        Page<Post> findByPlantTagIgnoreCaseOrderByCreatedAtDesc(String plantTag, Pageable pageable);
 
-    @Query("SELECT p FROM Post p WHERE LOWER(p.plantTag) = LOWER(:plantTag) AND p.author.id NOT IN :blockedIds ORDER BY p.createdAt DESC")
-    Page<Post> findByPlantTagExcludingBlocked(@Param("plantTag") String plantTag,
-            @Param("blockedIds") Set<UUID> blockedIds, Pageable pageable);
+        @Query("SELECT p FROM Post p WHERE LOWER(p.plantTag) = LOWER(:plantTag) AND p.author.id NOT IN :blockedIds ORDER BY p.createdAt DESC")
+        Page<Post> findByPlantTagExcludingBlocked(@Param("plantTag") String plantTag,
+                        @Param("blockedIds") Set<UUID> blockedIds, Pageable pageable);
 
-    List<Post> findAllByPlantId(UUID plantId);
+        List<Post> findAllByPlantId(UUID plantId);
 
-    @Query("SELECT p FROM Post p WHERE p.createdAt >= :startDate ORDER BY SIZE(p.likes) DESC")
-    org.springframework.data.domain.Page<Post> findTrendingPosts(java.time.LocalDateTime startDate, Pageable pageable);
+        @Query("SELECT p FROM Post p WHERE p.createdAt >= :startDate ORDER BY SIZE(p.likes) DESC")
+        org.springframework.data.domain.Page<Post> findTrendingPosts(
+                        @Param("startDate") java.time.LocalDateTime startDate, Pageable pageable);
 
-    Page<Post> findByContentContainingIgnoreCaseOrderByCreatedAtDesc(String content, Pageable pageable);
+        @Query("SELECT p FROM Post p WHERE p.plantTag = :tag AND p.createdAt >= :startDate ORDER BY SIZE(p.likes) DESC")
+        org.springframework.data.domain.Page<Post> findTrendingPostsByTag(
+                        @Param("startDate") java.time.LocalDateTime startDate, @Param("tag") String tag,
+                        Pageable pageable);
 
-    @Query("SELECT p FROM Post p WHERE LOWER(p.content) LIKE LOWER(CONCAT('%', :content, '%')) AND p.author.id NOT IN :blockedIds ORDER BY p.createdAt DESC")
-    Page<Post> findByContentExcludingBlocked(@Param("content") String content,
-            @Param("blockedIds") Set<UUID> blockedIds, Pageable pageable);
+        Page<Post> findByContentContainingIgnoreCaseOrderByCreatedAtDesc(String content, Pageable pageable);
 
-    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Post p WHERE p.author.id = :authorId AND p.repostOf.id = :repostOfId")
-    boolean existsByAuthorIdAndRepostOfId(@Param("authorId") UUID authorId, @Param("repostOfId") UUID repostOfId);
+        @Query("SELECT p FROM Post p WHERE LOWER(p.content) LIKE LOWER(CONCAT('%', :content, '%')) AND p.author.id NOT IN :blockedIds ORDER BY p.createdAt DESC")
+        Page<Post> findByContentExcludingBlocked(@Param("content") String content,
+                        @Param("blockedIds") Set<UUID> blockedIds, Pageable pageable);
 
-    @Query("SELECT p FROM Post p WHERE p.author.id = :authorId AND p.repostOf.id = :repostOfId")
-    Optional<Post> findByAuthorIdAndRepostOfId(@Param("authorId") UUID authorId, @Param("repostOfId") UUID repostOfId);
+        @Query("SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END FROM Post p WHERE p.author.id = :authorId AND p.repostOf.id = :repostOfId")
+        boolean existsByAuthorIdAndRepostOfId(@Param("authorId") UUID authorId, @Param("repostOfId") UUID repostOfId);
 
-    @Query("SELECT COUNT(p) FROM Post p WHERE p.repostOf.id = :repostOfId")
-    long countByRepostOfId(@Param("repostOfId") UUID repostOfId);
+        @Query("SELECT p FROM Post p WHERE p.author.id = :authorId AND p.repostOf.id = :repostOfId")
+        Optional<Post> findByAuthorIdAndRepostOfId(@Param("authorId") UUID authorId,
+                        @Param("repostOfId") UUID repostOfId);
+
+        @Query("SELECT COUNT(p) FROM Post p WHERE p.repostOf.id = :repostOfId")
+        long countByRepostOfId(@Param("repostOfId") UUID repostOfId);
 }

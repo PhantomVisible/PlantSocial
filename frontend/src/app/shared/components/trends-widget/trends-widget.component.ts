@@ -1,7 +1,8 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 export interface TrendDTO {
   postId: string; // UUID from backend is string in JS
@@ -49,7 +50,7 @@ export interface TrendDTO {
       background: var(--surface-card);
       border-radius: 16px;
       padding: 16px;
-      margin-bottom: 20px;
+      margin-bottom: 0;
       border: 1px solid var(--surface-border);
     }
 
@@ -106,19 +107,34 @@ export interface TrendDTO {
     }
   `]
 })
-export class TrendsWidgetComponent implements OnInit {
+export class TrendsWidgetComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:8080/api/v1';
+  private route = inject(ActivatedRoute);
 
   trends = signal<TrendDTO[]>([]);
   loading = signal<boolean>(true);
+  private querySub?: Subscription;
 
   ngOnInit() {
-    this.fetchTrends();
+    this.querySub = this.route.queryParams.subscribe(params => {
+      const plant = params['plant'] || null;
+      this.fetchTrends(plant);
+    });
   }
 
-  fetchTrends() {
-    this.http.get<TrendDTO[]>(`${this.apiUrl}/trends`)
+  ngOnDestroy() {
+    this.querySub?.unsubscribe();
+  }
+
+  fetchTrends(tag: string | null = null) {
+    this.loading.set(true);
+    let url = `${this.apiUrl}/trends`;
+    if (tag) {
+      url += `?tag=${encodeURIComponent(tag)}`;
+    }
+
+    this.http.get<TrendDTO[]>(url)
       .subscribe({
         next: (data) => {
           this.trends.set(data);

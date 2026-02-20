@@ -66,7 +66,7 @@ import { NewsService, NewsArticle } from '../../../core/services/news.service';
       background: var(--surface-card);
       border-radius: 16px;
       padding: 16px;
-      margin-bottom: 20px;
+      margin-bottom: 0;
       border: 1px solid var(--surface-border);
     }
     

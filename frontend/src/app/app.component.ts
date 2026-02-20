@@ -51,7 +51,7 @@ import { PlantDoctorService } from './features/plant-doctor/plant-doctor.service
           <router-outlet #outlet="outlet" />
         </div>
       </main>
-      <aside class="app-right" *ngIf="!isFullWidthRoute() && !isAuthRoute()">
+      <aside class="app-right flex flex-column gap-5" *ngIf="!isFullWidthRoute() && !isAuthRoute()">
         <!-- If Filtering: Wiki First, No News -->
         <app-wiki-sidebar *ngIf="isPlantSelected()"></app-wiki-sidebar>
 
@@ -102,7 +102,17 @@ import { PlantDoctorService } from './features/plant-doctor/plant-doctor.service
     .app-right {
       width: 340px;
       flex-shrink: 0;
-      padding: 16px 16px 16px 0;
+      padding: 16px 16px 16px 24px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE/Edge */
+    }
+    
+    .app-right::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
     }
 
     /* Center the feed column in remaining space */

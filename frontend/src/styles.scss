@@ -158,10 +158,14 @@ button:not(:disabled):active {
   box-shadow: 0 0 0 2px var(--xyla-green-pale);
 }
 
-.p-card {
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-soft);
-  border: 1px solid var(--trellis-border-light);
+.p-card,
+.card,
+.post-card {
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+  border: none !important;
+  /* Ensure generous internal padding as requested */
+  padding: 1.5rem;
 }
 
 /* Utility */

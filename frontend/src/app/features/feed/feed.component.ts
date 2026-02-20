@@ -38,14 +38,14 @@ import { ToastService } from '../../core/toast.service';
       ></app-post-composer>
 
       <!-- Skeleton Loading -->
-      <div *ngIf="isLoading()" class="feed-list">
+      <div *ngIf="isLoading()" class="feed-list flex flex-column gap-5">
         <app-post-skeleton></app-post-skeleton>
         <app-post-skeleton></app-post-skeleton>
         <app-post-skeleton></app-post-skeleton>
       </div>
 
       <!-- Post List -->
-      <div *ngIf="!isLoading()" class="feed-list">
+      <div *ngIf="!isLoading()" class="feed-list flex flex-column gap-5">
         <app-post-card
           *ngFor="let post of posts(); trackBy: trackByPostId"
           [post]="post"

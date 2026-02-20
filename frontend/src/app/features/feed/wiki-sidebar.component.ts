@@ -5,10 +5,10 @@ import { Subscription } from 'rxjs';
 import { WikipediaService, WikiSummary } from '../../shared/wikipedia.service';
 
 @Component({
-    selector: 'app-wiki-sidebar',
-    standalone: true,
-    imports: [CommonModule],
-    template: `
+  selector: 'app-wiki-sidebar',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
     <!-- Active Filter: Show Wiki Card -->
     <div *ngIf="data(); else defaultCard" class="wiki-card">
       <img *ngIf="data()!.thumbnail" [src]="data()!.thumbnail!.source" class="wiki-card__img" [alt]="data()!.title" />
@@ -52,11 +52,9 @@ import { WikipediaService, WikiSummary } from '../../shared/wikipedia.service';
       </div>
     </div>
   `,
-    styles: [`
+  styles: [`
     :host {
       display: block;
-      position: sticky;
-      top: 76px;
     }
 
     .wiki-card {
@@ -136,37 +134,37 @@ import { WikipediaService, WikiSummary } from '../../shared/wikipedia.service';
   `]
 })
 export class WikiSidebarComponent implements OnInit, OnDestroy {
-    private route = inject(ActivatedRoute);
-    private wikiService = inject(WikipediaService);
+  private route = inject(ActivatedRoute);
+  private wikiService = inject(WikipediaService);
 
-    data = signal<WikiSummary | null>(null);
-    loading = signal(false);
-    private querySub?: Subscription;
+  data = signal<WikiSummary | null>(null);
+  loading = signal(false);
+  private querySub?: Subscription;
 
-    ngOnInit() {
-        this.querySub = this.route.queryParams.subscribe(params => {
-            const plant = params['plant'];
-            if (plant) {
-                this.loading.set(true);
-                this.data.set(null);
-                this.wikiService.getSummary(plant).subscribe({
-                    next: (summary) => {
-                        this.data.set(summary);
-                        this.loading.set(false);
-                    },
-                    error: () => {
-                        this.data.set(null);
-                        this.loading.set(false);
-                    }
-                });
-            } else {
-                this.data.set(null);
-                this.loading.set(false);
-            }
+  ngOnInit() {
+    this.querySub = this.route.queryParams.subscribe(params => {
+      const plant = params['plant'];
+      if (plant) {
+        this.loading.set(true);
+        this.data.set(null);
+        this.wikiService.getSummary(plant).subscribe({
+          next: (summary) => {
+            this.data.set(summary);
+            this.loading.set(false);
+          },
+          error: () => {
+            this.data.set(null);
+            this.loading.set(false);
+          }
         });
-    }
+      } else {
+        this.data.set(null);
+        this.loading.set(false);
+      }
+    });
+  }
 
-    ngOnDestroy() {
-        this.querySub?.unsubscribe();
-    }
+  ngOnDestroy() {
+    this.querySub?.unsubscribe();
+  }
 }

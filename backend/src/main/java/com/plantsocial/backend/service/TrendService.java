@@ -18,12 +18,17 @@ public class TrendService {
 
     private final PostRepository postRepository;
 
-    public List<TrendDTO> getTrendingTopics() {
+    public List<TrendDTO> getTrendingTopics(String tag) {
         // Fetch posts from last 24 hours
         LocalDateTime startDate = LocalDateTime.now().minusHours(24);
         Pageable topFive = PageRequest.of(0, 5);
 
-        List<Post> trendingPosts = postRepository.findTrendingPosts(startDate, topFive).getContent();
+        List<Post> trendingPosts;
+        if (tag != null && !tag.trim().isEmpty()) {
+            trendingPosts = postRepository.findTrendingPostsByTag(startDate, tag, topFive).getContent();
+        } else {
+            trendingPosts = postRepository.findTrendingPosts(startDate, topFive).getContent();
+        }
 
         return trendingPosts.stream()
                 .map(this::mapToDTO)
