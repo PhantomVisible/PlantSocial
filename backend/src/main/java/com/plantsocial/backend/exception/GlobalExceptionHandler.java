@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
         public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex) {
                 return ResponseEntity
                                 .status(HttpStatus.CONFLICT)
-                                .body(new ErrorResponse(409, "A record with this information already exists."));
+                                .body(new ErrorResponse(409, "DB Error: " + ex.getMostSpecificCause().getMessage()));
         }
 
         // Bad login credentials

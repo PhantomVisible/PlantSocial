@@ -34,7 +34,9 @@ public class SecurityConfig {
                                                                 "/api/v1/posts/**", "/api/v1/users/**",
                                                                 "/api/v1/comments/**", "/api/v1/plants/**",
                                                                 "/api/v1/feed/**", "/api/v1/news/**",
-                                                                "/api/v1/trends/**")
+                                                                "/api/v1/trends/**", "/api/v1/shop/products/**",
+                                                                "/api/v1/marketplace/listings/**",
+                                                                "/api/v1/marketplace/listing/**")
                                                 .permitAll()
                                                 .anyRequest().authenticated())
                                 .sessionManagement(session -> session

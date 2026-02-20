@@ -16,6 +16,7 @@ import { FloatingChatContainerComponent } from './features/chat/floating-chat/fl
 import { ChatService } from './features/chat/chat.service';
 import { PlantDoctorDialogComponent } from './features/plant-doctor/plant-doctor-dialog.component';
 import { PlantDoctorService } from './features/plant-doctor/plant-doctor.service';
+import { ShopService } from './features/shop/shop.service';
 
 @Component({
   selector: 'app-root',
@@ -85,6 +86,12 @@ import { PlantDoctorService } from './features/plant-doctor/plant-doctor.service
       border-left: 1px solid var(--trellis-border-light);
       border-right: 1px solid var(--trellis-border-light);
       background: var(--trellis-white);
+      transition: max-width 0.3s ease;
+    }
+
+    .app-main.full-width {
+      max-width: 1000px; // Increased width
+      border-right: none;
     }
 
     .app-main--full {
@@ -118,7 +125,7 @@ import { PlantDoctorService } from './features/plant-doctor/plant-doctor.service
     /* Center the feed column in remaining space */
     @media (min-width: 1101px) {
       .app-layout:not(.app-layout--fullwidth) {
-        max-width: 1200px;
+        max-width: 1400px;
         width: 100%;
         margin: 0 auto;
       }
@@ -162,6 +169,7 @@ export class AppComponent implements OnInit {
   chatService = inject(ChatService);
   authService = inject(AuthService);
   plantDoctor = inject(PlantDoctorService);
+  shopService = inject(ShopService);
 
   route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -172,20 +180,32 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.notificationService.init();
+    this.shopService.loadCart();
 
     // Subscribe to Router events to detect URL changes
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        this.isPlantSelected.set(this.router.url.includes('plant='));
-        const url = this.router.url;
-        this.isFullWidthRoute.set(url.startsWith('/chat'));
-        this.isAuthRoute.set(url.startsWith('/auth'));
-        this.isExploreRoute.set(url.startsWith('/explore'));
+        this.updateRouteState();
       }
     });
 
-    // Initial check (in case of deep link)
-    this.isPlantSelected.set(this.router.url.includes('plant='));
+    // Initial check
+    this.updateRouteState();
+  }
+
+  private updateRouteState() {
+    const url = this.router.url;
+    this.isPlantSelected.set(url.includes('plant='));
+    this.isAuthRoute.set(url.startsWith('/auth'));
+    this.isExploreRoute.set(url.startsWith('/explore'));
+
+    // Updated to include marketplace in full width
+    this.isFullWidthRoute.set(
+      url.startsWith('/chat') ||
+      url.startsWith('/notifications') ||
+      url.startsWith('/shop') ||
+      url.startsWith('/marketplace')
+    );
   }
 
   getRouteAnimationData(outlet: RouterOutlet) {

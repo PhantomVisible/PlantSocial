@@ -1,0 +1,1109 @@
+// Premium Plants - Luxury Design System
+$primary: #1b5e20; // Deep Emerald
+$primary-light: #4c8c4a;
+$accent: #fbc02d; // Gold
+$surface: #ffffff;
+$background: #fcfdfc; // Very slight green tint off-white
+$text: #0a1f0c;
+$text-secondary: #536b55;
+$border: #e8f0e9;
+$shadow-sm: 0 4px 12px rgba(27, 94, 32, 0.04);
+$shadow-md: 0 8px 24px rgba(27, 94, 32, 0.06);
+$shadow-lg: 0 16px 48px rgba(27, 94, 32, 0.08);
+
+// Global Layout
+.add-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 24px;
+    min-height: 100vh;
+    background: radial-gradient(circle at top right, rgba(76, 140, 74, 0.03), transparent 70%);
+}
+
+// Page Header
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    margin-bottom: 48px;
+
+    .back-btn {
+        background: white;
+        border: 1px solid transparent;
+        padding: 12px 20px;
+        border-radius: 16px;
+        cursor: pointer;
+        color: $text-secondary;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: $shadow-sm;
+
+        i {
+            font-size: 0.9rem;
+            transition: transform 0.3s;
+        }
+
+        &:hover {
+            color: $primary;
+            transform: translateY(-2px);
+            box-shadow: $shadow-md;
+
+            i {
+                transform: translateX(-4px);
+            }
+        }
+    }
+
+    .header-content {
+        h2 {
+            font-size: 2.25rem;
+            font-weight: 800; // Extra bold
+            margin: 0 0 8px;
+            background: linear-gradient(135deg, $primary, $primary-light);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+
+        p {
+            margin: 0;
+            color: $text-secondary;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+    }
+}
+
+// Main Grid Layout
+.content-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 48px;
+    align-items: start;
+
+    @media (max-width: 1000px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+// Cards - Premium Card Style
+.card {
+    background: white;
+    border-radius: 32px; // More rounded
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    padding: 40px;
+    box-shadow: $shadow-md;
+    margin-bottom: 32px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    backdrop-filter: blur(20px); // Subtle glass effect if bg was transparent, kept for feel
+
+    &:hover {
+        box-shadow: $shadow-lg;
+    }
+
+    h3 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin: 0 0 32px;
+        color: $text-secondary;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        &::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, $border, transparent);
+        }
+    }
+}
+
+// Left Column Styles
+.input-section {
+    .magic-section {
+        label {
+            display: block;
+            margin-bottom: 16px;
+            font-weight: 600;
+            color: $text;
+            font-size: 1.1rem;
+        }
+
+        .magic-input-wrapper {
+            position: relative;
+            background: #FaFaFa; // Slightly darker than white
+            border: 2px solid transparent;
+            border-radius: 20px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+
+            &.focused {
+                background: white;
+                border-color: rgba($primary, 0.3);
+                box-shadow: 0 8px 32px rgba($primary, 0.1);
+            }
+
+            .input-icon {
+                padding-left: 20px;
+                color: $primary;
+                font-size: 1.4rem;
+            }
+
+            input {
+                width: 100%;
+                border: none;
+                padding: 20px;
+                font-size: 1.2rem;
+                outline: none;
+                color: $text;
+                background: transparent;
+                font-weight: 500;
+
+                &::placeholder {
+                    color: #d0d0d0;
+                    font-weight: 400;
+                }
+            }
+
+            .fetch-pill {
+                background: $text; // Dark pill
+                border: none;
+                padding: 14px 28px;
+                border-radius: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                color: white;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                white-space: nowrap;
+                transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+                i {
+                    color: $accent;
+                    font-size: 1.1rem;
+                }
+
+                &:hover:not(:disabled) {
+                    transform: translateY(-2px) scale(1.02);
+                    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+                }
+
+                &:disabled {
+                    background: #e0e0e0;
+                    color: #999;
+                    box-shadow: none;
+                    cursor: not-allowed;
+
+                    i {
+                        color: #999;
+                    }
+                }
+
+                &.loading {
+                    background: #f0f0f0;
+                    color: $text;
+                }
+            }
+        }
+    }
+
+    .field-group {
+        margin-bottom: 32px;
+
+        label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: $text;
+            font-size: 0.95rem;
+        }
+
+        // PrimeNG Input Overrides
+        ::ng-deep {
+
+            .p-inputtext,
+            .p-inputtextarea {
+                width: 100%;
+                border-radius: 16px;
+                padding: 18px 24px;
+                border: 1px solid $border;
+                background: #fff;
+                font-family: inherit;
+                font-size: 1rem;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+
+                &:hover {
+                    border-color: darken($border, 15%);
+                }
+
+                &:focus {
+                    border-color: $primary;
+                    box-shadow: 0 0 0 4px rgba($primary, 0.1);
+                }
+            }
+
+            .custom-textarea {
+                resize: vertical;
+                min-height: 140px;
+            }
+        }
+    }
+
+    // Gallery Styles
+    .gallery-group {
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+
+            .header-actions {
+                display: flex;
+                background: $surface; // e.g. white or light gray
+                padding: 4px;
+                border-radius: 14px;
+                border: 1px solid $border;
+                box-shadow: $shadow-sm;
+
+                .btn-add-mini {
+                    background: transparent;
+                    color: $text-secondary;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 10px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-size: 0.9rem;
+                    transition: all 0.2s;
+
+                    &:hover {
+                        background: rgba(0, 0, 0, 0.03);
+                        color: $primary;
+                    }
+
+                    // You could add an 'active' state logic if they were tabs, 
+                    // but for two action buttons, simple hover is fine.
+                }
+            }
+        }
+
+        // Upload Row (Manual Mode)
+        .upload-row {
+            display: flex;
+            gap: 12px;
+
+            .flex-grow {
+                flex: 1;
+            }
+
+            .btn-upload {
+                background: $text;
+                color: white;
+                border: none;
+                padding: 0 24px;
+                border-radius: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.3s;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+                &:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+                }
+            }
+        }
+
+        .gallery-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+
+            .gallery-row {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                background: white;
+                padding: 8px 16px;
+                border-radius: 16px;
+                border: 1px solid $border;
+                box-shadow: $shadow-sm;
+                transition: transform 0.2s;
+
+                &:hover {
+                    transform: translateX(4px);
+                    border-color: darken($border, 10%);
+                }
+
+                i {
+                    color: $primary;
+                    font-size: 1.1rem;
+                }
+
+                input {
+                    background: transparent;
+                    border: none;
+                    flex: 1;
+                    padding: 12px;
+                    outline: none;
+                    font-size: 1rem;
+                    color: $text;
+                }
+
+                .btn-remove-mini {
+                    background: transparent;
+                    border: none;
+                    color: #ef5350;
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.2s;
+
+                    &:hover {
+                        background: #ffebee;
+                        transform: scale(1.1);
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Right Column: Preview Sidebar
+.preview-sidebar {
+    position: sticky;
+    top: 40px;
+
+    .preview-card {
+        background: white;
+        border-radius: 32px;
+        overflow: hidden;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: $shadow-lg; // Deep shadow for "floating" effect
+
+        .preview-image {
+            width: 100%;
+            height: 360px;
+            background: #f0f0f0;
+            position: relative;
+
+            &::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(to bottom, transparent 60%, rgba(0, 0, 0, 0.6));
+            }
+
+            .main-img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            // Overlay for Manual Upload on Link Mode
+            .image-override-overlay {
+                position: absolute;
+                bottom: 16px;
+                left: 16px;
+                right: 16px;
+                z-index: 10;
+
+                .upload-row.mini {
+                    background: rgba(255, 255, 255, 0.85);
+                    backdrop-filter: blur(16px);
+                    padding: 6px;
+                    border-radius: 20px;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+                    border: 1px solid rgba(255, 255, 255, 0.4);
+
+                    input[type="text"] {
+                        flex: 1;
+                        background: transparent;
+                        border: none;
+                        padding: 8px 12px;
+                        outline: none;
+                        font-size: 0.9rem;
+                        color: $text;
+                        font-weight: 500;
+                    }
+
+                    .btn-icon {
+                        background: $text;
+                        color: white;
+                        border: none;
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 16px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+                        i {
+                            font-size: 1.1rem;
+                        }
+
+                        &:hover {
+                            transform: scale(1.05) translateY(-2px);
+                            background: black;
+                            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+                        }
+                    }
+                }
+            }
+        }
+
+        .preview-content {
+            padding: 32px;
+
+            h4 {
+                font-size: 1.75rem;
+                margin: 0 0 32px;
+                line-height: 1.3;
+                color: $text;
+                font-weight: 800;
+            }
+
+            .duration-control {
+                background: #f5f7f5;
+                padding: 24px;
+                border-radius: 20px;
+                margin-bottom: 32px;
+
+                .slider-header {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 20px;
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                    color: $text-secondary;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+
+                    .badge {
+                        background: $primary;
+                        padding: 4px 14px;
+                        border-radius: 20px;
+                        color: white;
+                        font-weight: 700;
+                        box-shadow: 0 4px 10px rgba($primary, 0.3);
+                    }
+                }
+            }
+
+            .cost-summary {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                padding-top: 20px;
+                border-top: 1px dashed $border;
+                text-align: center;
+
+                span:first-child {
+                    text-transform: uppercase;
+                    letter-spacing: 2px;
+                    font-size: 0.8rem;
+                    color: $text-secondary;
+                    font-weight: 600;
+                }
+
+                .price {
+                    font-size: 3.5rem;
+                    font-weight: 800;
+                    color: $primary;
+                    letter-spacing: -2px;
+                }
+            }
+        }
+
+        .actions {
+            padding: 24px 32px 32px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+
+            button {
+                width: 100%;
+                padding: 20px;
+                border-radius: 16px;
+                font-weight: 800;
+                font-size: 1.1rem;
+                cursor: pointer;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                border: none;
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
+
+                &.btn-primary {
+                    background: $text; // Luxury Black/Dark Green
+                    color: white;
+                    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+
+                    &:hover:not(:disabled) {
+                        transform: translateY(-4px);
+                        box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
+                        background: black;
+                    }
+                }
+
+                &.btn-secondary {
+                    background: transparent;
+                    color: $text-secondary;
+                    border: 1px solid transparent;
+
+                    &:hover:not(:disabled) {
+                        background: $surface;
+                        color: $text;
+                    }
+                }
+
+                &:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                    transform: none !important;
+                    box-shadow: none !important;
+                }
+            }
+        }
+    }
+}
+
+// Angular / PrimeNG deep overrides
+:host ::ng-deep {
+    .p-slider {
+        &.p-slider-horizontal {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+        }
+
+        .p-slider-range {
+            background: $primary;
+            border-radius: 4px;
+        }
+
+        .p-slider-handle {
+            border: 4px solid white;
+            background: $primary;
+            width: 28px;
+            height: 28px;
+            margin-top: -10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+            &:hover {
+                transform: scale(1.2);
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+            }
+        }
+    }
+}
+
+// Mode Selector
+.mode-selector {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 32px;
+    background: white;
+    padding: 6px;
+    border-radius: 16px;
+    width: fit-content;
+    border: 1px solid $border;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+
+    .mode-btn {
+        background: transparent;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        color: $text-secondary;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        font-size: 0.95rem;
+
+        i {
+            font-size: 1.1rem;
+        }
+
+        &:hover {
+            color: $text;
+            background: $surface;
+        }
+
+        &.active {
+            background: rgba($primary, 0.1);
+            color: $primary;
+            box-shadow: none;
+        }
+    }
+}
+
+// Main Grid Layout
+.content-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 32px;
+    align-items: start;
+
+    @media (max-width: 900px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+// Cards
+.card {
+    background: white;
+    border-radius: 24px;
+    border: 1px solid $border;
+    padding: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+    margin-bottom: 24px;
+
+    h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0 0 24px;
+        color: $text;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+}
+
+// Left Column Styles
+.input-section {
+    .magic-section {
+        label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: $text-secondary;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .magic-input-wrapper {
+            position: relative;
+            background: white;
+            border: 2px solid $border;
+            border-radius: 16px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+
+            &.focused {
+                border-color: $primary;
+                box-shadow: 0 4px 12px rgba($primary, 0.15);
+            }
+
+            .input-icon {
+                padding-left: 16px;
+                color: $text-secondary;
+                font-size: 1.2rem;
+            }
+
+            input {
+                width: 100%;
+                border: none;
+                padding: 16px;
+                font-size: 1.1rem;
+                outline: none;
+                color: $text;
+                background: transparent;
+
+                &::placeholder {
+                    color: #ccc;
+                }
+            }
+
+            .fetch-pill {
+                background: $surface;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 12px;
+                font-weight: 700;
+                cursor: pointer;
+                color: $text;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                white-space: nowrap;
+                transition: all 0.2s;
+
+                i {
+                    color: #fbc02d;
+                    font-size: 1.1rem;
+                }
+
+                &:hover:not(:disabled) {
+                    background: #eee;
+                    transform: translateY(-1px);
+                }
+
+                &:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+
+                &.loading {
+                    color: $text-secondary;
+                    background: transparent;
+                }
+            }
+        }
+    }
+
+    .field-group {
+        margin-bottom: 24px;
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: $text;
+            font-size: 0.95rem;
+        }
+
+        // PrimeNG Input Overrides
+        ::ng-deep {
+
+            .p-inputtext,
+            .p-inputtextarea {
+                width: 100%;
+                border-radius: 12px;
+                padding: 16px;
+                border: 1px solid $border;
+                font-family: inherit;
+                font-size: 1rem;
+                transition: all 0.2s;
+
+                &:hover {
+                    border-color: darken($border, 10%);
+                }
+
+                &:focus {
+                    border-color: $primary;
+                    box-shadow: 0 0 0 4px rgba($primary, 0.1);
+                }
+            }
+
+            .custom-textarea {
+                resize: vertical;
+                min-height: 120px;
+            }
+        }
+
+        .hint {
+            display: block;
+            margin-top: 8px;
+            color: $text-secondary;
+            font-size: 0.9rem;
+        }
+    }
+
+    // Gallery Styles
+    .gallery-group {
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+
+            .btn-add-mini {
+                background: rgba($primary, 0.1);
+                color: $primary;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 8px;
+                font-weight: 600;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 0.9rem;
+                transition: all 0.2s;
+
+                &:hover {
+                    background: rgba($primary, 0.2);
+                }
+            }
+        }
+
+        .gallery-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+
+            .gallery-row {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                background: $surface;
+                padding: 8px 12px;
+                border-radius: 12px;
+
+                i {
+                    color: $text-secondary;
+                }
+
+                input {
+                    background: transparent;
+                    border: none;
+                    flex: 1;
+                    padding: 8px;
+                    outline: none;
+
+                    &:focus {
+                        box-shadow: none;
+                    }
+                }
+
+                .btn-remove-mini {
+                    background: white;
+                    border: 1px solid $border;
+                    color: #ef5350;
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.2s;
+
+                    &:hover {
+                        background: #ffebee;
+                        border-color: #ef5350;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Right Column: Preview Sidebar
+.preview-sidebar {
+    position: sticky;
+    top: 32px;
+
+    .preview-card {
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        border: 1px solid $border;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+
+        .preview-image {
+            width: 100%;
+            height: 300px; // Larger image
+            background: #eee;
+            position: relative;
+
+            .main-img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .image-override-overlay {
+                position: absolute;
+                bottom: 16px;
+                left: 16px;
+                right: 16px;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(4px);
+                padding: 8px 12px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                opacity: 0;
+                transform: translateY(10px);
+                transition: all 0.3s;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+                i {
+                    color: $text-secondary;
+                }
+
+                input {
+                    border: none;
+                    background: transparent;
+                    width: 100%;
+                    outline: none;
+                    font-size: 0.9rem;
+                }
+            }
+
+            &:hover .image-override-overlay {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .preview-content {
+            padding: 24px;
+
+            h4 {
+                font-size: 1.5rem;
+                margin: 0 0 24px;
+                line-height: 1.3;
+                color: $text;
+            }
+
+            .duration-control {
+                background: $surface;
+                padding: 16px;
+                border-radius: 16px;
+                margin-bottom: 24px;
+
+                .slider-header {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 16px;
+                    font-size: 0.9rem;
+                    font-weight: 600;
+                    color: $text-secondary;
+
+                    .badge {
+                        background: white;
+                        padding: 4px 12px;
+                        border-radius: 20px;
+                        color: $text;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+                    }
+                }
+            }
+
+            .cost-summary {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding-top: 16px;
+                border-top: 2px dashed $border;
+
+                span {
+                    font-weight: 600;
+                    color: $text-secondary;
+                }
+
+                .price {
+                    font-size: 2rem;
+                    font-weight: 800;
+                    background: linear-gradient(135deg, $primary, darken($primary, 10%));
+                    background-clip: text;
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                }
+            }
+        }
+
+        .actions {
+            padding: 24px;
+            background: $surface;
+            border-top: 1px solid $border;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+
+            button {
+                width: 100%;
+                padding: 16px;
+                border-radius: 12px;
+                font-weight: 700;
+                font-size: 1rem;
+                cursor: pointer;
+                transition: all 0.2s;
+                border: none;
+
+                &.btn-primary {
+                    background: linear-gradient(135deg, $primary, $primary-light);
+                    color: white;
+                    box-shadow: 0 4px 12px rgba($primary, 0.3);
+
+                    &:hover:not(:disabled) {
+                        transform: translateY(-2px);
+                        box-shadow: 0 8px 20px rgba($primary, 0.4);
+                    }
+                }
+
+                &.btn-secondary {
+                    background: white;
+                    color: $text;
+                    border: 1px solid $border;
+
+                    &:hover:not(:disabled) {
+                        background: #f0f0f0;
+                    }
+                }
+
+                &:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                }
+            }
+        }
+    }
+}
+
+// Angular / PrimeNG Deep Overrides
+:host ::ng-deep {
+    .p-slider {
+        &.p-slider-horizontal {
+            height: 6px;
+        }
+
+        .p-slider-range {
+            background: $primary;
+        }
+
+        .p-slider-handle {
+            border: 2px solid $primary;
+            background: white;
+            width: 20px;
+            height: 20px;
+            margin-top: -8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+            &:hover {
+                transform: scale(1.1);
+                background: $primary;
+            }
+        }
+    }
+}

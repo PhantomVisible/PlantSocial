@@ -1,0 +1,153 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+    background: white;
+    width: 90%;
+    max-width: 450px;
+    border-radius: 16px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        color: #1a1a1a;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: #999;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+
+        &:hover {
+            color: #333;
+        }
+    }
+}
+
+.modal-body {
+    padding: 24px;
+
+    p {
+        margin: 0 0 16px;
+        color: #666;
+    }
+
+    .cost-summary {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f9f9f9;
+        padding: 16px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+
+        span {
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .amount {
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: #2e7d32;
+        }
+    }
+
+    .note {
+        font-size: 0.9rem;
+        margin: 0;
+    }
+}
+
+.modal-footer {
+    padding: 16px 24px;
+    background: #f9f9f9;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+
+    button {
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s;
+
+        &.cancel-btn {
+            background: white;
+            border: 1px solid #ddd;
+            color: #666;
+
+            &:hover {
+                background: #f5f5f5;
+            }
+        }
+
+        &.pay-btn {
+            background: #2e7d32;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            &:hover {
+                background: #1b5e20;
+            }
+
+            &:disabled {
+                opacity: 0.7;
+                cursor: not-allowed;
+            }
+        }
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
