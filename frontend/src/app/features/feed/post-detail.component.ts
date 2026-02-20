@@ -1,9 +1,10 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule, Router } from '@angular/router';
 import { FeedService, Post } from './feed.service';
 import { PostCardComponent } from './post-card.component';
 import { switchMap } from 'rxjs/operators';
+import { ToastService } from '../../core/toast.service';
 
 @Component({
     selector: 'app-post-detail',
@@ -32,7 +33,13 @@ import { switchMap } from 'rxjs/operators';
 
         <!-- Post Content -->
         <div *ngIf="post() as p" class="post-content">
-            <app-post-card [post]="p"></app-post-card>
+            <app-post-card 
+              [post]="p"
+              (onLike)="toggleLike($event)"
+              (onDelete)="deletePost($event)"
+              (onEdit)="editPost($event)"
+              (onRepost)="repostPost($event)"
+            ></app-post-card>
             
             <!-- Future Comment Section Placeholder -->
             <div class="comments-section">
@@ -93,7 +100,9 @@ import { switchMap } from 'rxjs/operators';
 })
 export class PostDetailComponent implements OnInit {
     private route = inject(ActivatedRoute);
+    private router = inject(Router);
     private feedService = inject(FeedService);
+    private toastService = inject(ToastService);
 
     post = signal<Post | null>(null);
     loading = signal(true);
@@ -119,6 +128,105 @@ export class PostDetailComponent implements OnInit {
                 this.error.set('Post not found or unavailable.');
                 this.loading.set(false);
             }
+        });
+    }
+
+    toggleLike(post: Post) {
+        this.feedService.likePost(post.id).subscribe();
+
+        // Optimistic update
+        this.post.update(current => {
+            if (!current) return current;
+            const originalPost = current.originalPost || current;
+            const updatedOriginal = {
+                ...originalPost,
+                likedByCurrentUser: !originalPost.likedByCurrentUser,
+                likesCount: originalPost.likedByCurrentUser ? originalPost.likesCount - 1 : originalPost.likesCount + 1
+            };
+
+            if (current.originalPost) {
+                return { ...current, originalPost: updatedOriginal };
+            }
+            return updatedOriginal;
+        });
+    }
+
+    deletePost(postId: string) {
+        this.feedService.deletePost(postId).subscribe({
+            next: () => {
+                this.toastService.showSuccess('Post deleted successfully');
+                this.router.navigate(['/']); // Go back to feed
+            },
+            error: (err) => {
+                console.error('Delete failed', err);
+                this.toastService.showError('Failed to delete post');
+            }
+        });
+    }
+
+    editPost(event: { id: string, content: string, plantTag?: string | null }) {
+        this.feedService.editPost(event.id, event.content, event.plantTag).subscribe({
+            next: (updated) => {
+                this.toastService.showSuccess('Post updated');
+                // Optimistic update to reflect new content in the detail view
+                this.post.update(current => {
+                    if (!current) return current;
+                    if (current.id === updated.id) {
+                        return { ...current, content: updated.content, plantTag: updated.plantTag };
+                    }
+                    if (current.originalPost && current.originalPost.id === updated.id) {
+                        return { ...current, originalPost: { ...current.originalPost, content: updated.content, plantTag: updated.plantTag } };
+                    }
+                    return current;
+                });
+            },
+            error: (err) => {
+                console.error('Edit failed', err);
+                this.toastService.showError('Failed to update post');
+            }
+        });
+    }
+
+    repostPost(postId: string) {
+        const currentPost = this.post();
+        if (!currentPost) return;
+
+        const isCurrentlyReposted = currentPost.originalPost
+            ? currentPost.isRepostedByCurrentUser
+            : currentPost.isRepostedByCurrentUser;
+
+        this.feedService.repostPost(postId).subscribe({
+            next: () => {
+                if (isCurrentlyReposted) {
+                    this.toastService.showInfo('Removed repost');
+                    this.updateRepostOptimistically(false);
+                } else {
+                    this.toastService.showSuccess('Reposted successfully');
+                    this.updateRepostOptimistically(true);
+                }
+            },
+            error: (err: any) => {
+                console.error('Repost failed', err);
+                this.toastService.showError('Failed to update repost status');
+            }
+        });
+    }
+
+    private updateRepostOptimistically(isReposting: boolean) {
+        this.post.update(current => {
+            if (!current) return current;
+            const originalPost = current.originalPost || current;
+            const updatedOriginal = {
+                ...originalPost,
+                repostCount: isReposting ? originalPost.repostCount + 1 : Math.max(0, originalPost.repostCount - 1)
+            };
+
+            const updatedPost = {
+                ...(current.originalPost ? { ...current, originalPost: updatedOriginal } : updatedOriginal),
+                isRepostedByCurrentUser: isReposting
+            };
+
+            return updatedPost;
         });
     }
 }

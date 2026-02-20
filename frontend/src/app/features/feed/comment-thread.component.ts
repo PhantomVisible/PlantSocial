@@ -4,17 +4,22 @@ import { FormsModule } from '@angular/forms';
 import { CommentService, CommentData } from './comment.service';
 import { AuthService } from '../../auth/auth.service';
 import { AuthGatekeeperService } from '../../auth/auth-gatekeeper.service';
+import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
 
 @Component({
   selector: 'app-comment-thread',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AvatarComponent],
   template: `
     <div class="thread">
       <!-- New comment input -->
       <div class="thread__compose">
-        <div class="thread__compose-avatar">
-          {{ getMyInitials() }}
+        <div class="thread__compose-avatar-wrap">
+          <app-avatar 
+            [imageUrl]="resolveImageUrl(authService.currentUser()?.profilePictureUrl || '')" 
+            [name]="authService.currentUser()?.fullName || authService.currentUser()?.username || 'User'" 
+            [size]="32">
+          </app-avatar>
         </div>
         <div class="thread__compose-input-wrap">
           <textarea
@@ -39,8 +44,12 @@ import { AuthGatekeeperService } from '../../auth/auth-gatekeeper.service';
       <div class="thread__list">
         <div *ngFor="let comment of comments()" class="comment">
           <div class="comment__line" *ngIf="comment._replies && comment._replies.length > 0"></div>
-          <div class="comment__avatar">
-            {{ getInitials(comment.authorName) }}
+          <div class="comment__avatar-wrap">
+            <app-avatar 
+              [imageUrl]="resolveImageUrl(comment.authorProfilePictureUrl || '')" 
+              [name]="comment.authorName" 
+              [size]="32">
+            </app-avatar>
           </div>
           <div class="comment__body">
             <div class="comment__header">
@@ -90,8 +99,12 @@ import { AuthGatekeeperService } from '../../auth/auth-gatekeeper.service';
             <!-- Nested Replies -->
             <div *ngIf="comment._replies && comment._replies.length > 0" class="comment__replies">
               <div *ngFor="let reply of comment._replies" class="comment comment--reply">
-                <div class="comment__avatar comment__avatar--sm">
-                  {{ getInitials(reply.authorName) }}
+                <div class="comment__avatar-wrap">
+                  <app-avatar 
+                    [imageUrl]="resolveImageUrl(reply.authorProfilePictureUrl || '')" 
+                    [name]="reply.authorName" 
+                    [size]="26">
+                  </app-avatar>
                 </div>
                 <div class="comment__body">
                   <div class="comment__header">
@@ -131,17 +144,7 @@ import { AuthGatekeeperService } from '../../auth/auth-gatekeeper.service';
       align-items: flex-start;
     }
 
-    .thread__compose-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--trellis-green), var(--trellis-green-dark));
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 0.7rem;
+    .thread__compose-avatar-wrap {
       flex-shrink: 0;
     }
 
@@ -199,24 +202,9 @@ import { AuthGatekeeperService } from '../../auth/auth-gatekeeper.service';
       position: relative;
     }
 
-    .comment__avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #a5d6a7, #66bb6a);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 0.65rem;
+    .comment__avatar-wrap {
       flex-shrink: 0;
-    }
-
-    .comment__avatar--sm {
-      width: 26px;
-      height: 26px;
-      font-size: 0.55rem;
+      z-index: 1; /* Above connecting line */
     }
 
     .comment__body {
@@ -362,12 +350,17 @@ export class CommentThreadComponent {
   @Input({ required: true }) postId!: string;
 
   private commentService = inject(CommentService);
-  private authService = inject(AuthService);
+  public authService = inject(AuthService);
   private gatekeeper = inject(AuthGatekeeperService);
 
   comments = signal<CommentDataUI[]>([]);
   loading = signal(false);
   newCommentText = '';
+
+  resolveImageUrl(url: string | null): string {
+    if (!url) return '';
+    return url.startsWith('http') ? url : `http://localhost:8080${url}`;
+  }
 
   /** Extended interface with UI-only fields */
   ngOnInit() {
@@ -468,15 +461,6 @@ export class CommentThreadComponent {
     const el = event.target as HTMLTextAreaElement;
     el.style.height = 'auto';
     el.style.height = el.scrollHeight + 'px';
-  }
-
-  getMyInitials(): string {
-    const user = this.authService.currentUser();
-    return user ? this.getInitials(user.fullName || user.email) : '?';
-  }
-
-  getInitials(name: string): string {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   }
 
   formatTime(dateStr: string): string {

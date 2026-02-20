@@ -207,6 +207,7 @@ public class ChatService {
                         m.getUser().getId(),
                         m.getUser().getUsername(),
                         m.getUser().getFullName(),
+                        m.getUser().getProfilePictureUrl(),
                         m.getRole().name()))
                 .collect(Collectors.toList());
 
@@ -231,6 +232,7 @@ public class ChatService {
                 msg.getSender().getId(),
                 msg.getSender().getUsername(),
                 msg.getSender().getFullName(),
+                msg.getSender().getProfilePictureUrl(),
                 msg.getContent(),
                 msg.getMessageType().name(),
                 msg.getMediaUrl(),

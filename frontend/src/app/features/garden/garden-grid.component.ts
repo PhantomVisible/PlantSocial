@@ -2,14 +2,15 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PlantData } from './plant.service';
 import { PlantCardComponent } from './plant-card.component';
+import { PlantSkeletonComponent } from './plant-skeleton.component';
 
 @Component({
   selector: 'app-garden-grid',
   standalone: true,
-  imports: [CommonModule, PlantCardComponent],
+  imports: [CommonModule, PlantCardComponent, PlantSkeletonComponent],
   template: `
-    <div class="garden">
-      <!-- Add Plant Card (owner only) -->
+    <div class="garden" *ngIf="!(!loading && plants.length === 0 && isOwner)">
+      <!-- Add Plant Card (owner only - shown when there are already plants) -->
       <div *ngIf="isOwner" class="plant-card plant-card--add" (click)="addPlantClicked.emit()">
         <div class="add-icon">
           <i class="pi pi-plus"></i>
@@ -17,21 +18,38 @@ import { PlantCardComponent } from './plant-card.component';
         <span class="add-label">Add Plant</span>
       </div>
 
-      <!-- Plant Cards -->
-      <app-plant-card
-        *ngFor="let plant of plants"
-        [plant]="plant"
-        [isOwner]="isOwner"
-        (edit)="plantEdit.emit($event)"
-        (delete)="plantDelete.emit($event)"
-        (click)="plantClick.emit(plant)"
-      ></app-plant-card>
+      <!-- Skeleton Loading -->
+      <ng-container *ngIf="loading">
+        <app-plant-skeleton *ngFor="let i of [1,2,3,4,5,6]"></app-plant-skeleton>
+      </ng-container>
 
-      <!-- Empty State -->
-      <div *ngIf="plants.length === 0 && !isOwner" class="garden-empty">
-        <div class="garden-empty__icon">🌿</div>
+      <ng-container *ngIf="!loading">
+        <!-- Plant Cards -->
+        <app-plant-card
+          *ngFor="let plant of plants"
+          [plant]="plant"
+          [isOwner]="isOwner"
+          (edit)="plantEdit.emit($event)"
+          (delete)="plantDelete.emit($event)"
+          (click)="plantClick.emit(plant)"
+        ></app-plant-card>
+      </ng-container>
+
+      <!-- Empty State (Visitor) -->
+      <div *ngIf="!loading && plants.length === 0 && !isOwner" class="garden-empty">
+        <img src="assets/empty-garden.svg" alt="Empty Garden" class="garden-empty__svg"/>
         <p class="garden-empty__text">No plants in this garden yet.</p>
       </div>
+    </div>
+
+    <!-- Empty State (Owner) -->
+    <div *ngIf="!loading && plants.length === 0 && isOwner" class="garden-empty-owner">
+        <img src="assets/empty-garden.svg" alt="Empty Garden" class="garden-empty__svg"/>
+        <h3>No plants yet!</h3>
+        <p>Add your first green friend to get started.</p>
+        <button class="btn btn--filled btn--large" (click)="addPlantClicked.emit()">
+           <i class="pi pi-plus"></i> Add Plant
+        </button>
     </div>
   `,
   styles: [`
@@ -77,20 +95,49 @@ import { PlantCardComponent } from './plant-card.component';
       color: var(--trellis-green-dark);
     }
 
-    /* Empty */
+    /* Empty State */
     .garden-empty {
       grid-column: 1 / -1;
       text-align: center;
-      padding: 40px 16px;
+      padding: 60px 16px;
     }
-    .garden-empty__icon { font-size: 2rem; margin-bottom: 8px; }
-    .garden-empty__text { color: var(--trellis-text-hint); font-size: 0.9rem; }
+    .garden-empty__svg {
+      width: 200px;
+      height: 150px;
+      margin-bottom: 20px;
+    }
+    .garden-empty__text { color: var(--trellis-text-hint); font-size: 1rem; font-weight: 500; }
+    
+    .garden-empty-owner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 20px;
+      text-align: center;
+    }
+    .garden-empty-owner h3 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--trellis-text);
+      margin: 0 0 8px 0;
+    }
+    .garden-empty-owner p {
+      color: var(--trellis-text-secondary);
+      margin: 0 0 24px 0;
+    }
+    .btn--large {
+      padding: 12px 24px;
+      font-size: 1rem;
+      border-radius: 24px;
+    }
   `]
 })
 export class GardenGridComponent {
   @Input({ required: true }) userId!: string;
   @Input() isOwner = false;
   @Input() plants: PlantData[] = [];
+  @Input() loading = false;
   @Output() addPlantClicked = new EventEmitter<void>();
   @Output() plantClick = new EventEmitter<PlantData>();
   @Output() plantEdit = new EventEmitter<PlantData>();

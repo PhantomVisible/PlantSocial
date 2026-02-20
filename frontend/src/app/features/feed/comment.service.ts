@@ -9,6 +9,7 @@ export interface CommentData {
     authorId: string;
     createdAt: string;
     replyCount: number;
+    authorProfilePictureUrl?: string;
 }
 
 @Injectable({

@@ -5,17 +5,18 @@ import { ChatService, FloatingChatState, ChatMessage } from '../chat.service';
 import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../auth/auth.service';
+import { AvatarComponent } from '../../../shared/components/avatar/avatar.component';
 
 @Component({
   selector: 'app-floating-chat-window',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, AvatarComponent],
   template: `
     <div class="floating-window" [class.minimized]="chatState.minimized">
       <!-- Header -->
       <div class="window-header" (click)="toggleMinimize()">
         <div class="header-user">
-          <div class="avatar">{{ chatState.displayName.charAt(0).toUpperCase() }}</div>
+          <app-avatar [imageUrl]="resolveImageUrl(chatState.targetProfilePictureUrl || '')" [name]="chatState.displayName" [size]="28"></app-avatar>
           <span class="username">{{ chatState.displayName }}</span>
         </div>
         <div class="header-actions">
@@ -108,20 +109,6 @@ import { AuthService } from '../../../auth/auth.service';
         display: flex;
         align-items: center;
         gap: 8px;
-    }
-
-    .avatar {
-      width: 28px;
-      height: 28px;
-      background: linear-gradient(135deg, #1d9bf0, #0c8ce9);
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: 600;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     .username {

@@ -130,6 +130,21 @@ a:hover {
 .p-button:enabled:hover {
   background: var(--primary-hover);
   border-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Global native buttons micro-interaction */
+button:not(:disabled) {
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+button:not(:disabled):hover {
+  transform: translateY(-2px);
+}
+
+button:not(:disabled):active {
+  transform: translateY(0);
 }
 
 .p-inputtext {

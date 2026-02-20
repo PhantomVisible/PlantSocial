@@ -55,8 +55,8 @@ import { PlantDoctorService } from './features/plant-doctor/plant-doctor.service
         <!-- If Filtering: Wiki First, No News -->
         <app-wiki-sidebar *ngIf="isPlantSelected()"></app-wiki-sidebar>
 
-        <!-- If Normal: News First -->
-        <app-news-widget *ngIf="!isPlantSelected()"></app-news-widget>
+        <!-- If Normal AND Not Explore: News First -->
+        <app-news-widget *ngIf="!isPlantSelected() && !isExploreRoute()"></app-news-widget>
 
         <app-trends-widget></app-trends-widget>
         
@@ -158,6 +158,7 @@ export class AppComponent implements OnInit {
   isPlantSelected = signal(false);
   isFullWidthRoute = signal(false);
   isAuthRoute = signal(false);
+  isExploreRoute = signal(false);
 
   ngOnInit() {
     this.notificationService.init();
@@ -169,6 +170,7 @@ export class AppComponent implements OnInit {
         const url = this.router.url;
         this.isFullWidthRoute.set(url.startsWith('/chat'));
         this.isAuthRoute.set(url.startsWith('/auth'));
+        this.isExploreRoute.set(url.startsWith('/explore'));
       }
     });
 

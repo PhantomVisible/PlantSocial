@@ -36,7 +36,7 @@ import { PostSkeletonComponent } from '../feed/post-skeleton.component';
 
         <!-- Default Widgets (shown when not searching) -->
         <div *ngIf="!searchQuery()">
-            <app-news-widget></app-news-widget>
+            <app-news-widget [layout]="'grid'"></app-news-widget>
             <app-who-to-follow></app-who-to-follow>
         </div>
       </div>

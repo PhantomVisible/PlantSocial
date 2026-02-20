@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ChatService, ChatRoom } from '../chat.service';
 import { FloatingChatWindowComponent } from './floating-chat-window.component';
 import { AuthService } from '../../../auth/auth.service';
+import { AvatarComponent } from '../../../shared/components/avatar/avatar.component';
 
 @Component({
     selector: 'app-floating-chat-container',
     standalone: true,
-    imports: [CommonModule, FloatingChatWindowComponent],
+    imports: [CommonModule, FloatingChatWindowComponent, AvatarComponent],
     template: `
     <div class="floating-container">
       <!-- Open Chat Windows -->
@@ -45,7 +46,9 @@ import { AuthService } from '../../../auth/auth.service';
                 <div *ngFor="let room of chatService.rooms()" 
                      class="chat-list-item" 
                      (click)="openRoom(room)">
-                    <div class="avatar">{{ getRoomName(room).charAt(0).toUpperCase() }}</div>
+                    <div class="avatar-wrap">
+                        <app-avatar [imageUrl]="resolveImageUrl(getRoomAvatar(room) || '')" [name]="getRoomName(room)" [size]="48"></app-avatar>
+                    </div>
                     <div class="room-info">
                         <span class="room-name">{{ getRoomName(room) }}</span>
                         <div class="last-message-row">
@@ -239,19 +242,8 @@ import { AuthService } from '../../../auth/auth.service';
         border-right: 3px solid #1d9bf0; /* Active indicator hint */
     }
 
-    .avatar {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%); /* Random gradient */
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 1.2rem;
+    .avatar-wrap {
         flex-shrink: 0;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
     .room-info {
@@ -340,6 +332,19 @@ export class FloatingChatContainerComponent implements OnInit {
         const currentUser = this.authService.currentUser();
         const other = room.members.find(m => m.userId !== currentUser?.id);
         return other ? other.fullName : 'Chat';
+    }
+
+    getRoomAvatar(room: ChatRoom): string | undefined {
+        if (room.type === 'GROUP') return undefined;
+        const currentUser = this.authService.currentUser();
+        const other = room.members.find(m => m.userId !== currentUser?.id);
+        return other?.profilePictureUrl;
+    }
+
+    resolveImageUrl(url: string | null): string {
+        if (!url) return '';
+        if (url.startsWith('http')) return url;
+        return 'http://localhost:8080' + url;
     }
 
     isOwnMessage(msg: any): boolean {

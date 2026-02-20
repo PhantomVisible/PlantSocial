@@ -12,6 +12,7 @@ import { GardenGridComponent } from '../garden/garden-grid.component';
 import { AddPlantDialogComponent } from '../garden/add-plant-dialog.component';
 import { PlantService, PlantData } from '../garden/plant.service';
 import { PlantDetailsDialogComponent } from '../garden/plant-details-dialog.component';
+import { PostSkeletonComponent } from '../feed/post-skeleton.component';
 import { ChatService } from '../chat/chat.service';
 import { BlockService } from '../../core/services/block.service';
 import { ToastService } from '../../core/toast.service';
@@ -22,7 +23,7 @@ import { EditProfileDialogComponent } from './edit-profile-dialog.component';
 @Component({
   selector: 'app-user-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule, PostCardComponent, GardenGridComponent, AddPlantDialogComponent, PlantDetailsDialogComponent, EditProfileDialogComponent],
+  imports: [CommonModule, RouterModule, PostCardComponent, GardenGridComponent, AddPlantDialogComponent, PlantDetailsDialogComponent, EditProfileDialogComponent, PostSkeletonComponent],
   providers: [DialogService],
   template: `
     <div class="profile-page">
@@ -37,9 +38,35 @@ import { EditProfileDialogComponent } from './edit-profile-dialog.component';
         </div>
       </header>
 
-      <!-- Loading State -->
-      <div *ngIf="loading()" class="profile-loading">
-        <i class="pi pi-spin pi-spinner"></i>
+      <!-- Loading State (Skeleton) -->
+      <div *ngIf="loading()" class="profile-content">
+        <section class="hero">
+          <div class="hero__banner shimmer" style="background: none;"></div>
+          <div class="hero__row">
+            <div class="hero__avatar shimmer" style="background: none;"></div>
+            <div class="hero__action" style="flex: 1;">
+               <div class="shimmer" style="height: 36px; width: 100px; border-radius: 20px; float: right;"></div>
+            </div>
+          </div>
+          <div class="hero__info">
+            <div class="shimmer" style="height: 24px; width: 200px; border-radius: 4px; margin-bottom: 8px;"></div>
+            <div class="shimmer" style="height: 16px; width: 120px; border-radius: 4px; margin-bottom: 12px;"></div>
+            <div class="shimmer" style="height: 48px; width: 80%; border-radius: 4px;"></div>
+          </div>
+        </section>
+
+        <section class="user-feed">
+          <div class="feed-tabs">
+            <button class="feed-tab feed-tab--active">{{ activeTab() === 'posts' ? 'Posts' : 'Garden' }}</button>
+          </div>
+          
+          <ng-container *ngIf="activeTab() === 'posts'">
+            <app-post-skeleton *ngFor="let i of [1,2,3]"></app-post-skeleton>
+          </ng-container>
+          <ng-container *ngIf="activeTab() === 'garden'">
+            <app-garden-grid [userId]="''" [plants]="[]" [isOwner]="false" [loading]="true"></app-garden-grid>
+          </ng-container>
+        </section>
       </div>
 
       <div *ngIf="!loading() && profile()" class="profile-content">
@@ -202,6 +229,23 @@ import { EditProfileDialogComponent } from './edit-profile-dialog.component';
       margin: 0 auto;
       border-left: 1px solid var(--trellis-border-light);
       border-right: 1px solid var(--trellis-border-light);
+    }
+
+    /* ===== Shimmer ===== */
+    .shimmer {
+      background: linear-gradient(
+        90deg,
+        var(--skeleton-base, #f0f0f0) 25%,
+        var(--skeleton-shine, #e0e0e0) 50%,
+        var(--skeleton-base, #f0f0f0) 75%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 1.5s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
 
     /* ---- Top Bar ---- */

@@ -134,11 +134,12 @@ public class ChatRestController {
         return ResponseEntity.ok(
                 chatService.searchUsers(q, currentUser.getId()).stream()
                         .map(u -> new UserSearchResult(
-                                u.getId(), u.getUsername(), u.getFullName(),
+                                u.getId(), u.getUsername(), u.getFullName(), u.getProfilePictureUrl(),
                                 presenceService.isOnline(u.getId().toString())))
                         .toList());
     }
 
-    public record UserSearchResult(UUID id, String username, String fullName, boolean online) {
+    public record UserSearchResult(UUID id, String username, String fullName, String profilePictureUrl,
+            boolean online) {
     }
 }

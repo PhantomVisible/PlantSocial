@@ -56,7 +56,7 @@ import { ToastService } from '../../core/toast.service';
         ></app-post-card>
 
         <div *ngIf="posts().length === 0" class="feed-empty">
-          <i class="pi pi-sun empty-icon"></i>
+          <img src="assets/empty-feed.svg" alt="Empty Feed" class="feed-empty__svg" />
           <p *ngIf="!activeFilter()">Nothing here yet.</p>
           <p *ngIf="activeFilter()">No posts tagged "{{ activeFilter() }}".</p>
           <span *ngIf="!activeFilter()">Share what's growing in your garden!</span>
@@ -125,10 +125,10 @@ import { ToastService } from '../../core/toast.service';
       color: var(--trellis-text-hint);
     }
 
-    .empty-icon {
-      font-size: 2.5rem;
-      color: var(--trellis-green-pale);
-      margin-bottom: 12px;
+    .feed-empty__svg {
+      width: 200px;
+      height: 150px;
+      margin-bottom: 20px;
     }
 
     .feed-empty p {

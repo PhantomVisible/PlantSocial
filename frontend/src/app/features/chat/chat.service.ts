@@ -17,6 +17,7 @@ export interface ChatMember {
     userId: string;
     username: string;
     fullName: string;
+    profilePictureUrl?: string;
     role: string;
 }
 
@@ -26,6 +27,7 @@ export interface ChatMessage {
     senderId: string;
     senderUsername: string;
     senderFullName: string;
+    senderProfilePictureUrl?: string;
     content: string;
     messageType: 'TEXT' | 'IMAGE' | 'FILE';
     mediaUrl: string | null;
@@ -43,12 +45,14 @@ export interface UserSearchResult {
     id: string;
     username: string;
     fullName: string;
+    profilePictureUrl?: string;
     online: boolean;
 }
 
 export interface FloatingChatState {
     roomId: string;
     displayName: string;
+    targetProfilePictureUrl?: string;
     type: 'PRIVATE' | 'GROUP';
     minimized: boolean;
 }
@@ -104,6 +108,7 @@ export class ChatService {
     openFloatingChat(userOrRoom: UserSearchResult | ChatRoom | any): void {
         let roomId: string | undefined;
         let displayName: string;
+        let targetProfilePictureUrl: string | undefined;
         let type: 'PRIVATE' | 'GROUP';
         let participantId: string | undefined;
 
@@ -113,11 +118,13 @@ export class ChatService {
             const room = userOrRoom as ChatRoom;
             roomId = room.id;
             displayName = this.getRoomDisplayName(room);
+            targetProfilePictureUrl = this.getRoomTargetAvatar(room);
             type = room.type;
         } else {
             // It's a UserSearchResult or similar
             const user = userOrRoom;
             displayName = user.fullName;
+            targetProfilePictureUrl = user.profilePictureUrl;
             participantId = user.id;
             type = 'PRIVATE';
 
@@ -128,16 +135,18 @@ export class ChatService {
 
             if (existingRoom) {
                 roomId = existingRoom.id;
+                targetProfilePictureUrl = this.getRoomTargetAvatar(existingRoom);
             }
         }
 
         if (roomId) {
-            this.addFloatingChat(roomId, displayName, type!);
+            this.addFloatingChat(roomId, displayName, targetProfilePictureUrl, type!);
         } else if (participantId) {
             // Create/Get room via API then open
             this.getOrCreatePrivateRoom(participantId).subscribe(room => {
                 const name = this.getRoomDisplayName(room);
-                this.addFloatingChat(room.id, name, room.type);
+                const avatar = this.getRoomTargetAvatar(room);
+                this.addFloatingChat(room.id, name, avatar, room.type);
             });
         }
     }
@@ -148,10 +157,16 @@ export class ChatService {
         return other ? other.fullName : 'Unknown';
     }
 
-    private addFloatingChat(roomId: string, displayName: string, type: 'PRIVATE' | 'GROUP') {
+    private getRoomTargetAvatar(room: ChatRoom): string | undefined {
+        if (room.type === 'GROUP') return undefined;
+        const other = room.members.find(m => m.userId !== this.authService.currentUser()?.id);
+        return other?.profilePictureUrl;
+    }
+
+    private addFloatingChat(roomId: string, displayName: string, targetProfilePictureUrl: string | undefined, type: 'PRIVATE' | 'GROUP') {
         this.activeFloatingChats.update(chats => {
             if (chats.some(c => c.roomId === roomId)) return chats; // Already open
-            return [...chats, { roomId, displayName, type, minimized: false }];
+            return [...chats, { roomId, displayName, targetProfilePictureUrl, type, minimized: false }];
         });
         this.subscribeToRoom(roomId);
     }
