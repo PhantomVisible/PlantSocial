@@ -5,23 +5,31 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { ChatService, ChatRoom, ChatMessage, UserSearchResult } from './chat.service';
 import { WebSocketService } from '../../core/websocket.service';
 import { AuthService } from '../../auth/auth.service';
+import { UserService, UserProfile } from '../profile/user.service';
+
+import { DialogModule } from 'primeng/dialog';
+import { AvatarModule } from 'primeng/avatar';
+import { ButtonModule } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-chat-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, DialogModule, AvatarModule, ButtonModule, TooltipModule],
   template: `
     <div class="chat-container">
       <!-- ─── Sidebar ──────────────────────────────────────────── -->
       <div class="chat-sidebar" [class.hidden-mobile]="activeRoom() !== null">
         <div class="sidebar-header">
           <h2>Messages</h2>
-          <button class="btn-new-chat" (click)="showNewChat.set(true)" title="New Chat">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              <line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
-            </svg>
-          </button>
+          <p-button 
+            icon="pi pi-plus" 
+            [rounded]="true" 
+            pTooltip="New Conversation" 
+            tooltipPosition="bottom" 
+            styleClass="new-chat-btn shadow-2"
+            (onClick)="showNewChatModal = true">
+          </p-button>
         </div>
 
         <div class="sidebar-search">
@@ -38,19 +46,23 @@ import { AuthService } from '../../auth/auth.service';
           } @else if (filteredRooms().length === 0) {
             <div class="empty-state">
               <p>No conversations yet</p>
-              <button class="btn-start" (click)="showNewChat.set(true)">Start a chat</button>
+              <button class="btn-start" (click)="showNewChatModal = true">Start a chat</button>
             </div>
           } @else {
             @for (room of filteredRooms(); track room.id) {
               <div class="room-item" [class.active]="activeRoom()?.id === room.id"
                    (click)="selectRoom(room)">
                 <div class="room-avatar" [class.online]="isAnyMemberOnline(room)">
-                  {{ getRoomInitial(room) }}
+                  @if (getRoomAvatarUrl(room)) {
+                    <img [src]="resolveImageUrl(getRoomAvatarUrl(room))" class="avatar-img" alt="Avatar">
+                  } @else {
+                    {{ getRoomInitial(room) }}
+                  }
                 </div>
                 <div class="room-info">
                   <div class="room-name">{{ getRoomDisplayName(room) }}</div>
                   <div class="room-last-msg" *ngIf="room.lastMessage">
-                    <span class="msg-sender">{{ room.lastMessage.senderUsername }}:</span>
+                    <span class="msg-sender">{{ room.lastMessage.senderFullName }}:</span>
                     @if (room.lastMessage.messageType === 'IMAGE') {
                       📷 Photo
                     } @else if (room.lastMessage.messageType === 'FILE') {
@@ -96,7 +108,11 @@ import { AuthService } from '../../auth/auth.service';
               </svg>
             </button>
             <div class="room-header-avatar" [class.online]="isAnyMemberOnline(activeRoom()!)">
-              {{ getRoomInitial(activeRoom()!) }}
+              @if (getRoomAvatarUrl(activeRoom()!)) {
+                <img [src]="resolveImageUrl(getRoomAvatarUrl(activeRoom()!))" class="avatar-img" alt="Avatar">
+              } @else {
+                {{ getRoomInitial(activeRoom()!) }}
+              }
             </div>
             <div class="room-header-info">
               <div class="room-header-name">
@@ -169,81 +185,37 @@ import { AuthService } from '../../auth/auth.service';
       </div>
 
       <!-- ─── New Chat Dialog ──────────────────────────────────── -->
-      @if (showNewChat()) {
-        <div class="dialog-overlay" (click)="showNewChat.set(false)">
-          <div class="new-chat-dialog" (click)="$event.stopPropagation()">
-            <div class="dialog-header">
-              <h3>New Conversation</h3>
-              <button class="btn-close" (click)="showNewChat.set(false)">&times;</button>
+      <p-dialog header="Start a Conversation" [(visible)]="showNewChatModal" [modal]="true"
+        [style]="{ width: '450px' }" [draggable]="false" [resizable]="false"
+        (onShow)="loadMutualConnections()">
+        <div class="p-4" style="min-height: 300px;">
+          @if (isLoadingMutuals()) {
+            <div class="flex justify-content-center align-items-center h-10rem">
+              <i class="pi pi-spin pi-spinner text-3xl text-primary"></i>
             </div>
-
-            <div class="dialog-tabs">
-              <button [class.active]="newChatTab() === 'private'"
-                      (click)="newChatTab.set('private')">Private</button>
-              <button [class.active]="newChatTab() === 'group'"
-                      (click)="newChatTab.set('group')">Group</button>
+          } @else if (mutualConnections().length === 0) {
+            <div class="text-center p-4">
+              <i class="pi pi-users text-4xl text-500 mb-3"></i>
+              <p class="m-0 text-color-secondary line-height-3">
+                You don't have any mutual connections yet. Go explore the Feed to find fellow gardeners!
+              </p>
             </div>
-
-            @if (newChatTab() === 'private') {
-              <div class="dialog-body">
-                <input type="text" placeholder="Search users..."
-                       [(ngModel)]="userSearchQuery"
-                       (input)="searchUsersDebounced()">
-                <div class="user-results">
-                  @for (user of userResults(); track user.id) {
-                    <div class="user-item" (click)="startPrivateChat(user.id)">
-                      <div class="user-avatar" [class.online]="user.online">
-                        {{ user.fullName.charAt(0) || '?' }}
-                      </div>
-                      <div class="user-info">
-                        <div class="user-name">{{ user.fullName }}</div>
-                        <div class="user-handle">&#64;{{ user.username }}</div>
-                      </div>
-                    </div>
-                  }
-                  @if (userResults().length === 0 && userSearchQuery.length > 1) {
-                    <div class="no-results">No users found</div>
-                  }
+          } @else {
+            <div class="flex flex-column gap-2">
+              @for (user of mutualConnections(); track user.id) {
+                <div class="flex align-items-center gap-3 p-3 border-round cursor-pointer hover:surface-hover transition-colors transition-duration-150"
+                     (click)="startConversation(user)">
+                  <p-avatar [image]="resolveImageUrl(user.profilePictureUrl)" shape="circle" size="large"></p-avatar>
+                  <div class="flex flex-column gap-1">
+                    <span class="font-medium text-color">{{ user.fullName }}</span>
+                    <span class="text-color-secondary text-sm">&#64;{{ user.username }}</span>
+                  </div>
                 </div>
-              </div>
-            } @else {
-              <div class="dialog-body">
-                <input type="text" placeholder="Group name"
-                       [(ngModel)]="newGroupName">
-                <input type="text" placeholder="Search members to add..."
-                       [(ngModel)]="userSearchQuery"
-                       (input)="searchUsersDebounced()">
-                <div class="selected-members">
-                  @for (member of selectedMembers(); track member.id) {
-                    <span class="member-chip">
-                      {{ member.fullName }}
-                      <button (click)="removeMember(member)">&times;</button>
-                    </span>
-                  }
-                </div>
-                <div class="user-results">
-                  @for (user of userResults(); track user.id) {
-                    <div class="user-item" (click)="toggleMember(user)">
-                      <div class="user-avatar">{{ user.fullName.charAt(0) || '?' }}</div>
-                      <div class="user-info">
-                        <div class="user-name">{{ user.fullName }}</div>
-                        <div class="user-handle">&#64;{{ user.username }}</div>
-                      </div>
-                      @if (isMemberSelected(user)) {
-                        <span class="check-icon">✓</span>
-                      }
-                    </div>
-                  }
-                </div>
-                <button class="btn-create-group" (click)="createGroup()"
-                        [disabled]="!newGroupName.trim() || selectedMembers().length === 0">
-                  Create Group
-                </button>
-              </div>
-            }
-          </div>
+              }
+            </div>
+          }
         </div>
-      }
+      </p-dialog>
     </div>
   `,
   styles: [`
@@ -296,21 +268,20 @@ import { AuthService } from '../../auth/auth.service';
       margin: 0;
     }
 
-    .btn-new-chat {
+    .new-chat-btn {
       width: 36px; height: 36px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #4caf50, #2e7d32);
-      color: white;
-      border: none;
-      cursor: pointer;
+      padding: 0;
+      background: linear-gradient(135deg, #4caf50, #2e7d32) !important;
+      border: none !important;
+      color: white !important;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all .2s;
     }
-    .btn-new-chat:hover {
+    .new-chat-btn:hover {
       transform: scale(1.08);
-      box-shadow: 0 4px 12px rgba(76,175,80,0.3);
+      box-shadow: 0 4px 12px rgba(76,175,80,0.3) !important;
     }
 
     .sidebar-search {
@@ -374,6 +345,12 @@ import { AuthService } from '../../auth/auth.service';
       border-radius: 50%;
       background: #4caf50;
       border: 2px solid #fff;
+    }
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
     }
 
     .room-info {
@@ -909,6 +886,7 @@ import { AuthService } from '../../auth/auth.service';
 export class ChatPageComponent implements OnInit, OnDestroy {
   chatService = inject(ChatService);
   private authService = inject(AuthService);
+  private userService = inject(UserService);
   private router = inject(Router);
 
   @ViewChild('messagesContainer') messagesContainer!: ElementRef;
@@ -917,7 +895,10 @@ export class ChatPageComponent implements OnInit, OnDestroy {
   searchQuery = '';
   filteredRooms = signal<ChatRoom[]>([]);
   messageText = '';
-  showNewChat = signal(false);
+  showNewChatModal = false;
+  mutualConnections = signal<UserProfile[]>([]);
+  isLoadingMutuals = signal(false);
+
   newChatTab = signal<'private' | 'group'>('private');
   userSearchQuery = '';
   userResults = signal<UserSearchResult[]>([]);
@@ -1079,7 +1060,6 @@ export class ChatPageComponent implements OnInit, OnDestroy {
       setTimeout(() => this.scrollToBottom(), 200);
     });
   }
-
   searchUsersDebounced(): void {
     clearTimeout(this.searchTimeout);
     if (this.userSearchQuery.length < 2) {
@@ -1095,7 +1075,7 @@ export class ChatPageComponent implements OnInit, OnDestroy {
 
   startPrivateChat(userId: string): void {
     this.chatService.getOrCreatePrivateRoom(userId).subscribe(room => {
-      this.showNewChat.set(false);
+      this.showNewChatModal = false;
       this.chatService.loadRooms();
       setTimeout(() => this.selectRoom(room), 300);
     });
@@ -1124,12 +1104,41 @@ export class ChatPageComponent implements OnInit, OnDestroy {
 
     this.chatService.createGroupRoom(name, this.selectedMembers().map(m => m.id))
       .subscribe(room => {
-        this.showNewChat.set(false);
+        this.showNewChatModal = false;
         this.newGroupName = '';
         this.selectedMembers.set([]);
         this.chatService.loadRooms();
         setTimeout(() => this.selectRoom(room), 300);
       });
+  }
+
+  loadMutualConnections(): void {
+    if (this.mutualConnections().length > 0) return; // already loaded
+    this.isLoadingMutuals.set(true);
+    const userId = this.currentUserId();
+    if (!userId) return;
+
+    this.userService.getMutualConnections(userId).subscribe({
+      next: (users) => {
+        this.mutualConnections.set(users);
+        this.isLoadingMutuals.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load mutual connections:', err);
+        this.isLoadingMutuals.set(false);
+      }
+    });
+  }
+
+  startConversation(user: UserProfile): void {
+    this.showNewChatModal = false;
+    this.openPrivateChatWithUser(user.id);
+  }
+
+  resolveImageUrl(url: string | null | undefined): string | undefined {
+    if (!url) return undefined;
+    if (url.startsWith('http')) return url;
+    return 'http://localhost:8080' + url;
   }
 
   getOtherMember(room: ChatRoom): any {
@@ -1142,6 +1151,12 @@ export class ChatPageComponent implements OnInit, OnDestroy {
     if (room.type === 'GROUP') return room.name || 'Group Chat';
     const other = this.getOtherMember(room);
     return other?.fullName || 'Private Chat';
+  }
+
+  getRoomAvatarUrl(room: ChatRoom): string | undefined {
+    if (room.type === 'GROUP') return undefined;
+    const other = this.getOtherMember(room);
+    return other?.profilePictureUrl;
   }
 
   getRoomInitial(room: ChatRoom): string {

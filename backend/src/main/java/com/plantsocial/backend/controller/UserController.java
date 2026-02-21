@@ -28,6 +28,7 @@ public class UserController {
     private final PostRepository postRepository;
     private final FeedService feedService;
     private final com.plantsocial.backend.service.FileStorageService fileStorageService;
+    @SuppressWarnings("unused")
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     /**
@@ -112,12 +113,42 @@ public class UserController {
     }
 
     /**
+     * Get mutual connections (users who follow the current user and whom the
+     * current user follows back)
+     */
+    @GetMapping("/users/{userId}/mutuals")
+    public ResponseEntity<List<UserProfileDTO>> getMutualConnections(@PathVariable UUID userId) {
+        // optionally verify if current user is requesting their own mutuals or not
+
+        List<User> mutuals = userRepository.findMutualFollowers(userId);
+
+        List<UserProfileDTO> result = mutuals.stream().map(u -> new UserProfileDTO(
+                u.getId(),
+                u.getFullName(),
+                u.getHandle(),
+                u.getBio(),
+                u.getLocation(),
+                u.getProfilePictureUrl(),
+                u.getCoverPictureUrl(),
+                u.getCreatedAt(),
+                postRepository.countByAuthorId(u.getId()),
+                (long) u.getFollowers().size(),
+                (long) u.getFollowing().size(),
+                true // Since they are mutuals, the current user MUST be following them
+        )).collect(Collectors.toList());
+
+        return ResponseEntity.ok(result);
+    }
+
+    /**
      * Get all posts by a specific user (newest first)
      */
     @GetMapping("/posts/user/{userId}")
     public ResponseEntity<List<PostResponse>> getUserPosts(@PathVariable UUID userId) {
         List<Post> posts = postRepository.findByAuthorIdOrderByCreatedAtDesc(userId);
-        User currentUser = getCurrentUser();
+        User currentUser = getCurrentUserSafe(); // Using safe method to avoid crashing if viewed while unauthenticated,
+                                                 // though typically won't hit here due to feedService mapping requiring
+                                                 // a User mostly. Actually, better use safe.
 
         List<PostResponse> responses = posts.stream()
                 .map(post -> feedService.mapToPostResponsePublic(post, currentUser))

@@ -37,4 +37,15 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             """)
     List<User> findSuggestedUsers(@Param("currentUserId") UUID currentUserId,
             org.springframework.data.domain.Pageable pageable);
+
+    @Query("""
+                SELECT u FROM User u
+                WHERE u.id IN (
+                    SELECT f.id FROM User me JOIN me.following f WHERE me.id = :userId
+                )
+                AND u.id IN (
+                    SELECT f.id FROM User me JOIN me.followers f WHERE me.id = :userId
+                )
+            """)
+    List<User> findMutualFollowers(@Param("userId") UUID userId);
 }

@@ -1046,15 +1046,15 @@ export class PostCardComponent implements OnChanges {
 
   onTagClick(event: Event) {
     event.stopPropagation();
-    if (this.post.plantTag) {
-      this.router.navigate([], { queryParams: { plant: this.post.plantTag } });
+    if (this.displayPost.plantTag) {
+      this.router.navigate([], { queryParams: { plant: this.displayPost.plantTag } });
     }
   }
 
   openPlantDetails(event: Event) {
     event.stopPropagation();
-    if (this.post.plantId) {
-      this.selectedPlantId.set(this.post.plantId);
+    if (this.displayPost.plantId) {
+      this.selectedPlantId.set(this.displayPost.plantId);
       this.showPlantDetails.set(true);
     }
   }

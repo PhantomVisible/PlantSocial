@@ -205,7 +205,7 @@ public class ChatService {
         List<ChatRoomDTO.MemberInfo> memberInfos = members.stream()
                 .map(m -> new ChatRoomDTO.MemberInfo(
                         m.getUser().getId(),
-                        m.getUser().getUsername(),
+                        m.getUser().getHandle(),
                         m.getUser().getFullName(),
                         m.getUser().getProfilePictureUrl(),
                         m.getRole().name()))
@@ -230,7 +230,7 @@ public class ChatService {
                 msg.getId(),
                 msg.getChatRoom().getId(),
                 msg.getSender().getId(),
-                msg.getSender().getUsername(),
+                msg.getSender().getHandle(),
                 msg.getSender().getFullName(),
                 msg.getSender().getProfilePictureUrl(),
                 msg.getContent(),

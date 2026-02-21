@@ -57,4 +57,8 @@ export class UserService {
     getSuggestions(): Observable<UserProfile[]> {
         return this.http.get<UserProfile[]>(`${this.baseUrl}/users/suggestions`);
     }
+
+    getMutualConnections(userId: string): Observable<UserProfile[]> {
+        return this.http.get<UserProfile[]>(`${this.baseUrl}/users/${userId}/mutuals`);
+    }
 }
