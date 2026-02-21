@@ -201,14 +201,19 @@ import { TooltipModule } from 'primeng/tooltip';
               </p>
             </div>
           } @else {
-            <div class="flex flex-column gap-2">
+            <div class="flex flex-column gap-2 mt-2">
               @for (user of mutualConnections(); track user.id) {
-                <div class="flex align-items-center gap-3 p-3 border-round cursor-pointer hover:surface-hover transition-colors transition-duration-150"
+                <div class="flex align-items-center p-3 gap-3 border-round cursor-pointer transition-colors transition-duration-200 hover:surface-hover"
                      (click)="startConversation(user)">
-                  <p-avatar [image]="resolveImageUrl(user.profilePictureUrl)" shape="circle" size="large"></p-avatar>
-                  <div class="flex flex-column gap-1">
-                    <span class="font-medium text-color">{{ user.fullName }}</span>
-                    <span class="text-color-secondary text-sm">&#64;{{ user.username }}</span>
+                  <ng-container *ngIf="user.profilePictureUrl; else noAvatar">
+                    <p-avatar [image]="resolveImageUrl(user.profilePictureUrl)" shape="circle" size="large" styleClass="flex-shrink-0"></p-avatar>
+                  </ng-container>
+                  <ng-template #noAvatar>
+                    <p-avatar [label]="(user.fullName.charAt(0) || user.username.charAt(0)) | uppercase" shape="circle" size="large" styleClass="flex-shrink-0" [style]="{'background-color': '#4caf50', 'color': '#ffffff'}"></p-avatar>
+                  </ng-template>
+                  <div class="flex flex-column">
+                    <span class="font-bold text-color">{{ user.fullName }}</span>
+                    <span class="text-sm text-color-secondary">&#64;{{ user.username }}</span>
                   </div>
                 </div>
               }
