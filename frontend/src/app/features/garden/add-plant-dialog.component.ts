@@ -8,6 +8,7 @@ import { PlantIdService, PlantNetResult } from '../../core/services/plant-id.ser
   selector: 'app-add-plant-dialog',
   standalone: true,
   imports: [CommonModule, FormsModule],
+  styleUrls: ['./add-plant-dialog.component.scss'],
   template: `
     <div class="dialog-overlay" (click)="close.emit()">
       <div class="dialog" (click)="$event.stopPropagation()">
@@ -96,8 +97,49 @@ import { PlantIdService, PlantNetResult } from '../../core/services/plant-id.ser
         </div>
         <!-- Loading Overlay -->
         <div class="processing-overlay" *ngIf="verifying()">
-          <div class="spinner"></div>
-          <p>Identifying plant...</p>
+          <div class="flex flex-column align-items-center justify-content-center p-5 text-center fadein animation-duration-500">
+            <svg class="id-loader-svg mb-4" width="150" height="150" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g class="target-leaf">
+                <path d="M100 30 C 160 30, 180 100, 100 170 C 20 100, 40 30, 100 30 Z" fill="var(--surface-card, #1E1E1E)" stroke="#00C853" stroke-width="4" stroke-linejoin="round"/>
+                <path d="M100 30 V 170" stroke="#00C853" stroke-width="4" stroke-linecap="round"/>
+                <path d="M100 70 L 130 50 M100 110 L 135 90 M100 140 L 125 125 M100 80 L 70 60 M100 120 L 65 100" stroke="#00C853" stroke-width="3" stroke-linecap="round"/>
+              </g>
+
+              <line class="id-scan-line" x1="20" y1="100" x2="180" y2="100" stroke="#00e676" stroke-width="3" opacity="0.8"/>
+
+              <g class="viewfinder-brackets" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M 50 70 V 50 H 70" />
+                <path d="M 150 70 V 50 H 130" />
+                <path d="M 50 130 V 150 H 70" />
+                <path d="M 150 130 V 150 H 130" />
+              </g>
+            </svg>
+
+            <h3 class="text-color m-0 mb-2">Identifying Species...</h3>
+            <p class="text-color-secondary m-0">Phantom Visible is cross-referencing the global database.</p>
+          </div>
+        </div>
+
+        <!-- Error Dialog -->
+        <div class="conflict-dialog" *ngIf="showErrorDialog()">
+           <div class="conflict-content">
+             <h3>Oops! ⚠️</h3>
+             <p>
+               Phantom Visible encountered an error while trying to identify your plant.
+             </p>
+             <p class="sub-text">
+               Would you like to try again or skip identification and save as unverified?
+             </p>
+             
+             <div class="conflict-actions">
+               <button class="btn btn--secondary" (click)="skipAndSave()">
+                 Skip & Save
+               </button>
+               <button class="btn btn--primary" (click)="retryIdentification()">
+                 Try Again
+               </button>
+             </div>
+           </div>
         </div>
 
         <!-- Conflict Dialog -->
@@ -374,6 +416,7 @@ export class AddPlantDialogComponent implements OnInit {
   // Verification State
   verifying = signal<boolean>(false);
   showConflict = signal<boolean>(false);
+  showErrorDialog = signal<boolean>(false);
   suggestedPlant = signal<PlantNetResult | null>(null);
 
   ngOnInit() {
@@ -424,9 +467,7 @@ export class AddPlantDialogComponent implements OnInit {
         error: (err: any) => {
           console.error('Plant ID failed', err);
           this.verifying.set(false);
-          // Show error to user?
-          alert('Could not verify plant (Network Error). Saving as unverified.');
-          this.emitSave(); // Fallback to save anyway
+          this.showErrorDialog.set(true);
         }
       });
     } else {
@@ -484,6 +525,16 @@ export class AddPlantDialogComponent implements OnInit {
     }
     this.showConflict.set(false);
     this.emitSave(useSuggested); // If they accepted suggestion, it is verified
+  }
+
+  skipAndSave() {
+    this.showErrorDialog.set(false);
+    this.emitSave();
+  }
+
+  retryIdentification() {
+    this.showErrorDialog.set(false);
+    this.submit();
   }
 
   emitSave(isVerified: boolean = false) {

@@ -2,11 +2,12 @@ import { Component, Input, Output, EventEmitter, inject, signal, ElementRef, Hos
 import { CommonModule } from '@angular/common';
 import { PlantData } from './plant.service';
 import { PlantDoctorService } from '../plant-doctor/plant-doctor.service';
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
   selector: 'app-plant-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DialogModule],
   template: `
     <div class="plant-card">
       <div class="plant-card__image plant-card__image--placeholder" *ngIf="!plant.imageUrl">
@@ -68,8 +69,31 @@ import { PlantDoctorService } from '../plant-doctor/plant-doctor.service';
             <span class="plant-card__species" *ngIf="plant.species">{{ plant.species }}</span>
             <span class="plant-card__age" *ngIf="plant.plantedDate">• {{ daysOld }}</span>
         </div>
-      </div>
     </div>
+
+    <!-- ===== DELETE CONFIRMATION ====== -->
+    <p-dialog 
+      header="Compost Plant?" 
+      [visible]="deleteConfirmOpen()" 
+      (visibleChange)="deleteConfirmOpen.set($event)" 
+      [modal]="true" 
+      appendTo="body" 
+      [draggable]="false" 
+      [resizable]="false"
+      [closable]="false"
+      [style]="{width: '380px'}"
+      styleClass="custom-confirm-dialog"
+    >
+      <div class="confirm-content text-center py-3">
+        <p class="m-0 mb-4 text-color-secondary line-height-3">
+          Are you sure you want to compost <strong>{{ plant.nickname }}</strong>? This cannot be undone.
+        </p>
+        <div class="confirm-actions flex gap-3 justify-content-center">
+          <button class="confirm-btn confirm-btn--delete" (click)="doDelete()">Compost</button>
+          <button class="confirm-btn confirm-btn--cancel" (click)="deleteConfirmOpen.set(false)">Cancel</button>
+        </div>
+      </div>
+    </p-dialog>
   `,
   styles: [`
     :host {
@@ -284,6 +308,43 @@ import { PlantDoctorService } from '../plant-doctor/plant-doctor.service';
       transform: scale(1.1);
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
+    
+    /* ===== DELETE CONFIRMATION ===== */
+    ::ng-deep .custom-confirm-dialog .p-dialog-header {
+      padding: 1.5rem 1.5rem 0.5rem;
+      border-bottom: none;
+    }
+    ::ng-deep .custom-confirm-dialog .p-dialog-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--trellis-text);
+      width: 100%;
+      text-align: center;
+    }
+    ::ng-deep .custom-confirm-dialog .p-dialog-content {
+      padding: 0 1.5rem 1.5rem;
+    }
+    ::ng-deep .custom-confirm-dialog .p-dialog-header-icons {
+      position: absolute;
+      right: 1rem;
+      top: 1.5rem;
+    }
+    
+    .confirm-btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 24px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      min-width: 120px;
+    }
+    .confirm-btn--delete { background: #E53E3E; color: #fff; }
+    .confirm-btn--delete:hover { background: #C53030; transform: translateY(-1px); }
+    .confirm-btn--cancel { background: var(--surface-hover); color: var(--trellis-text-secondary); }
+    .confirm-btn--cancel:hover { background: var(--surface-border); }
   `]
 })
 export class PlantCardComponent {
@@ -315,11 +376,16 @@ export class PlantCardComponent {
     this.menuOpen.set(false);
   }
 
+  deleteConfirmOpen = signal(false);
+
   onDelete() {
-    if (confirm(`Are you sure you want to compost ${this.plant.nickname}? This cannot be undone.`)) {
-      this.delete.emit(this.plant.id);
-    }
+    this.deleteConfirmOpen.set(true);
     this.menuOpen.set(false);
+  }
+
+  doDelete() {
+    this.delete.emit(this.plant.id);
+    this.deleteConfirmOpen.set(false);
   }
 
   // Close menu when clicking outside

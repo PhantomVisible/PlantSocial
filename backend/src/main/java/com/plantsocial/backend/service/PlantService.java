@@ -122,7 +122,11 @@ public class PlantService {
         }
         postRepository.saveAll(posts);
 
-        // 2. Delete plant
+        // 2. Delete plant logs
+        List<PlantLog> logs = plantLogRepository.findAllByPlantIdOrderByLogDateDesc(plantId);
+        plantLogRepository.deleteAll(logs);
+
+        // 3. Delete plant
         plantRepository.deleteById(plantId);
     }
 

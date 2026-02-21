@@ -52,12 +52,12 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
           <a [routerLink]="['/post', displayPost.id]" class="post-card__time" title="View post">{{ formatTime(displayPost.createdAt) }}</a>
           
           <!-- Plant Badge (from garden) -->
-          <span *ngIf="displayPost.plantNickname" class="post-card__plant-badge" (click)="openPlantDetails($event)">
+          <span *ngIf="displayPost.plantNickname" class="post-card__plant-badge white-space-nowrap overflow-hidden text-overflow-ellipsis max-w-10rem inline-block" (click)="openPlantDetails($event)" title="{{ displayPost.plantNickname }}">
             🌿 {{ displayPost.plantNickname }}
           </span>
 
           <!-- Plant Tag Badge (free-text, clickable) -->
-          <span *ngIf="displayPost.plantTag" class="post-card__plant-tag" (click)="onTagClick($event)">
+          <span *ngIf="displayPost.plantTag" class="post-card__plant-tag white-space-nowrap overflow-hidden text-overflow-ellipsis max-w-10rem inline-block" (click)="onTagClick($event)" title="{{ displayPost.plantTag }}">
             🏷️ {{ displayPost.plantTag }}
           </span>
         </div>

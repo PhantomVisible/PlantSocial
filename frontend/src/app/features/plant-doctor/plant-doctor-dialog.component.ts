@@ -10,6 +10,7 @@ import { DiagnosisResultComponent } from './diagnosis-result.component';
   selector: 'app-plant-doctor-dialog',
   standalone: true,
   imports: [CommonModule, HttpClientModule, DiagnosisResultComponent],
+  styleUrls: ['./plant-doctor.component.scss'],
   template: `
     <div class="dialog-overlay" (click)="close.emit()">
       <div class="dialog-content" (click)="$event.stopPropagation()">
@@ -85,9 +86,25 @@ import { DiagnosisResultComponent } from './diagnosis-result.component';
           </div>
 
           <!-- Loading State (Skeleton) -->
-          <div *ngIf="loading()" class="loading-state">
-            <div class="spinner"></div>
-            <p>Analyzing your plant's health with Gemini AI...</p>
+          <div *ngIf="loading()" class="loading-state flex flex-column align-items-center justify-content-center p-5 text-center fadein animation-duration-500">
+            <svg class="plant-loader-svg mb-4" width="150" height="150" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M60 130 L70 170 H130 L140 130 H60Z" fill="var(--accent-bg, #2A3B2D)"/>
+              <ellipse cx="100" cy="130" rx="40" ry="10" fill="var(--surface-ground, #121212)"/>
+              
+              <circle class="ai-scanner-ring" cx="100" cy="130" r="50" stroke="#00C853" stroke-width="2" fill="none" opacity="0.5"/>
+
+              <g class="plant-group">
+                <path class="plant-stem" d="M95 130 Q 100 80 100 60 Q 100 80 105 130 H95Z" fill="#00C853"/>
+                
+                <g transform="translate(100, 65)">
+                  <path class="leaf-left" d="M0 0 Q -30 -20 -40 10 Q -20 10 0 0Z" fill="#00C853"/>
+                  <path class="leaf-right" d="M0 0 Q 30 -20 40 10 Q 20 10 0 0Z" fill="#00C853"/>
+                </g>
+              </g>
+            </svg>
+
+            <h3 class="text-color m-0 mb-2">Analyzing your plant...</h3>
+            <p class="text-color-secondary m-0">Consulting the botanical archives.</p>
           </div>
 
           <!-- Result State -->
