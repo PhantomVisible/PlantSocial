@@ -72,13 +72,13 @@ interface GroupedNotification {
       font-family: 'Inter', sans-serif;
       max-width: 600px;
       margin: 0 auto;
-      background: var(--trellis-white);
+      background: var(--surface-ground);
       min-height: 100vh;
     }
     .notifications-header {
       padding: 16px 20px;
       border-bottom: 1px solid var(--trellis-border-light);
-      background: var(--trellis-white);
+      background: var(--surface-ground);
       position: sticky;
       top: 0;
       z-index: 10;

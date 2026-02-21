@@ -2,7 +2,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 /* PrimeNG base */
-@import "primeng/resources/themes/lara-light-green/theme.css";
 @import "primeng/resources/primeng.css";
 @import "primeicons/primeicons.css";
 @import "primeflex/primeflex.css";
@@ -25,15 +24,15 @@
   --trellis-green-ghost: var(--xyla-green-ghost);
 
   /* Surfaces */
-  --trellis-bg: #F4F6F8;
-  --trellis-white: #FFFFFF;
-  --trellis-border: #D1D5DB;
-  --trellis-border-light: #E5E7EB;
+  --trellis-bg: var(--surface-ground);
+  --trellis-white: var(--surface-card);
+  --trellis-border: var(--surface-border);
+  --trellis-border-light: var(--surface-border);
 
   /* Text — softer, no pure black */
-  --trellis-text: #2E384D;
-  --trellis-text-secondary: #8798AD;
-  --trellis-text-hint: #8798AD;
+  --trellis-text: var(--text-color);
+  --trellis-text-secondary: var(--text-color-secondary);
+  --trellis-text-hint: var(--text-color-secondary);
 
   /* Accent */
   --trellis-danger: #E74C3C;
@@ -57,10 +56,8 @@
   --primary-color: var(--xyla-green);
   --primary-hover: var(--xyla-green-dark);
   --accent-bg: var(--xyla-green-pale);
-  --text-main: #2E384D;
-  --text-secondary: #8798AD;
-  --surface-card: #FFFFFF;
-  --surface-ground: #F4F6F8;
+  --text-main: var(--text-color);
+  --text-secondary: var(--text-color-secondary);
   --border-radius-lg: 12px;
   --border-radius-sm: 8px;
   --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.05);

@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { RouterOutlet, Router, ActivatedRoute, NavigationEnd, RouterLink } from '@angular/router';
+import { RouterOutlet, Router, ActivatedRoute, NavigationEnd, RouterLink, ChildrenOutletContexts } from '@angular/router';
 import { slideInAnimation } from './core/route-animations';
 import { GlobalLoaderComponent } from './shared/global-loader/global-loader.component';
 import { ToastContainerComponent } from './shared/toast-container/toast-container.component';
@@ -47,9 +47,9 @@ import { ShopService } from './features/shop/shop.service';
       <app-sidebar *ngIf="!isAuthRoute()" class="app-sidebar"></app-sidebar>
       <main class="app-main" [class.app-main--full]="isFullWidthRoute() || isAuthRoute()"
             style="position: relative; overflow: hidden;">
-        <div [@routeAnimations]="getRouteAnimationData(outlet)"
+        <div [@routeAnimations]="getRouteAnimationData()"
              style="position: relative; width: 100%; height: 100%;">
-          <router-outlet #outlet="outlet" />
+          <router-outlet />
         </div>
       </main>
       <aside class="app-right flex flex-column gap-5" *ngIf="!isFullWidthRoute() && !isAuthRoute()">
@@ -76,7 +76,7 @@ import { ShopService } from './features/shop/shop.service';
     .app-layout {
       display: flex;
       min-height: 100vh;
-      background: var(--trellis-bg);
+      background: var(--surface-ground);
     }
 
     .app-main {
@@ -85,7 +85,7 @@ import { ShopService } from './features/shop/shop.service';
       min-height: 100vh;
       border-left: 1px solid var(--trellis-border-light);
       border-right: 1px solid var(--trellis-border-light);
-      background: var(--trellis-white);
+      background: var(--surface-ground);
       transition: max-width 0.3s ease;
     }
 
@@ -208,7 +208,9 @@ export class AppComponent implements OnInit {
     );
   }
 
-  getRouteAnimationData(outlet: RouterOutlet) {
-    return outlet?.activatedRouteData?.['animation'];
+  private contexts = inject(ChildrenOutletContexts);
+
+  getRouteAnimationData() {
+    return this.contexts.getContext('primary')?.route?.snapshot?.data?.['animation'];
   }
 }

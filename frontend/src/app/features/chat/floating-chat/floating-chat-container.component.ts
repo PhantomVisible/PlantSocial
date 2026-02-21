@@ -106,9 +106,8 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
     .messages-trigger {
         pointer-events: auto;
         height: 50px;
-        background: white;
-        border: 1px solid #cfd9de;
-        border-radius: 25px 25px 0 0; /* Pill top? No, detached pill */
+        background: var(--surface-card);
+        border: 1px solid var(--trellis-border-light);
         border-radius: 25px; 
         box-shadow: 0 0 10px rgba(0,0,0,0.08);
         padding: 0 16px;
@@ -120,13 +119,13 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
         font-weight: 700;
         font-size: 15px;
         min-width: 140px; 
-        color: #0f1419;
+        color: var(--text-main);
         margin-bottom: 20px; /* Float slightly */
         transition: all 0.2s;
     }
     
     .messages-trigger:hover {
-        background: #f7f9f9;
+        background: var(--trellis-green-ghost);
         box-shadow: 0 2px 12px rgba(0,0,0,0.12);
     }
 
@@ -172,13 +171,13 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
         width: 350px;
         height: 500px;
         max-height: 70vh;
-        background: white;
+        background: var(--surface-card);
         border-radius: 16px;
-        box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+        box-shadow: var(--trellis-shadow-lg);
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        border: 1px solid #cfd9de;
+        border: 1px solid var(--trellis-border-light);
         animation: activePop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         transform-origin: bottom right;
     }
@@ -190,11 +189,12 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
 
     .chat-list-header {
         padding: 12px 16px;
-        border-bottom: 1px solid #eff3f4;
+        border-bottom: 1px solid var(--trellis-border-light);
         display: flex;
         justify-content: space-between;
         align-items: center;
         height: 53px;
+        color: var(--text-main);
     }
     
     .chat-list-header h3 { 
@@ -219,8 +219,8 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
         justify-content: center;
         transition: background 0.2s;
     }
-    .icon-btn:hover { background: #eff3f4; }
-    .icon-btn i { font-size: 1rem; color: #0f1419; }
+    .icon-btn:hover { background: var(--trellis-green-ghost); }
+    .icon-btn i { font-size: 1rem; color: var(--text-main); }
 
     .chat-list-body {
         flex: 1;
@@ -234,12 +234,12 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
         gap: 12px;
         cursor: pointer;
         transition: background 0.2s;
-        border-bottom: 1px solid #f7f9f9;
+        border-bottom: 1px solid var(--trellis-border-light);
     }
 
     .chat-list-item:hover {
-        background: #f7f9f9;
-        border-right: 3px solid #1d9bf0; /* Active indicator hint */
+        background: var(--trellis-green-ghost);
+        border-right: 3px solid var(--text-main); /* Active indicator hint */
     }
 
     .avatar-wrap {
@@ -257,14 +257,14 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
     .room-name {
         font-weight: 700;
         font-size: 15px;
-        color: #0f1419;
+        color: var(--text-color);
     }
 
     .last-message-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        color: #536471;
+        color: var(--text-color-secondary);
         font-size: 14px;
     }
 
@@ -286,7 +286,7 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
         align-items: center;
         justify-content: center;
         height: 100%;
-        color: #536471; 
+        color: var(--text-color-secondary); 
         text-align: center;
     }
     
@@ -295,7 +295,7 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
         align-items: center;
         justify-content: center;
         height: 100px;
-        color: #1d9bf0;
+        color: var(--primary-color);
     }
 
     @keyframes slideUp {

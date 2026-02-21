@@ -58,7 +58,7 @@ import { WikipediaService, WikiSummary } from '../../shared/wikipedia.service';
     }
 
     .wiki-card {
-      background: var(--trellis-white);
+      background: var(--surface-card);
       border: 1px solid var(--trellis-border-light);
       border-radius: 16px;
       overflow: hidden;
@@ -124,7 +124,7 @@ import { WikipediaService, WikiSummary } from '../../shared/wikipedia.service';
       font-size: 0.85rem;
       color: var(--trellis-text-secondary);
       padding: 6px 10px;
-      background: var(--trellis-green-ghost);
+      background: rgba(0, 200, 83, 0.1);
       border-radius: 8px;
     }
 

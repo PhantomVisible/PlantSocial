@@ -143,7 +143,7 @@ import { PlantDoctorService } from '../plant-doctor/plant-doctor.service';
       display: flex;
       gap: 12px;
       padding: 16px 20px;
-      background: var(--trellis-white);
+      background: var(--surface-card);
       border-bottom: 1px solid var(--trellis-border-light);
     }
 

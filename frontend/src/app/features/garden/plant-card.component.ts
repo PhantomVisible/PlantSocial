@@ -190,7 +190,7 @@ import { PlantDoctorService } from '../plant-doctor/plant-doctor.service';
       width: 28px;
       height: 28px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.8);
+      background: var(--surface-card);
       backdrop-filter: blur(4px);
       border: none;
       display: flex;
@@ -205,7 +205,7 @@ import { PlantDoctorService } from '../plant-doctor/plant-doctor.service';
         opacity: 1;
     }
     .menu-btn:hover, .menu-btn.active {
-        background: #fff;
+        background: var(--surface-hover);
         color: var(--trellis-green-dark);
         box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
@@ -268,7 +268,7 @@ import { PlantDoctorService } from '../plant-doctor/plant-doctor.service';
       right: 44px; /* Left of menu button */
       width: 28px; height: 28px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.8);
+      background: var(--surface-card);
       backdrop-filter: blur(4px);
       border: none;
       display: flex; align-items: center; justify-content: center;
@@ -280,7 +280,7 @@ import { PlantDoctorService } from '../plant-doctor/plant-doctor.service';
     }
     .plant-card:hover .doctor-btn, .doctor-btn:hover { opacity: 1; }
     .doctor-btn:hover {
-      background: #fff;
+      background: var(--surface-hover);
       transform: scale(1.1);
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }

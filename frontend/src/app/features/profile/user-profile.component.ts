@@ -235,9 +235,9 @@ import { EditProfileDialogComponent } from './edit-profile-dialog.component';
     .shimmer {
       background: linear-gradient(
         90deg,
-        var(--skeleton-base, #f0f0f0) 25%,
-        var(--skeleton-shine, #e0e0e0) 50%,
-        var(--skeleton-base, #f0f0f0) 75%
+        var(--surface-ground) 25%,
+        var(--surface-hover) 50%,
+        var(--surface-ground) 75%
       );
       background-size: 200% 100%;
       animation: shimmer 1.5s ease-in-out infinite;
@@ -254,10 +254,10 @@ import { EditProfileDialogComponent } from './edit-profile-dialog.component';
       align-items: center;
       gap: 20px;
       padding: 10px 16px;
-      background: rgba(255,255,255,0.85);
+      background: var(--surface-card);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--trellis-border-light);
+      border-bottom: 1px solid var(--surface-border);
       position: sticky;
       top: 0;
       z-index: 100;
@@ -361,12 +361,13 @@ import { EditProfileDialogComponent } from './edit-profile-dialog.component';
       background: rgba(0,0,0,0.06);
     }
     .btn--filled {
-      background: var(--trellis-text);
-      color: #fff;
-      border-color: var(--trellis-text);
+      background: var(--text-color);
+      color: var(--surface-card);
+      border-color: var(--text-color);
     }
     .btn--filled:hover {
-      background: #333;
+      background: var(--text-color-secondary);
+      border-color: var(--text-color-secondary);
     }
     .btn--following {
       background: transparent;
@@ -423,7 +424,7 @@ import { EditProfileDialogComponent } from './edit-profile-dialog.component';
       right: 0;
       margin-top: 4px;
       min-width: 200px;
-      background: var(--trellis-white);
+      background: var(--surface-card);
       border: 1px solid var(--trellis-border-light);
       border-radius: 12px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.12);
@@ -531,8 +532,8 @@ import { EditProfileDialogComponent } from './edit-profile-dialog.component';
       position: relative;
     }
     .feed-tab:hover:not(:disabled) {
-      background: var(--trellis-green-ghost);
-      color: var(--trellis-text);
+      background: var(--surface-hover);
+      color: var(--text-color);
     }
     .feed-tab:disabled {
       cursor: default;

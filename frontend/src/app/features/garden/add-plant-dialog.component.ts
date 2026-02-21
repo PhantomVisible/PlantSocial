@@ -244,7 +244,7 @@ import { PlantIdService, PlantNetResult } from '../../core/services/plant-id.ser
       color: var(--trellis-text);
       outline: none;
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
-      background: #fff;
+      background: var(--surface-ground);
     }
     .field input:focus, .field select:focus {
       border-color: var(--trellis-green);
@@ -284,7 +284,7 @@ import { PlantIdService, PlantNetResult } from '../../core/services/plant-id.ser
     .processing-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(255,255,255,0.9);
+      background: var(--surface-card);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -315,7 +315,7 @@ import { PlantIdService, PlantNetResult } from '../../core/services/plant-id.ser
       padding: 20px;
     }
     .conflict-content {
-      background: #fff;
+      background: var(--surface-card);
       padding: 24px;
       border-radius: 16px;
       text-align: center;

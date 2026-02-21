@@ -113,7 +113,7 @@ import { DiagnosisResultComponent } from './diagnosis-result.component';
       animation: fadeIn 0.15s ease-out;
     }
     .dialog-content {
-      background: var(--trellis-white); width: 500px; max-width: 95%;
+      background: var(--surface-card); width: 500px; max-width: 95%;
       border-radius: 16px; overflow: hidden;
       box-shadow: 0 10px 40px rgba(0,0,0,0.2);
       animation: scaleIn 0.2s ease-out;

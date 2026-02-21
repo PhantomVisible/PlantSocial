@@ -257,7 +257,7 @@ import { AuthService } from '../../auth/auth.service';
       height: 100vh;
       padding: 1.5rem 1.5rem;
       box-sizing: border-box;
-      background: var(--trellis-bg, #f0f4f0);
+      background: var(--surface-ground);
       overflow: hidden;
     }
 
@@ -266,7 +266,7 @@ import { AuthService } from '../../auth/auth.service';
       width: 100%;
       max-width: 1300px;
       height: 100%;
-      background: #fff;
+      background: var(--surface-card);
       border-radius: 16px;
       overflow: hidden;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.10), 0 1px 4px rgba(0,0,0,0.06);
@@ -276,10 +276,10 @@ import { AuthService } from '../../auth/auth.service';
     .chat-sidebar {
       width: 340px;
       flex-shrink: 0;
-      border-right: 1px solid #e8ece8;
+      border-right: 1px solid var(--surface-border);
       display: flex;
       flex-direction: column;
-      background: #fff;
+      background: var(--surface-card);
     }
 
     .sidebar-header {
@@ -292,7 +292,7 @@ import { AuthService } from '../../auth/auth.service';
     .sidebar-header h2 {
       font-size: 1.4rem;
       font-weight: 700;
-      color: #1a2e1a;
+      color: var(--text-color);
       margin: 0;
     }
 
@@ -319,16 +319,17 @@ import { AuthService } from '../../auth/auth.service';
     .sidebar-search input {
       width: 100%;
       padding: 10px 14px;
-      border: 1px solid #e0e8e0;
+      border: 1px solid var(--surface-border);
       border-radius: 24px;
       font-size: 0.88rem;
-      background: #f5f8f5;
+      background: var(--surface-ground);
       outline: none;
       transition: all .2s;
+      color: var(--text-color);
     }
     .sidebar-search input:focus {
       border-color: #4caf50;
-      background: #fff;
+      background: var(--surface-card);
       box-shadow: 0 0 0 3px rgba(76,175,80,0.1);
     }
 
@@ -344,12 +345,12 @@ import { AuthService } from '../../auth/auth.service';
       padding: 12px 16px;
       cursor: pointer;
       transition: background .15s;
-      border-bottom: 1px solid #f4f7f4;
+      border-bottom: 1px solid var(--surface-border);
     }
-    .room-item:hover { background: #f4f8f4; }
+    .room-item:hover { background: var(--surface-hover); }
     .room-item.active {
-      background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
-      border-left: 3px solid #4caf50;
+      background: var(--primary-color-transparent, rgba(76, 175, 80, 0.1));
+      border-left: 3px solid var(--primary-color);
     }
 
     .room-avatar {
@@ -382,14 +383,14 @@ import { AuthService } from '../../auth/auth.service';
     .room-name {
       font-weight: 600;
       font-size: 0.92rem;
-      color: #1a2e1a;
+      color: var(--text-color);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .room-last-msg {
       font-size: 0.8rem;
-      color: #6b7c6b;
+      color: var(--text-color-secondary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -427,7 +428,7 @@ import { AuthService } from '../../auth/auth.service';
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      background: #fafcfa;
+      background: var(--surface-ground);
     }
 
     .no-room-selected {
@@ -449,8 +450,8 @@ import { AuthService } from '../../auth/auth.service';
       align-items: center;
       gap: 12px;
       padding: 12px 16px;
-      background: #fff;
-      border-bottom: 1px solid #e8ece8;
+      background: var(--surface-card);
+      border-bottom: 1px solid var(--surface-border);
       box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
     .btn-back {
@@ -485,11 +486,11 @@ import { AuthService } from '../../auth/auth.service';
     .room-header-name {
       font-weight: 700;
       font-size: 1rem;
-      color: #1a2e1a;
+      color: var(--text-color);
     }
     .room-header-status {
       font-size: 0.78rem;
-      color: #6b7c6b;
+      color: var(--text-color-secondary);
     }
 
     .typing-indicator {
@@ -544,8 +545,9 @@ import { AuthService } from '../../auth/auth.service';
     .message-bubble {
       padding: 10px 14px;
       border-radius: 18px;
-      background: #fff;
-      border: 1px solid #e8ece8;
+      background: var(--surface-card);
+      border: 1px solid var(--surface-border);
+      color: var(--text-color);
       box-shadow: 0 1px 2px rgba(0,0,0,0.04);
       position: relative;
     }
@@ -590,15 +592,15 @@ import { AuthService } from '../../auth/auth.service';
       align-items: center;
       gap: 8px;
       padding: 12px 16px;
-      background: #fff;
-      border-top: 1px solid #e8ece8;
+      background: var(--surface-card);
+      border-top: 1px solid var(--surface-border);
     }
 
     .btn-attach {
       width: 36px; height: 36px;
       border-radius: 50%;
-      background: #f0f4f0;
-      color: #4a5c4a;
+      background: var(--surface-ground);
+      color: var(--text-color-secondary);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -613,16 +615,17 @@ import { AuthService } from '../../auth/auth.service';
     .message-input {
       flex: 1;
       padding: 10px 16px;
-      border: 1px solid #e0e8e0;
+      border: 1px solid var(--surface-border);
       border-radius: 24px;
       font-size: 0.9rem;
       outline: none;
       transition: all .2s;
-      background: #f8faf8;
+      background: var(--surface-ground);
+      color: var(--text-color);
     }
     .message-input:focus {
       border-color: #4caf50;
-      background: #fff;
+      background: var(--surface-card);
       box-shadow: 0 0 0 3px rgba(76,175,80,0.1);
     }
 
@@ -665,7 +668,7 @@ import { AuthService } from '../../auth/auth.service';
     }
 
     .new-chat-dialog {
-      background: #fff;
+      background: var(--surface-card);
       border-radius: 20px;
       width: 420px;
       max-height: 70vh;
@@ -688,21 +691,21 @@ import { AuthService } from '../../auth/auth.service';
     .dialog-header h3 {
       margin: 0;
       font-size: 1.15rem;
-      color: #1a2e1a;
+      color: var(--text-color);
     }
     .btn-close {
       width: 32px; height: 32px;
       border-radius: 50%;
       border: none;
-      background: #f0f4f0;
+      background: var(--surface-ground);
       font-size: 1.2rem;
       cursor: pointer;
-      color: #6b7c6b;
+      color: var(--text-color-secondary);
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    .btn-close:hover { background: #e8ece8; }
+    .btn-close:hover { background: var(--surface-hover); }
 
     .dialog-tabs {
       display: flex;
@@ -714,10 +717,10 @@ import { AuthService } from '../../auth/auth.service';
       padding: 8px;
       border: none;
       border-radius: 10px;
-      background: #f0f4f0;
+      background: var(--surface-ground);
       font-weight: 600;
       font-size: 0.85rem;
-      color: #6b7c6b;
+      color: var(--text-color-secondary);
       cursor: pointer;
       transition: all .2s;
     }
@@ -733,7 +736,9 @@ import { AuthService } from '../../auth/auth.service';
     .dialog-body input {
       width: 100%;
       padding: 10px 14px;
-      border: 1px solid #e0e8e0;
+      border: 1px solid var(--surface-border);
+      background: var(--surface-ground);
+      color: var(--text-color);
       border-radius: 12px;
       font-size: 0.88rem;
       outline: none;
@@ -759,7 +764,7 @@ import { AuthService } from '../../auth/auth.service';
       cursor: pointer;
       transition: background .15s;
     }
-    .user-item:hover { background: #f4f8f4; }
+    .user-item:hover { background: var(--surface-hover); }
 
     .user-avatar {
       width: 40px; height: 40px;
@@ -786,11 +791,11 @@ import { AuthService } from '../../auth/auth.service';
     .user-name {
       font-weight: 600;
       font-size: 0.92rem;
-      color: #1a2e1a;
+      color: var(--text-color);
     }
     .user-handle {
       font-size: 0.78rem;
-      color: #6b7c6b;
+      color: var(--text-color-secondary);
     }
 
     .check-icon {
@@ -812,15 +817,15 @@ import { AuthService } from '../../auth/auth.service';
       gap: 4px;
       padding: 4px 10px;
       border-radius: 16px;
-      background: #e8f5e9;
-      color: #2e7d32;
+      background: var(--primary-color-transparent, rgba(76,175,80,0.1));
+      color: var(--primary-color);
       font-size: 0.8rem;
       font-weight: 600;
     }
     .member-chip button {
       background: none;
       border: none;
-      color: #2e7d32;
+      color: var(--primary-color);
       cursor: pointer;
       font-size: 0.9rem;
       padding: 0 2px;
@@ -864,7 +869,7 @@ import { AuthService } from '../../auth/auth.service';
       align-items: center;
       justify-content: center;
       padding: 40px 20px;
-      color: #8a9a8a;
+      color: var(--text-color-secondary);
     }
 
     .spinner {
@@ -879,7 +884,7 @@ import { AuthService } from '../../auth/auth.service';
     .no-results {
       text-align: center;
       padding: 20px;
-      color: #8a9a8a;
+      color: var(--text-color-secondary);
     }
 
     /* ─── Responsive ──────────────────────────────────────────── */

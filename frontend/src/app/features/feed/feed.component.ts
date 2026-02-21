@@ -69,7 +69,7 @@ import { ToastService } from '../../core/toast.service';
     :host {
       display: block;
       min-height: 100vh;
-      background: var(--trellis-white);
+      background: var(--surface-ground);
     }
 
     .feed-layout {
@@ -81,8 +81,7 @@ import { ToastService } from '../../core/toast.service';
       border-bottom: 1px solid var(--trellis-border-light);
       position: sticky;
       top: 0;
-      background: rgba(255,255,255,0.85);
-      backdrop-filter: blur(12px);
+      background: var(--surface-card);
       z-index: 50;
       display: flex;
       align-items: center;
@@ -102,7 +101,7 @@ import { ToastService } from '../../core/toast.service';
       gap: 4px;
       padding: 4px 12px;
       border: 1px solid var(--trellis-border-light);
-      background: var(--trellis-white);
+      background: var(--surface-card);
       border-radius: 16px;
       font-family: 'Inter', sans-serif;
       font-size: 0.82rem;

@@ -119,7 +119,7 @@ import { ProductCardComponent } from './product-card.component';
       display: inline-block;
       font-size: 0.8rem;
       font-weight: 600;
-      background: rgba(255,255,255,0.7);
+      background: var(--surface-card);
       backdrop-filter: blur(8px);
       padding: 6px 14px;
       border-radius: 20px;
@@ -159,7 +159,7 @@ import { ProductCardComponent } from './product-card.component';
       gap: 16px;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid rgba(0,0,0,0.06);
+      border-bottom: 1px solid var(--surface-border);
     }
     .filter-pills {
       display: flex;
@@ -168,12 +168,12 @@ import { ProductCardComponent } from './product-card.component';
     }
     .pill {
       padding: 8px 16px;
-      border: 1px solid rgba(0,0,0,0.1);
+      border: 1px solid var(--surface-border);
       border-radius: 24px;
-      background: #fff;
+      background: var(--surface-card);
       font-size: 0.82rem;
       font-weight: 600;
-      color: #555;
+      color: var(--text-color);
       cursor: pointer;
       transition: all 0.2s ease;
       font-family: 'Inter', sans-serif;
@@ -194,13 +194,13 @@ import { ProductCardComponent } from './product-card.component';
       align-items: center;
       gap: 8px;
       padding: 8px 14px;
-      border: 1px solid rgba(0,0,0,0.1);
+      border: 1px solid var(--surface-border);
       border-radius: 24px;
-      background: #fafafa;
+      background: var(--surface-ground);
       transition: border-color 0.2s;
     }
     .search-box:focus-within { border-color: var(--primary-color); }
-    .search-box i { color: #999; font-size: 0.85rem; }
+    .search-box i { color: var(--text-color-secondary); font-size: 0.85rem; }
     .search-box input {
       border: none;
       outline: none;
@@ -208,16 +208,17 @@ import { ProductCardComponent } from './product-card.component';
       font-size: 0.85rem;
       font-family: 'Inter', sans-serif;
       width: 160px;
+      color: var(--text-color);
     }
     .sort-select {
       padding: 8px 14px;
-      border: 1px solid rgba(0,0,0,0.1);
+      border: 1px solid var(--surface-border);
       border-radius: 24px;
-      background: #fafafa;
+      background: var(--surface-ground);
       font-size: 0.82rem;
       font-family: 'Inter', sans-serif;
       cursor: pointer;
-      color: #555;
+      color: var(--text-color);
     }
 
     .view-cart-btn {

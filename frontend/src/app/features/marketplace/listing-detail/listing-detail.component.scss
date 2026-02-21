@@ -1,8 +1,8 @@
 // Variables
 $primary: var(--primary-color);
-$text: #1a1a1a;
-$text-secondary: #666;
-$surface: #f8f9fa;
+$text: var(--text-color);
+$text-secondary: var(--text-color-secondary);
+$surface: var(--surface-ground);
 $red: #d32f2f;
 
 .detail-container {
@@ -60,7 +60,7 @@ $red: #d32f2f;
 // Hero Image Section (Gallery Style)
 .image-section {
     width: 100%;
-    background: #f8f9fa;
+    background: var(--surface-ground);
     border-radius: 32px;
     padding: 40px;
     display: flex;
@@ -94,7 +94,7 @@ $red: #d32f2f;
         flex-wrap: wrap;
         justify-content: center;
         padding: 8px;
-        background: rgba(255, 255, 255, 0.5);
+        background: var(--surface-ground);
         border-radius: 20px;
         backdrop-filter: blur(8px);
 
@@ -105,7 +105,7 @@ $red: #d32f2f;
             cursor: pointer;
             border: 2px solid transparent;
             overflow: hidden;
-            background: white;
+            background: var(--surface-card);
             transition: all 0.2s ease;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
@@ -146,7 +146,7 @@ $red: #d32f2f;
             content: '';
             height: 2px;
             flex: 1;
-            background: #f0f0f0;
+            background: var(--surface-border);
             border-radius: 4px;
         }
     }
@@ -222,7 +222,7 @@ $red: #d32f2f;
         gap: 4px;
         margin-bottom: 32px;
         padding-bottom: 24px;
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid var(--surface-border);
 
         .label {
             font-size: 0.85rem;
@@ -280,7 +280,7 @@ $red: #d32f2f;
             &.expiry {
                 align-items: flex-start;
                 padding-top: 16px;
-                border-top: 1px dashed #e0e0e0;
+                border-top: 1px dashed var(--surface-border);
 
                 .expiry-value {
                     text-align: right;
@@ -312,7 +312,7 @@ $red: #d32f2f;
             bottom: 0;
             left: 0;
             right: 0;
-            background: white;
+            background: var(--surface-card);
             padding: 16px 24px 32px;
             box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
             z-index: 100;
@@ -341,12 +341,12 @@ $red: #d32f2f;
         }
 
         .btn-visit {
-            background: #1a1a1a;
-            color: white;
+            background: var(--text-color);
+            color: var(--surface-card);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 
             &:hover {
-                background: black;
+                background: var(--text-color-secondary);
                 transform: translateY(-2px);
                 box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
             }

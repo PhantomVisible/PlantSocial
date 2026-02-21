@@ -292,46 +292,46 @@ import { AddLogDialogComponent } from './add-log-dialog.component';
 
     /* Tabs */
     .dialog-tabs {
-        display: flex; border-bottom: 1px solid #eee;
-        background: #f9f9f9;
+        display: flex; border-bottom: 1px solid var(--surface-border);
+        background: var(--surface-ground);
         margin-top: 50px; /* Space for close button */
     }
     .tab-btn {
         flex: 1; padding: 14px; border: none; background: none;
-        font-family: 'Inter'; font-weight: 600; color: #888; cursor: pointer;
+        font-family: 'Inter'; font-weight: 600; color: var(--text-color-secondary); cursor: pointer;
         border-bottom: 2px solid transparent;
         transition: all 0.2s;
     }
-    .tab-btn.active { color: #2E7D32; border-bottom-color: #2E7D32; background: #fff; }
+    .tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); background: var(--surface-card); }
     
     /* Journal Styles */
     .journal-header {
         padding: 16px 24px; display: flex; justify-content: space-between; align-items: center;
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid var(--surface-border);
     }
-    .journal-header h3 { margin: 0; font-size: 1rem; color: #333; }
+    .journal-header h3 { margin: 0; font-size: 1rem; color: var(--text-color); }
     .btn-add {
-        background: #2E7D32; color: #fff; border: none; padding: 6px 12px;
+        background: var(--primary-color); color: #fff; border: none; padding: 6px 12px;
         border-radius: 20px; font-weight: 600; cursor: pointer; font-size: 0.8rem;
         display: flex; align-items: center; gap: 4px;
     }
-    .btn-add:hover { background: #1B5E20; }
+    .btn-add:hover { background: var(--primary-hover); }
     
     .journal-body { padding: 0 24px 24px; max-height: 400px; overflow-y: auto; }
-    .empty-logs { text-align: center; padding: 40px; color: #999; }
+    .empty-logs { text-align: center; padding: 40px; color: var(--text-color-secondary); }
 
     /* Timeline */
-    .timeline { padding-top: 20px; border-left: 2px solid #eee; margin-left: 10px; }
+    .timeline { padding-top: 20px; border-left: 2px solid var(--surface-border); margin-left: 10px; }
     .timeline-item { position: relative; padding-left: 24px; margin-bottom: 24px; }
     .timeline-item::before {
         content: ''; position: absolute; left: -5px; top: 6px;
-        width: 8px; height: 8px; background: #2E7D32; border-radius: 50%;
+        width: 8px; height: 8px; background: var(--primary-color); border-radius: 50%;
     }
-    .timeline-date { font-size: 0.75rem; color: #999; margin-bottom: 6px; font-weight: 600; }
-    .timeline-content { background: #f9f9f9; padding: 12px; border-radius: 12px; }
+    .timeline-date { font-size: 0.75rem; color: var(--text-color-secondary); margin-bottom: 6px; font-weight: 600; }
+    .timeline-content { background: var(--surface-ground); padding: 12px; border-radius: 12px; }
     .timeline-photo { width: 100%; margin-bottom: 8px; border-radius: 8px; overflow: hidden; }
     .timeline-photo img { width: 100%; display: block; }
-    .timeline-notes { margin: 0; font-size: 0.9rem; color: #444; line-height: 1.4; white-space: pre-wrap; }
+    .timeline-notes { margin: 0; font-size: 0.9rem; color: var(--text-color); line-height: 1.4; white-space: pre-wrap; }
     
     .log-actions {
         display: flex;

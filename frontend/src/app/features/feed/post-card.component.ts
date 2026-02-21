@@ -243,13 +243,9 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
        POST CARD
        =========================== */
     .post-card {
-      background: var(--trellis-white);
+      background: var(--surface-card);
       border-bottom: 1px solid var(--trellis-border-light);
       padding: 16px 20px;
-      transition: background 0.15s ease;
-    }
-    .post-card:hover {
-      background: var(--trellis-green-ghost);
     }
     
     .repost-header {
@@ -332,8 +328,8 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
       gap: 4px;
       font-size: 0.8rem;
       font-weight: 600;
-      color: var(--trellis-green-dark);
-      background: var(--trellis-green-ghost);
+      color: var(--primary-color);
+      background: rgba(0, 200, 83, 0.1);
       padding: 2px 8px;
       border-radius: 12px;
       margin-left: 4px;
@@ -341,8 +337,7 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
       transition: all 0.15s ease;
     }
     .post-card__plant-badge:hover {
-      background: var(--trellis-green-pale);
-      color: var(--trellis-green-dark);
+      background: rgba(0, 200, 83, 0.2);
     }
 
     /* Report Dialog Styles */
@@ -379,7 +374,7 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
         border-color: var(--trellis-green);
         outline: none;
         box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
-        background: var(--trellis-white);
+        background: var(--surface-card);
     }
     .form-input {
         resize: vertical;
@@ -431,7 +426,7 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
       position: absolute;
       top: 100%;
       right: 0;
-      background: var(--trellis-white);
+      background: var(--surface-card);
       border: 1px solid var(--trellis-border-light);
       border-radius: var(--trellis-radius-md);
       box-shadow: var(--trellis-shadow-lg);
@@ -496,7 +491,7 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
       font-size: 0.95rem;
       line-height: 1.55;
       color: var(--trellis-text);
-      background: var(--trellis-white);
+      background: var(--surface-card);
       resize: none;
       outline: none;
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -719,7 +714,7 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
       z-index: 10001;
     }
     .confirm-dialog {
-      background: var(--trellis-white);
+      background: var(--surface-card);
       border-radius: var(--trellis-radius-lg);
       padding: 28px 32px;
       min-width: 320px;
@@ -835,7 +830,7 @@ import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
       top: 100%;
       left: 0;
       right: 0;
-      background: var(--trellis-white);
+      background: var(--surface-card);
       border: 1px solid var(--trellis-border-light);
       border-radius: 0 0 8px 8px;
       box-shadow: var(--trellis-shadow-lg);

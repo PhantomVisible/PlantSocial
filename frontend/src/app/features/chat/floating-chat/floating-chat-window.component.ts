@@ -71,7 +71,7 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
   styles: [`
     .floating-window {
       width: 330px;
-      background: white;
+      background: var(--surface-card);
       border-radius: 12px 12px 0 0;
       box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
       display: flex;
@@ -80,7 +80,7 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       transition: height 0.3s ease;
       /* Border to separate from white background if any */
-      border: 1px solid #eee;
+      border: 1px solid var(--surface-border);
     }
 
     .floating-window.minimized {
@@ -91,8 +91,8 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
     /* Header */
     .window-header {
       padding: 12px 16px;
-      background: white;
-      border-bottom: 1px solid #eee;
+      background: var(--surface-ground);
+      border-bottom: 1px solid var(--surface-border);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -101,8 +101,8 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
     }
     
     .window-header:hover {
-        background: #f9f9f9;
-        color: #1d9bf0;
+        background: var(--surface-hover);
+        color: var(--primary-color);
     }
 
     .header-user {
@@ -114,7 +114,7 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
     .username {
       font-weight: 700;
       font-size: 14px;
-      color: #0f1419;
+      color: var(--text-color);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -129,7 +129,7 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
     .header-actions button {
       background: none;
       border: none;
-      color: #536471;
+      color: var(--text-color-secondary);
       cursor: pointer;
       padding: 4px;
       border-radius: 4px;
@@ -138,8 +138,8 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
     }
 
     .header-actions button:hover {
-      background: #eff3f4;
-      color: #1d9bf0;
+      background: var(--surface-hover);
+      color: var(--primary-color);
     }
 
     /* Body */
@@ -147,7 +147,7 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
       height: 350px;
       display: flex;
       flex-direction: column;
-      background: #fff;
+      background: var(--surface-card);
     }
 
     .messages-list {
@@ -174,14 +174,14 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
       border-bottom-left-radius: 4px;
       font-size: 14px;
       line-height: 1.4;
-      background: #eff3f4;
-      color: #0f1419;
+      background: var(--surface-hover);
+      color: var(--text-color);
       word-wrap: break-word;
     }
 
     .message.own .msg-content {
-      background: #1d9bf0;
-      color: white;
+      background: var(--primary-color);
+      color: var(--surface-ground);
       border-bottom-left-radius: 18px;
       border-bottom-right-radius: 4px;
     }
@@ -198,8 +198,8 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
     /* Input */
     .input-area {
       padding: 8px 12px;
-      background: white;
-      border-top: 1px solid #eff3f4;
+      background: var(--surface-ground);
+      border-top: 1px solid var(--surface-border);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -207,24 +207,24 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
 
     .input-area input {
       flex: 1;
-      background: #eff3f4;
+      background: var(--surface-hover);
       border: 1px solid transparent;
       border-radius: 20px;
       padding: 8px 16px;
       font-size: 14px;
       outline: none;
-      color: #0f1419;
+      color: var(--text-color);
       transition: border 0.2s, background 0.2s;
     }
 
     .input-area input:focus {
-      background: white;
-      border-color: #1d9bf0;
+      background: var(--surface-ground);
+      border-color: var(--primary-color);
     }
 
     .input-area button {
-      background: #1d9bf0;
-      color: white;
+      background: var(--primary-color);
+      color: var(--surface-ground);
       border: none;
       width: 32px;
       height: 32px;
@@ -237,12 +237,12 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
     }
     
     .input-area button:hover:not(:disabled) {
-        background: #1a8cd8;
+        background: var(--primary-hover);
     }
 
     .input-area button:disabled {
-      background: #eff3f4;
-      color: #ccc;
+      background: var(--surface-hover);
+      color: var(--text-color-secondary);
       cursor: default;
     }
   `]

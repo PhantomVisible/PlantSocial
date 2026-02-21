@@ -8,11 +8,14 @@ import { PlantDoctorService } from '../features/plant-doctor/plant-doctor.servic
 import { AvatarComponent } from '../shared/components/avatar/avatar.component';
 import { NotificationService } from '../features/notifications/notification.service';
 import { ShopService } from '../features/shop/shop.service';
+import { ThemeService } from '../shared/theme.service';
+import { InputSwitchModule } from 'primeng/inputswitch';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule, AuthPromptDialogComponent, AvatarComponent],
+  imports: [CommonModule, RouterModule, AuthPromptDialogComponent, AvatarComponent, InputSwitchModule, FormsModule],
   template: `
     <nav class="sidebar">
       <!-- Logo -->
@@ -77,7 +80,18 @@ import { ShopService } from '../features/shop/shop.service';
       </div>
 
       <!-- Bottom -->
-      <div class="sidebar__bottom">
+      <div class="sidebar__bottom mt-auto">
+        <!-- Theme Toggle -->
+        <div class="flex align-items-center gap-3 px-3 py-2 border-round hover:surface-hover cursor-pointer mt-auto mb-3">
+            <i class="pi" [ngClass]="themeService.isDarkMode() ? 'pi-moon' : 'pi-sun'"></i>
+            <span class="font-medium">Dark Mode</span>
+            <p-inputSwitch 
+                [ngModel]="themeService.isDarkMode()" 
+                (onChange)="themeService.toggleTheme()" 
+                class="ml-auto">
+            </p-inputSwitch>
+        </div>
+
         <ng-container *ngIf="user(); else guestBlock">
           <button class="nav-item nav-item--logout" (click)="authService.logout()">
             <i class="pi pi-sign-out"></i>
@@ -133,7 +147,7 @@ import { ShopService } from '../features/shop/shop.service';
       width: 250px;
       padding: 12px 12px 16px;
       border-right: 1px solid var(--trellis-border-light);
-      background: var(--trellis-white);
+      background: var(--surface-card);
       font-family: 'Inter', sans-serif;
     }
 
@@ -185,8 +199,8 @@ import { ShopService } from '../features/shop/shop.service';
       white-space: nowrap;
     }
     .nav-item i { font-size: 1.3rem; width: 24px; text-align: center; }
-    .nav-item:hover { background: var(--trellis-green-ghost); }
-    .nav-item.active { font-weight: 700; color: var(--trellis-green); }
+    .nav-item:hover { background: var(--surface-hover); }
+    .nav-item.active { background: rgba(0,200,83,0.1); font-weight: 700; color: var(--trellis-green); }
     .nav-item.active i { color: var(--trellis-green); }
 
     .badge-ai {
@@ -204,14 +218,14 @@ import { ShopService } from '../features/shop/shop.service';
     .nav-item--logout:hover i { color: #E53E3E; }
 
     .nav-item--signup {
-      background: var(--xyla-green);
+      background: var(--primary-color);
       color: #fff !important;
       font-weight: 600;
       justify-content: center;
       margin-top: 4px;
     }
     .nav-item--signup i { color: #fff; }
-    .nav-item--signup:hover { background: var(--xyla-green-dark); }
+    .nav-item--signup:hover { background: var(--primary-hover); }
 
     .nav-item--notifications,
     .nav-item--chat {
@@ -317,6 +331,7 @@ export class SidebarComponent implements OnInit {
   notifService = inject(NotificationService);
   plantDoctor = inject(PlantDoctorService);
   shopService = inject(ShopService);
+  themeService = inject(ThemeService);
   private router = inject(Router);
   user = this.authService.currentUser;
   showAuthModal = signal(false);
