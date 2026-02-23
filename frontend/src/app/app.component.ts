@@ -206,7 +206,8 @@ export class AppComponent implements OnInit {
       url.startsWith('/chat') ||
       url.startsWith('/notifications') ||
       url.startsWith('/shop') ||
-      url.startsWith('/marketplace')
+      url.startsWith('/marketplace') ||
+      url.startsWith('/auth')
     );
   }
 

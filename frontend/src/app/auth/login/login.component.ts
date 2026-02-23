@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { AuthFormComponent } from '../auth-form.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, AuthFormComponent],
+  imports: [CommonModule, RouterModule, AuthFormComponent],
   template: `
     <div class="auth-page">
       <!-- Left: Brand Panel -->
@@ -28,7 +29,7 @@ import { AuthFormComponent } from '../auth-form.component';
     .auth-page {
       display: flex;
       min-height: 100vh;
-      width: 100vw;
+      width: 100%;
       overflow: hidden;
       font-family: 'Inter', sans-serif;
     }
@@ -104,6 +105,12 @@ import { AuthFormComponent } from '../auth-form.component';
       justify-content: center;
       background: #fafbfc;
       padding: 32px;
+      /* Force text color to be dark on this light panel regardless of dark mode */
+      color: #1a1a1a;
+      --text-main: #1a1a1a;
+      --text-color: #1a1a1a;
+      --text-secondary: #4a5568;
+      --text-color-secondary: #4a5568;
     }
 
     /* ===== Responsive ===== */

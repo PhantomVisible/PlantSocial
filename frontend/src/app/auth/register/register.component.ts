@@ -52,6 +52,12 @@ import { VerificationComponent } from '../verification.component';
       align-items: center;
       justify-content: center;
       padding: 40px 24px;
+      /* Force text color to be dark on this light panel regardless of dark mode */
+      color: #1a1a1a;
+      --text-main: #1a1a1a;
+      --text-color: #1a1a1a;
+      --text-secondary: #4a5568;
+      --text-color-secondary: #4a5568;
     }
 
     .form-wrapper {

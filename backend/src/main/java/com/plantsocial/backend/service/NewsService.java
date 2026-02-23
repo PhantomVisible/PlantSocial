@@ -35,15 +35,15 @@ public class NewsService {
         fetchNews();
     }
 
-    // Fetch every 6 hours (6 * 60 * 60 * 1000 = 21600000 ms)
-    @Scheduled(fixedRate = 21600000)
+    // Fetch every 2 hours (2 * 60 * 60 * 1000 = 7200000 ms)
+    @Scheduled(fixedRate = 7200000)
     public void fetchNews() {
         log.info("Fetching latest plant news...");
         try {
             String url = UriComponentsBuilder.fromHttpUrl(apiUrl)
                     .queryParam("q", "gardening")
                     .queryParam("language", "en")
-                    .queryParam("sortBy", "relevancy")
+                    .queryParam("sortBy", "publishedAt")
                     .queryParam("pageSize", "40")
                     .queryParam("apiKey", apiKey)
                     .toUriString();
