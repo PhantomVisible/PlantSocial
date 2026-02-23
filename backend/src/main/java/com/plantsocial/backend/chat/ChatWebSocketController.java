@@ -37,23 +37,28 @@ public class ChatWebSocketController {
             @Payload SendMessageRequest request,
             Principal principal) {
 
+        log.info("WS sendMessage invoked for room: {}", roomId);
+
         User sender = extractUser(principal);
         if (sender == null) {
-            log.warn("Unauthenticated message attempt");
+            log.warn("Unauthenticated message attempt! Principal is: {}", principal);
             return;
         }
 
-        chatService.sendMessage(
-                UUID.fromString(roomId),
-                sender,
-                request.content(),
-                request.messageType(),
-                null // media handled via REST upload
-        );
+        log.info("WS sender authenticated: {}", sender.getUsername());
 
-        // Note: ChatService.sendMessage() already broadcasts to /topic/room/{roomId}
-        // Do NOT broadcast again here — that causes duplicate messages.
-        log.debug("Message sent to room {} by {}", roomId, sender.getUsername());
+        try {
+            chatService.sendMessage(
+                    UUID.fromString(roomId),
+                    sender,
+                    request.content(),
+                    request.messageType(),
+                    null // media handled via REST upload
+            );
+            log.info("Message successfully dispatched via chatService for room: {}", roomId);
+        } catch (Exception e) {
+            log.error("Error inside chatService.sendMessage: ", e);
+        }
     }
 
     /**

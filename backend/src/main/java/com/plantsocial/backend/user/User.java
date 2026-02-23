@@ -96,7 +96,7 @@ public class User implements UserDetails {
     private LocalDateTime verificationCodeExpiresAt;
 
     @Builder.Default
-    private boolean enabled = false;
+    private Boolean enabled = false;
 
     // UserDetails Implementation
 
@@ -130,6 +130,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return enabled;
+        return enabled != null && enabled;
     }
 }

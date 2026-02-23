@@ -34,8 +34,8 @@ import { TooltipModule } from 'primeng/tooltip';
 
         <div class="sidebar-search">
           <input type="text" placeholder="Search conversations..."
-                 [(ngModel)]="searchQuery"
-                 (input)="filterRooms()">
+                 [ngModel]="searchQuery()"
+                 (ngModelChange)="searchQuery.set($event)">
         </div>
 
         <div class="room-list">
@@ -897,8 +897,15 @@ export class ChatPageComponent implements OnInit, OnDestroy {
   @ViewChild('messagesContainer') messagesContainer!: ElementRef;
 
   activeRoom = signal<ChatRoom | null>(null);
-  searchQuery = '';
-  filteredRooms = signal<ChatRoom[]>([]);
+  searchQuery = signal('');
+  filteredRooms = computed(() => {
+    const rooms = this.chatService.rooms();
+    const q = this.searchQuery().trim().toLowerCase();
+    if (!q) {
+      return rooms;
+    }
+    return rooms.filter(r => this.getRoomDisplayName(r).toLowerCase().includes(q));
+  });
   messageText = '';
   showNewChatModal = false;
   mutualConnections = signal<UserProfile[]>([]);
@@ -933,9 +940,6 @@ export class ChatPageComponent implements OnInit, OnDestroy {
     this.chatService.init();
     this.chatService.loadRooms();
 
-    // Sync filtered rooms when rooms change
-    setTimeout(() => this.filterRooms(), 1000);
-
     // Check snapshot first
     const snapshotUserId = this.route.snapshot.queryParams['userId'];
     if (snapshotUserId) {
@@ -969,10 +973,8 @@ export class ChatPageComponent implements OnInit, OnDestroy {
           this.chatService.messages.set([]);
           this.chatService.loadMessages(room.id);
           this.chatService.joinRoom(room.id, this.currentUserId(), room);
-          // Reload rooms so the sidebar shows the new room
-          this.chatService.loadRooms();
+
           setTimeout(() => {
-            this.filterRooms();
             this.scrollToBottom();
           }, 800);
         });
@@ -984,20 +986,9 @@ export class ChatPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.chatService.destroy();
-  }
-
-  filterRooms(): void {
-    const rooms = this.chatService.rooms();
-    if (!this.searchQuery.trim()) {
-      this.filteredRooms.set(rooms);
-    } else {
-      const q = this.searchQuery.toLowerCase();
-      this.filteredRooms.set(
-        rooms.filter(r =>
-          this.getRoomDisplayName(r).toLowerCase().includes(q))
-      );
-    }
+    // We no longer destroy the ChatService here because it is a globally 
+    // persistent service used by Floating Chat and Notifications!
+    this.chatService.leaveCurrentRoom();
   }
 
   selectRoom(room: ChatRoom): void {

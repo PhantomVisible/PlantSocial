@@ -39,7 +39,7 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
       @if (!chatState.minimized) {
         <div class="window-body">
           <div class="messages-list" #scrollContainer>
-            @for (msg of messages(); track msg.id) {
+            @for (msg of messages(); track $index) {
               <div class="message" [class.own]="isOwnMessage(msg)">
                 <div class="msg-content" [class.sending]="msg.id.startsWith('temp-')">
                     @if (msg.messageType === 'IMAGE') {
@@ -303,12 +303,24 @@ export class FloatingChatWindowComponent implements OnInit, AfterViewChecked {
   }
 
   loadMessages() {
+    console.log(`[FloatingChat] loadMessages called for room: ${this.chatState.roomId}`);
+
+    // Explicitly grab the token and append it since occasionally the interceptor misses dynamically loaded standalone components
+    const token = this.authService.getToken() || localStorage.getItem('token');
+    const options: any = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+
     // Fetch messages independently
-    this.http.get<any>(`http://localhost:8080/api/v1/chat/rooms/${this.chatState.roomId}/messages?page=0&size=50`)
-      .subscribe(response => {
-        const msgs: ChatMessage[] = response.content || [];
-        this.messages.set(msgs.reverse());
-        setTimeout(() => this.scrollToBottom(), 100);
+    this.http.get<any>(`http://localhost:8080/api/v1/chat/rooms/${this.chatState.roomId}/messages?page=0&size=50`, options)
+      .subscribe({
+        next: (response: any) => {
+          const msgs: ChatMessage[] = response.content || [];
+          console.log(`[FloatingChat] loadMessages success. Received ${msgs.length} messages.`);
+          this.messages.set(msgs.reverse());
+          setTimeout(() => this.scrollToBottom(), 100);
+        },
+        error: err => {
+          console.error(`[FloatingChat] loadMessages HTTP ERROR for room ${this.chatState.roomId}:`, err);
+        }
       });
   }
 

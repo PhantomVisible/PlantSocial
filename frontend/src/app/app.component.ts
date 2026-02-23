@@ -65,7 +65,7 @@ import { ShopService } from './features/shop/shop.service';
         <app-wiki-sidebar *ngIf="!isPlantSelected()"></app-wiki-sidebar>
       </aside>
     </div>
-    <app-floating-chat-container *ngIf="authService.currentUser()"></app-floating-chat-container>
+    <app-floating-chat-container *ngIf="authService.currentUser() && !isChatRoute()"></app-floating-chat-container>
     
     <app-plant-doctor-dialog 
       *ngIf="plantDoctor.isOpen()" 
@@ -177,6 +177,7 @@ export class AppComponent implements OnInit {
   isFullWidthRoute = signal(false);
   isAuthRoute = signal(false);
   isExploreRoute = signal(false);
+  isChatRoute = signal(false);
 
   ngOnInit() {
     this.notificationService.init();
@@ -198,6 +199,7 @@ export class AppComponent implements OnInit {
     this.isPlantSelected.set(url.includes('plant='));
     this.isAuthRoute.set(url.startsWith('/auth'));
     this.isExploreRoute.set(url.startsWith('/explore'));
+    this.isChatRoute.set(url.startsWith('/chat'));
 
     // Updated to include marketplace in full width
     this.isFullWidthRoute.set(

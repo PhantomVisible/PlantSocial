@@ -39,7 +39,7 @@ public class AuthService {
                 .role(Role.USER)
                 .verificationCode(code)
                 .verificationCodeExpiresAt(java.time.LocalDateTime.now().plusMinutes(15))
-                .enabled(false)
+                .enabled(true)
                 .build();
         repository.save(user);
 

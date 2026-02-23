@@ -19,69 +19,74 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
         </app-floating-chat-window>
       }
 
-      <!-- Chat List Popover -->
-      <div *ngIf="showChatList()" class="chat-list-popover">
-        <div class="chat-list-header">
-            <h3>Messages</h3>
-            <div class="header-actions">
-                <button class="icon-btn" (click)="chatService.loadRooms()" title="Refresh">
-                    <i class="pi pi-refresh"></i>
-                </button>
-                <button class="icon-btn" (click)="toggleChatList()">
-                    <i class="pi pi-times"></i>
-                </button>
-            </div>
+      <!-- Trigger Wrapper -->
+      <div class="chat-trigger-wrapper">
+        <!-- Chat List Popover -->
+        <div *ngIf="showChatList()" class="chat-list-popover">
+          <div class="chat-list-header">
+              <h3>Messages</h3>
+              <div class="header-actions">
+                  <button class="icon-btn" (click)="chatService.loadRooms()" title="Refresh">
+                      <i class="pi pi-refresh"></i>
+                  </button>
+                  <button class="icon-btn" (click)="toggleChatList()">
+                      <i class="pi pi-times"></i>
+                  </button>
+              </div>
+          </div>
+          <div class="chat-list-body">
+              @if (chatService.loading()) {
+                  <div class="loading-state">
+                      <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+                  </div>
+              } @else if (chatService.rooms().length === 0) {
+                  <div class="empty-state">
+                      <p>No conversations yet</p>
+                      <small>Start a chat from a user profile!</small>
+                  </div>
+              } @else {
+                  <div *ngFor="let room of chatService.rooms()" 
+                       class="chat-list-item" 
+                       (click)="openRoom(room)">
+                      <div class="avatar-wrap">
+                          <app-avatar [imageUrl]="resolveImageUrl(getRoomAvatar(room) || '')" [name]="getRoomName(room)" [size]="48"></app-avatar>
+                      </div>
+                      <div class="room-info">
+                          <span class="room-name">{{ getRoomName(room) }}</span>
+                          <div class="last-message-row">
+                              <span class="last-message" *ngIf="room.lastMessage">
+                                  <span *ngIf="isOwnMessage(room.lastMessage)">You: </span>
+                                  @if (room.lastMessage.messageType === 'IMAGE') { 📷 Photo }
+                                  @else if (room.lastMessage.messageType === 'FILE') { 📎 File }
+                                  @else { {{ room.lastMessage.content }} }
+                              </span>
+                               <span class="date" *ngIf="room.lastMessage">
+                                  • {{ formatTime(room.lastMessage.createdAt) }}
+                               </span>
+                          </div>
+                      </div>
+                  </div>
+              }
+          </div>
         </div>
-        <div class="chat-list-body">
-            @if (chatService.loading()) {
-                <div class="loading-state">
-                    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
-                </div>
-            } @else if (chatService.rooms().length === 0) {
-                <div class="empty-state">
-                    <p>No conversations yet</p>
-                    <small>Start a chat from a user profile!</small>
-                </div>
-            } @else {
-                <div *ngFor="let room of chatService.rooms()" 
-                     class="chat-list-item" 
-                     (click)="openRoom(room)">
-                    <div class="avatar-wrap">
-                        <app-avatar [imageUrl]="resolveImageUrl(getRoomAvatar(room) || '')" [name]="getRoomName(room)" [size]="48"></app-avatar>
-                    </div>
-                    <div class="room-info">
-                        <span class="room-name">{{ getRoomName(room) }}</span>
-                        <div class="last-message-row">
-                            <span class="last-message" *ngIf="room.lastMessage">
-                                <span *ngIf="isOwnMessage(room.lastMessage)">You: </span>
-                                {{ room.lastMessage.content }}
-                            </span>
-                             <span class="date" *ngIf="room.lastMessage">
-                                • {{ formatTime(room.lastMessage.createdAt) }}
-                             </span>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-      </div>
 
-      <!-- Messages Trigger Button -->
-      <button class="messages-trigger" (click)="toggleChatList()" [class.active]="showChatList()">
-        <div class="trigger-content" *ngIf="!showChatList()">
-            <span class="trigger-text">Messages</span>
-            <div class="trigger-icon">
-                <!-- Envelope Icon -->
-                <svg viewBox="0 0 24 24" aria-hidden="true"><g><path d="M1.998 5.5c0-1.381 1.119-2.5 2.5-2.5h15c1.381 0 2.5 1.119 2.5 2.5v13c0 1.381-1.119 2.5-2.5 2.5h-15c-1.381 0-2.5-1.119-2.5-2.5v-13zm2.5-1.5a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h15a1 1 0 0 0 1-1v-13a1 1 0 0 0-1-1h-15z"></path><path d="M11.24 13.65l-7.39-6.38a.75.75 0 1 1 .98-1.14l7.17 6.19 7.17-6.19a.75.75 0 0 1 .98 1.14l-7.39 6.38a1 1 0 0 1-1.52 0z"></path></g></svg>
-            </div> 
-        </div>
-        <div class="trigger-content-close" *ngIf="showChatList()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-        </div>
-      </button>
+        <!-- Messages Trigger Button -->
+        <button class="messages-trigger" (click)="toggleChatList()" [class.active]="showChatList()">
+          <div class="trigger-content" *ngIf="!showChatList()">
+              <span class="trigger-text">Messages</span>
+              <div class="trigger-icon">
+                  <!-- Envelope Icon -->
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><g><path d="M1.998 5.5c0-1.381 1.119-2.5 2.5-2.5h15c1.381 0 2.5 1.119 2.5 2.5v13c0 1.381-1.119 2.5-2.5 2.5h-15c-1.381 0-2.5-1.119-2.5-2.5v-13zm2.5-1.5a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h15a1 1 0 0 0 1-1v-13a1 1 0 0 0-1-1h-15z"></path><path d="M11.24 13.65l-7.39-6.38a.75.75 0 1 1 .98-1.14l7.17 6.19 7.17-6.19a.75.75 0 0 1 .98 1.14l-7.39 6.38a1 1 0 0 1-1.52 0z"></path></g></svg>
+              </div> 
+          </div>
+          <div class="trigger-content-close" *ngIf="showChatList()">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+          </div>
+        </button>
+      </div>
     </div>
   `,
     styles: [`
@@ -100,6 +105,13 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
     .chat-window-wrapper {
       pointer-events: auto;
       animation: slideUp 0.3s ease-out;
+    }
+
+    .chat-trigger-wrapper {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
     }
 
     /* Trigger Button */
@@ -130,7 +142,6 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
     }
 
     .messages-trigger.active {
-        min-width: 50px; /* Shrink to circle/square when open if we want? Or keep pill */
         width: 50px;
         min-width: 50px;
         padding: 0;
@@ -167,7 +178,7 @@ import { AvatarComponent } from '../../../shared/components/avatar/avatar.compon
         pointer-events: auto;
         position: absolute;
         bottom: 80px; /* Above trigger */
-        right: 0;
+        right: 0; /* Anchored to the right of the wrapper */
         width: 350px;
         height: 500px;
         max-height: 70vh;

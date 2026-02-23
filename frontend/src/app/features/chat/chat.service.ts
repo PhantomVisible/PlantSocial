@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, effect } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap, map, Subject, Subscription } from 'rxjs';
 import { WebSocketService } from '../../core/websocket.service';
@@ -101,7 +101,21 @@ export class ChatService {
         private http: HttpClient,
         private ws: WebSocketService,
         private authService: AuthService
-    ) { }
+    ) {
+        // Automatically manage WebSocket connection based on authentication state
+        effect(() => {
+            const user = this.authService.currentUser();
+            if (user) {
+                console.log('ChatService: User logged in, initializing WebSocket...');
+                this.init();
+                this.loadRooms();
+            } else {
+                console.log('ChatService: User logged out, cleaning up...');
+                this.destroy();
+                this.activeFloatingChats.set([]);
+            }
+        }, { allowSignalWrites: true });
+    }
 
     // ─── Floating Chat Management ─────────────────────────────────
 
@@ -322,7 +336,18 @@ export class ChatService {
     }
 
     getOrCreatePrivateRoom(userId: string): Observable<ChatRoom> {
-        return this.http.post<ChatRoom>(`${this.apiUrl}/rooms/private/${userId}`, {});
+        return this.http.post<ChatRoom>(`${this.apiUrl}/rooms/private/${userId}`, {}).pipe(
+            tap(room => this.addRoomIfNotExists(room))
+        );
+    }
+
+    private addRoomIfNotExists(room: ChatRoom) {
+        this.rooms.update(rooms => {
+            if (rooms.some(r => r.id === room.id)) {
+                return rooms;
+            }
+            return [room, ...rooms];
+        });
     }
 
     loadMessages(roomId: string, page: number = 0): void {
