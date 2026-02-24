@@ -55,8 +55,13 @@
                         <span class="value md">{{ item.durationDays }} Days</span>
                     </div>
 
-                    <div class="detail-row">
-                        <span class="label">Total Cost</span>
+                    <div class="detail-row" *ngIf="item.productPrice">
+                        <span class="label">Product Value</span>
+                        <span class="value md">{{ item.productPrice | currency:'USD' }}</span>
+                    </div>
+
+                    <div class="detail-row" *ngIf="isOwner()">
+                        <span class="label">Listing Fee</span>
                         <span class="value lg">{{ (item.durationDays * 5) | currency:'USD' }}</span>
                     </div>
 
@@ -76,6 +81,10 @@
                         <button *ngIf="item.status === 'PENDING_PAYMENT'" (click)="handlePayment()"
                             class="btn-activate">
                             Pay & Activate
+                        </button>
+                        <button (click)="editListing()" class="btn-secondary"
+                            style="margin-bottom: 0.5rem; width: 100%;">
+                            <i class="pi pi-pencil"></i> Edit Listing
                         </button>
                         <button (click)="deleteListing()" class="btn-delete-ghost">
                             <i class="pi pi-trash"></i> Delete Listing
@@ -109,11 +118,11 @@
         </p>
 
         <div class="dialog-actions">
-            <button pButton class="p-button-text p-button-secondary" label="Cancel" (click)="cancelDelete()"
-                [disabled]="isDeleting()"></button>
-            <button pButton class="p-button-danger" [label]="isDeleting() ? 'Deleting...' : 'Yes, Delete'"
-                [icon]="isDeleting() ? 'pi pi-spin pi-spinner' : 'pi pi-trash'" (click)="confirmDelete()"
-                [disabled]="isDeleting()"></button>
+            <button class="btn-cancel" (click)="cancelDelete()" [disabled]="isDeleting()">Cancel</button>
+            <button class="btn-confirm" (click)="confirmDelete()" [disabled]="isDeleting()">
+                <i class="pi" [ngClass]="isDeleting() ? 'pi-spin pi-spinner' : 'pi-trash'"></i>
+                {{ isDeleting() ? 'Deleting...' : 'Yes, Delete' }}
+            </button>
         </div>
     </div>
 </p-dialog>

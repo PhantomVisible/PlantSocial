@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -35,7 +35,7 @@ import { trigger, style, animate, transition } from '@angular/animations';
         ])
     ]
 })
-export class MarketplaceAddComponent {
+export class MarketplaceAddComponent implements OnInit {
     listingForm: FormGroup;
     isFetchingPreview = false;
     isSubmitting = false;
@@ -43,11 +43,14 @@ export class MarketplaceAddComponent {
     previewData: any = null;
 
     creationMode: 'link' | 'manual' = 'link';
+    isEditMode = false;
+    listingId: string | null = null;
 
     constructor(
         private fb: FormBuilder,
         private marketplaceService: MarketplaceService,
-        private router: Router
+        private router: Router,
+        private route: ActivatedRoute
     ) {
         this.listingForm = this.fb.group({
             productUrl: ['', [Validators.pattern(/https?:\/\/.+/)]], // Removed required initially
@@ -55,11 +58,59 @@ export class MarketplaceAddComponent {
             title: ['', Validators.required],
             imageUrl: ['', Validators.required],
             description: [''],
+            productPrice: [null],
             additionalImages: this.fb.array([])
         });
 
         // Initialize validators based on default mode
         this.updateValidators();
+    }
+
+    ngOnInit() {
+        this.route.paramMap.subscribe(params => {
+            const id = params.get('id');
+            if (id) {
+                this.isEditMode = true;
+                this.listingId = id;
+                this.creationMode = 'manual'; // Force manual mode for editing
+                this.updateValidators();
+                this.fetchListingForEdit(id);
+            }
+        });
+    }
+
+    fetchListingForEdit(id: string) {
+        this.isFetchingPreview = true;
+        this.marketplaceService.getListingById(id).subscribe({
+            next: (listing) => {
+                this.previewData = { manual: true }; // Setup dummy preview to show form
+                this.listingForm.patchValue({
+                    title: listing.title,
+                    description: listing.description || '',
+                    imageUrl: listing.imageUrl,
+                    productPrice: listing.productPrice,
+                    productUrl: listing.productUrl,
+                    durationDays: listing.durationDays
+                });
+
+                // Keep the URL control disabled during edit
+                this.listingForm.get('productUrl')?.disable();
+                this.listingForm.get('durationDays')?.disable(); // Prevent changing duration
+
+                // Handle additional images if any exist
+                if (listing.additionalImages) {
+                    listing.additionalImages.forEach(img => {
+                        this.additionalImages.push(this.fb.control(img, Validators.required));
+                    });
+                }
+                this.isFetchingPreview = false;
+            },
+            error: (err) => {
+                console.error('Failed to fetch listing for edit', err);
+                this.isFetchingPreview = false;
+                this.router.navigate(['/marketplace']);
+            }
+        });
     }
 
     setMode(mode: 'link' | 'manual') {
@@ -117,7 +168,8 @@ export class MarketplaceAddComponent {
                 this.listingForm.patchValue({
                     title: data.title,
                     imageUrl: data.imageUrl,
-                    description: data.description || ''
+                    description: data.description || '',
+                    productPrice: data.productPrice || null
                 });
                 this.isFetchingPreview = false;
             },
@@ -138,9 +190,42 @@ export class MarketplaceAddComponent {
 
     payAndList() {
         if (this.listingForm.invalid) return;
-        this.showPaymentModal = true;
-        this.paymentStatus = 'processing';
-        this.createListing(true);
+
+        if (this.isEditMode && this.listingId) {
+            this.updateExistingListing();
+        } else {
+            this.showPaymentModal = true;
+            this.paymentStatus = 'processing';
+            this.createListing(true);
+        }
+    }
+
+    private updateExistingListing() {
+        if (!this.listingId) return;
+        this.isSubmitting = true;
+        const formVal = this.listingForm.getRawValue();
+
+        const request: ListingRequest = {
+            productUrl: formVal.productUrl,
+            title: formVal.title,
+            imageUrl: formVal.imageUrl,
+            description: formVal.description,
+            productPrice: formVal.productPrice,
+            additionalImages: formVal.additionalImages,
+            durationDays: formVal.durationDays
+        };
+
+        this.marketplaceService.updateListing(this.listingId, request).subscribe({
+            next: () => {
+                this.isSubmitting = false;
+                this.router.navigate(['/marketplace/listing', this.listingId]);
+            },
+            error: (err) => {
+                console.error('Update failed', err);
+                this.isSubmitting = false;
+                alert('Update failed. Please try again.');
+            }
+        });
     }
 
     private createListing(processPayment: boolean) {
@@ -152,6 +237,7 @@ export class MarketplaceAddComponent {
             title: formVal.title,
             imageUrl: formVal.imageUrl,
             description: formVal.description,
+            productPrice: formVal.productPrice,
             additionalImages: formVal.additionalImages,
             durationDays: formVal.durationDays
         };
@@ -170,7 +256,7 @@ export class MarketplaceAddComponent {
                             setTimeout(() => {
                                 this.showPaymentModal = false;
                                 navigateHome();
-                            }, 1500); // Wait 1.5s to show success before navigating
+                            }, 2500); // Wait 2.5s to show full success animation before navigating
                         },
                         error: (err) => {
                             console.error('Payment failed', err);

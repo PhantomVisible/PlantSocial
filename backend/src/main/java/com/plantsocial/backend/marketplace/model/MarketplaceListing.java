@@ -49,6 +49,9 @@ public class MarketplaceListing {
     @Column(name = "image_url")
     private java.util.List<String> additionalImages = new java.util.ArrayList<>();
 
+    @Column(precision = 10, scale = 2)
+    private BigDecimal productPrice;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal pricePerDay; // Fixed at 5.00
 

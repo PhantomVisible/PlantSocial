@@ -63,16 +63,7 @@ export class AuthService {
 
     register(request: RegisterRequest): Observable<AuthResponse> {
         console.log('HTTP PAYLOAD SENDING (Service):', request);
-        return this.http.post<AuthResponse>(`${this.apiUrl}/register`, request).pipe(
-            tap(response => {
-                if (isPlatformBrowser(this.platformId)) {
-                    localStorage.setItem('token', response.token);
-                    this.isAuthenticated.set(true);
-                    this.currentUser.set(this.decodeToken(response.token));
-                }
-                this.router.navigate(['/feed']);
-            })
-        );
+        return this.http.post<AuthResponse>(`${this.apiUrl}/register`, request);
     }
 
     login(request: LoginRequest): Observable<AuthResponse> {

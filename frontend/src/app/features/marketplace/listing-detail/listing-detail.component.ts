@@ -100,6 +100,13 @@ export class ListingDetailComponent implements OnInit {
     this.showDeleteModal.set(false);
   }
 
+  editListing() {
+    const id = this.listing()?.id;
+    if (id) {
+      this.router.navigate(['/marketplace/edit', id]);
+    }
+  }
+
   confirmDelete() {
     const id = this.listing()?.id;
     if (id) {

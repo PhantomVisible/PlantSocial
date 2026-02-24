@@ -385,3 +385,117 @@ $red: #d32f2f;
     color: $text-secondary;
     gap: 16px;
 }
+
+// Modal Styling Overrides
+::ng-deep .luxury-dialog {
+    .p-dialog-content {
+        padding: 0;
+        border-radius: 24px;
+        overflow: hidden;
+    }
+}
+
+.delete-confirmation-modal {
+    padding: 40px;
+    text-align: center;
+    background: white;
+    border-radius: 24px;
+
+    .warning-icon-wrapper {
+        width: 80px;
+        height: 80px;
+        background: #fff3e0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        animation: pulse-warning 2s infinite;
+
+        i {
+            font-size: 2.5rem;
+            color: #ff9800;
+        }
+    }
+
+    h3 {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: $text;
+        margin: 0 0 16px;
+    }
+
+    p {
+        color: $text-secondary;
+        line-height: 1.6;
+        margin: 0 0 32px;
+        font-size: 1.1rem;
+    }
+
+    .dialog-actions {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+
+        button {
+            padding: 16px 24px;
+            border-radius: 16px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex: 1;
+
+            &.btn-cancel {
+                background: #f5f5f5;
+                color: $text;
+                border: 1px solid transparent;
+
+                &:hover:not(:disabled) {
+                    background: #e0e0e0;
+                    transform: translateY(-2px);
+                }
+            }
+
+            &.btn-confirm {
+                background: #ef5350;
+                color: white;
+                box-shadow: 0 4px 12px rgba(239, 83, 80, 0.25);
+
+                &:hover:not(:disabled) {
+                    background: #d32f2f;
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 24px rgba(239, 83, 80, 0.4);
+                }
+
+                i {
+                    font-size: 1.2rem;
+                }
+            }
+
+            &:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+        }
+    }
+}
+
+@keyframes pulse-warning {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 20px rgba(255, 152, 0, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 152, 0, 0);
+    }
+}

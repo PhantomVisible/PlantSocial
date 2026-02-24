@@ -32,6 +32,9 @@ public class ScraperService {
                     .header("Sec-Fetch-Site", "none")
                     .header("Sec-Fetch-User", "?1")
                     .header("Cache-Control", "max-age=0")
+                    .cookie("i18n-prefs", "USD")
+                    .cookie("lc-main", "en_US")
+                    .cookie("session-id", "147-9876543-1234567") // Dummy session to bind prefs
                     .timeout(15000)
                     .get();
 
@@ -74,13 +77,38 @@ public class ScraperService {
                 description = description.substring(0, 497) + "...";
             }
 
-            log.info("Successfully scraped: Title={}, Image={}", title, image);
-            return new ProductPreviewDTO(title, image, description, url);
+            // Extract Price (especially for Amazon)
+            java.math.BigDecimal productPrice = null;
+            try {
+                String priceStr = doc.select("meta[property=product:price:amount]").attr("content");
+                if (priceStr.isEmpty()) {
+                    org.jsoup.nodes.Element offscreen = doc.selectFirst(".a-price .a-offscreen");
+                    priceStr = offscreen != null ? offscreen.text() : "";
+                }
+                if (priceStr.isEmpty()) {
+                    priceStr = doc.select("#priceblock_ourprice").text();
+                }
+                if (priceStr.isEmpty()) {
+                    priceStr = doc.select("#priceblock_dealprice").text();
+                }
+                if (!priceStr.isEmpty()) {
+                    // Clean up currency symbols and commas
+                    priceStr = priceStr.replaceAll("[^\\d.]", "");
+                    if (!priceStr.isEmpty()) {
+                        productPrice = new java.math.BigDecimal(priceStr);
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Could not extract price from {}", url);
+            }
+
+            log.info("Successfully scraped: Title={}, Image={}, Price={}", title, image, productPrice);
+            return new ProductPreviewDTO(title, image, description, url, productPrice);
 
         } catch (Exception e) {
             log.error("Failed to scrape URL: {} - Error: {}", url, e.getMessage());
             // Return a safe DTO so the frontend doesn't crash
-            return new ProductPreviewDTO("", "", "", url);
+            return new ProductPreviewDTO("", "", "", url, null);
         }
     }
 }

@@ -50,7 +50,12 @@ import { ToastService } from '../core/toast.service';
               [class.has-error]="form.get('fullName')?.invalid && form.get('fullName')?.touched"
             />
           </div>
-          <small *ngIf="form.get('fullName')?.invalid && form.get('fullName')?.touched" class="field-error">Required</small>
+          <small *ngIf="form.get('fullName')?.errors?.['required'] && form.get('fullName')?.touched" class="field-error">
+            Required
+          </small>
+          <small *ngIf="form.get('fullName')?.errors?.['pattern'] && form.get('fullName')?.touched" class="field-error">
+            Only letters and spaces allowed
+          </small>
         </div>
 
         <!-- Username (Register only) -->
@@ -66,8 +71,11 @@ import { ToastService } from '../core/toast.service';
               [class.has-error]="form.get('username')?.invalid && form.get('username')?.touched"
             />
           </div>
-          <small *ngIf="form.get('username')?.invalid && form.get('username')?.touched" class="field-error">
+          <small *ngIf="(form.get('username')?.errors?.['required'] || form.get('username')?.errors?.['minlength'] || form.get('username')?.errors?.['maxlength']) && form.get('username')?.touched" class="field-error">
             Username must be 3-20 chars
+          </small>
+          <small *ngIf="form.get('username')?.errors?.['pattern'] && form.get('username')?.touched" class="field-error">
+            Only letters, numbers, and underscores allowed
           </small>
         </div>
 
@@ -103,9 +111,23 @@ import { ToastService } from '../core/toast.service';
               <i [class]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
             </button>
           </div>
-          <small *ngIf="form.get('password')?.invalid && form.get('password')?.touched" class="field-error">
-            {{ mode === 'register' ? 'Min 6 characters' : 'Required' }}
-          </small>
+          <ng-container *ngIf="mode === 'register'">
+            <small *ngIf="(form.get('password')?.errors?.['required'] || form.get('password')?.errors?.['minlength']) && form.get('password')?.touched" class="field-error">
+              Min 6 characters
+            </small>
+            <!-- Password Strength Bar -->
+            <div class="password-strength-container" *ngIf="form.get('password')?.value">
+              <div class="strength-bar-bg">
+                <div class="strength-bar-fill" [ngClass]="passwordStrengthLabel() | lowercase" [style.width.%]="passwordStrength()"></div>
+              </div>
+              <span class="strength-label" [ngClass]="passwordStrengthLabel() | lowercase">{{ passwordStrengthLabel() }}</span>
+            </div>
+          </ng-container>
+          <ng-container *ngIf="mode === 'login'">
+            <small *ngIf="form.get('password')?.invalid && form.get('password')?.touched" class="field-error">
+              Required
+            </small>
+          </ng-container>
         </div>
 
         <!-- Error Banner -->
@@ -294,6 +316,34 @@ import { ToastService } from '../core/toast.service';
       color: #ef4444;
     }
 
+    /* ===== Password Strength ===== */
+    .password-strength-container {
+      margin-top: 10px;
+    }
+    .strength-bar-bg {
+      height: 4px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+    .strength-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.3s ease, background-color 0.3s ease;
+    }
+    .strength-bar-fill.low { background: #ef4444; }
+    .strength-bar-fill.medium { background: #f59e0b; }
+    .strength-bar-fill.high { background: #10b981; }
+    
+    .strength-label {
+      font-size: 0.76rem;
+      font-weight: 600;
+    }
+    .strength-label.low { color: #ef4444; }
+    .strength-label.medium { color: #f59e0b; }
+    .strength-label.high { color: #10b981; }
+
     /* ===== Error Banner ===== */
     .error-banner {
       display: flex;
@@ -415,6 +465,9 @@ export class AuthFormComponent implements OnInit, OnChanges {
   socialToast: string | null = null;
   private socialTimeout: any;
 
+  passwordStrength = signal<number>(0);
+  passwordStrengthLabel = signal<string>('Low');
+
   form!: FormGroup;
 
   ngOnInit() {
@@ -431,10 +484,23 @@ export class AuthFormComponent implements OnInit, OnChanges {
   private buildForm() {
     if (this.mode === 'register') {
       this.form = this.fb.group({
-        fullName: ['', Validators.required],
-        username: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(20)]],
+        fullName: ['', [Validators.required, Validators.pattern(/^[a-zA-Z\s]+$/)]],
+        username: ['', [
+          Validators.required,
+          Validators.minLength(3),
+          Validators.maxLength(20),
+          Validators.pattern(/^[a-zA-Z0-9_]+$/)
+        ]],
         email: ['', [Validators.required, Validators.email]],
-        password: ['', [Validators.required, Validators.minLength(6)]]
+        password: ['', [
+          Validators.required,
+          Validators.minLength(6)
+        ]]
+      });
+
+      // Subscribe to password changes to dynamically update strength meter
+      this.form.get('password')?.valueChanges.subscribe(val => {
+        this.checkPasswordStrength(val || '');
       });
     } else {
       this.form = this.fb.group({
@@ -491,5 +557,39 @@ export class AuthFormComponent implements OnInit, OnChanges {
     clearTimeout(this.socialTimeout);
     this.socialToast = `${provider} sign-in coming soon! Use email for now.`;
     this.socialTimeout = setTimeout(() => this.socialToast = null, 3000);
+  }
+
+  checkPasswordStrength(password: string) {
+    if (!password) {
+      this.passwordStrength.set(0);
+      this.passwordStrengthLabel.set('Low');
+      return;
+    }
+
+    const hasLetters = /[a-zA-Z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+    const hasSpecial = /[^a-zA-Z0-9]/.test(password);
+
+    let strength = 0;
+
+    // Base strength on combinations
+    if (hasLetters && hasNumbers && hasSpecial) {
+      strength = 100;
+      this.passwordStrengthLabel.set('High');
+    } else if ((hasLetters && hasNumbers) || (hasLetters && hasSpecial) || (hasNumbers && hasSpecial)) {
+      strength = 50;
+      this.passwordStrengthLabel.set('Medium');
+    } else {
+      strength = 25;
+      this.passwordStrengthLabel.set('Low');
+    }
+
+    // Penalize if it's too short, regardless of characters
+    if (password.length < 6) {
+      strength = Math.min(strength, 25);
+      this.passwordStrengthLabel.set('Low');
+    }
+
+    this.passwordStrength.set(strength);
   }
 }

@@ -4,8 +4,8 @@
             <i class="pi pi-arrow-left"></i> Back
         </button>
         <div class="header-content">
-            <h2>List Your Product</h2>
-            <p>Share your product with the community</p>
+            <h2>{{ isEditMode ? 'Edit Your Listing' : 'List Your Product' }}</h2>
+            <p>{{ isEditMode ? 'Update your product details' : 'Share your product with the community' }}</p>
         </div>
     </div>
 
@@ -122,17 +122,22 @@
                         <p-slider formControlName="durationDays" [min]="1" [max]="30"></p-slider>
                     </div>
 
+                    <div class="cost-summary" *ngIf="listingForm.get('productPrice')?.value">
+                        <span>Product Value</span>
+                        <span class="price">{{ listingForm.get('productPrice')?.value | currency:'USD' }}</span>
+                    </div>
+
                     <div class="cost-summary">
-                        <span>Total Cost</span>
+                        <span>Listing Fee</span>
                         <span class="price">{{ totalCost | currency:'USD' }}</span>
                     </div>
                 </div>
 
                 <div class="actions">
                     <button class="btn-primary" (click)="payAndList()" [disabled]="listingForm.invalid || isSubmitting">
-                        Pay & Activate
+                        {{ isEditMode ? 'Save Changes' : 'Pay & Activate' }}
                     </button>
-                    <button class="btn-secondary" (click)="saveDraft()" [disabled]="isSubmitting">
+                    <button class="btn-secondary" *ngIf="!isEditMode" (click)="saveDraft()" [disabled]="isSubmitting">
                         Save Draft
                     </button>
                 </div>
@@ -143,22 +148,44 @@
 </div>
 
 <!-- Payment Simulation Modal -->
-<p-dialog [(visible)]="showPaymentModal" [modal]="true" [closable]="false" [showHeader]="false">
-    <div class="payment-simulation-modal">
-        <div class="simulation-content" *ngIf="paymentStatus === 'processing'">
-            <div class="spinner-wrapper">
-                <i class="pi pi-spin pi-spinner"></i>
-            </div>
-            <h3>Processing Payment</h3>
-            <p>Simulating secure transaction with Stripe...</p>
-        </div>
+<p-dialog [(visible)]="showPaymentModal" [modal]="true" [closable]="false" [showHeader]="false"
+    styleClass="payment-dialog">
+    <div class="payment-simulation-modal" [ngClass]="paymentStatus">
+        <div class="simulation-content">
+            <!-- Animation Wrapper -->
+            <div class="payment-animation-container">
+                <!-- Card Element -->
+                <div class="credit-card" [class.success]="paymentStatus === 'success'">
+                    <div class="card-chip"></div>
+                    <div class="card-lines">
+                        <div class="line"></div>
+                        <div class="line short"></div>
+                    </div>
+                    <!-- Scanning line -->
+                    <div class="scanner-line" *ngIf="paymentStatus === 'processing'"></div>
+                </div>
 
-        <div class="simulation-content success" *ngIf="paymentStatus === 'success'">
-            <div class="success-icon-wrapper">
-                <i class="pi pi-check"></i>
+                <!-- Success icon (Checkmark) -->
+                <div class="success-icon-wrapper" *ngIf="paymentStatus === 'success'">
+                    <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                        <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none" />
+                        <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+                    </svg>
+                </div>
             </div>
-            <h3>Payment Successful!</h3>
-            <p>Your listing is now active.</p>
+
+            <!-- Text Content -->
+            <div class="status-text-content">
+                <ng-container *ngIf="paymentStatus === 'processing'">
+                    <h3>Processing Payment</h3>
+                    <p>Securing transaction...</p>
+                </ng-container>
+
+                <ng-container *ngIf="paymentStatus === 'success'">
+                    <h3 class="success-text">Payment Successful!</h3>
+                    <p>Your listing is now active.</p>
+                </ng-container>
+            </div>
         </div>
     </div>
 </p-dialog>

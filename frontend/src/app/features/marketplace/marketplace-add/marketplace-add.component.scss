@@ -309,22 +309,31 @@ $shadow-lg: 0 16px 48px rgba(27, 94, 32, 0.08);
             }
 
             .btn-upload {
-                background: $text;
+                background: linear-gradient(135deg, $primary, $primary-light);
                 color: white;
                 border: none;
-                padding: 0 24px;
+                padding: 14px 28px;
                 border-radius: 16px;
                 font-weight: 600;
+                font-size: 1rem;
                 cursor: pointer;
                 display: flex;
                 align-items: center;
-                gap: 8px;
-                transition: all 0.3s;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                gap: 12px;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+                box-shadow: 0 4px 12px rgba($primary, 0.3);
+
+                i {
+                    font-size: 1.2rem;
+                }
 
                 &:hover {
                     transform: translateY(-2px);
-                    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+                    box-shadow: 0 8px 24px rgba($primary, 0.4);
+                }
+
+                &:active {
+                    transform: translateY(0);
                 }
             }
         }
@@ -836,6 +845,35 @@ $shadow-lg: 0 16px 48px rgba(27, 94, 32, 0.08);
             align-items: center;
             margin-bottom: 16px;
 
+            .btn-upload {
+                background: linear-gradient(135deg, $primary, $primary-light);
+                color: white;
+                border: none;
+                padding: 14px 28px;
+                border-radius: 16px;
+                font-weight: 600;
+                font-size: 1rem;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+                box-shadow: 0 4px 12px rgba($primary, 0.3);
+
+                i {
+                    font-size: 1.2rem;
+                }
+
+                &:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 24px rgba($primary, 0.4);
+                }
+
+                &:active {
+                    transform: translateY(0);
+                }
+            }
+
             .btn-add-mini {
                 background: rgba($primary, 0.1);
                 color: $primary;
@@ -1097,5 +1135,227 @@ $shadow-lg: 0 16px 48px rgba(27, 94, 32, 0.08);
                 background: $primary;
             }
         }
+    }
+}
+
+/* ------------------------------------------------------------------------
+   Payment Simulation Modal Styles & Advanced Realistic Animations
+------------------------------------------------------------------------ */
+
+::ng-deep .payment-dialog {
+    .p-dialog-content {
+        padding: 0;
+        border-radius: 24px;
+        overflow: hidden;
+        background: transparent;
+    }
+}
+
+.payment-simulation-modal {
+    background: white;
+    padding: 48px 32px;
+    border-radius: 24px;
+    text-align: center;
+    width: 100%;
+    min-width: 360px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.1);
+
+    .payment-animation-container {
+        position: relative;
+        height: 160px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 24px;
+        perspective: 1000px;
+    }
+
+    /* Credit Card Design & Initial Insert Animation */
+    .credit-card {
+        width: 180px;
+        height: 110px;
+        background: linear-gradient(135deg, #1b5e20, #4c8c4a);
+        border-radius: 16px;
+        position: relative;
+        box-shadow: 0 12px 24px rgba(27, 94, 32, 0.3);
+        overflow: hidden;
+        animation: cardInsert 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        transform-origin: center;
+        will-change: transform, opacity;
+
+        /* Step 3: Transition to success state (Fade out card) */
+        &.success {
+            animation: cardFadeOut 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .card-chip {
+            width: 30px;
+            height: 22px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 4px;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+
+        .card-lines {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 100%;
+
+            .line {
+                height: 6px;
+                background: rgba(255, 255, 255, 0.4);
+                border-radius: 4px;
+                margin-bottom: 8px;
+                width: 60%;
+
+                &.short {
+                    width: 40%;
+                }
+            }
+        }
+
+        /* Step 2: Scanner Line Animation */
+        .scanner-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: #fbc02d;
+            /* Gold */
+            box-shadow: 0 0 12px #fbc02d;
+            opacity: 0.8;
+            animation: scan 1.5s ease-in-out infinite alternate;
+            animation-delay: 0.8s;
+            /* Start after card is fully inserted */
+            will-change: transform;
+        }
+    }
+
+    /* Step 4 & 5: Success Checkmark Animation */
+    .success-icon-wrapper {
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        animation-delay: 0.3s;
+        /* Wait for card to start fading out */
+        opacity: 0;
+        transform: scale(0);
+        will-change: transform, opacity;
+
+        .checkmark {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 4;
+            stroke: #4c8c4a;
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px #4c8c4a;
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        }
+
+        .checkmark-circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 4;
+            stroke-miterlimit: 10;
+            stroke: #4c8c4a;
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark-check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards;
+        }
+    }
+
+    .status-text-content {
+        h3 {
+            font-size: 1.5rem;
+            color: #1a1a1a;
+            margin: 0 0 8px;
+            font-weight: 700;
+
+            &.success-text {
+                color: #4c8c4a;
+                animation: popIn 0.5s ease-out forwards;
+            }
+        }
+
+        p {
+            color: #666;
+            margin: 0;
+            font-size: 1rem;
+        }
+    }
+}
+
+/* Keyframes - Hardware Accelerated for 60fps */
+@keyframes cardInsert {
+    0% {
+        transform: translateY(40px) scale(0.8) rotateX(20deg);
+        opacity: 0;
+        box-shadow: 0 4px 8px rgba(27, 94, 32, 0.1);
+    }
+
+    100% {
+        transform: translateY(0) scale(1) rotateX(0deg);
+        opacity: 1;
+        box-shadow: 0 16px 32px rgba(27, 94, 32, 0.3);
+    }
+}
+
+@keyframes scan {
+    0% {
+        transform: translateY(0);
+    }
+
+    100% {
+        transform: translateY(106px);
+        /* Card height - scanner height */
+    }
+}
+
+@keyframes cardFadeOut {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+}
+
+@keyframes popIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes stroke {
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes fill {
+    100% {
+        box-shadow: inset 0px 0px 0px 30px #fcfdfc;
     }
 }

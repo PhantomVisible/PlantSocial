@@ -8,6 +8,7 @@ export interface ListingRequest {
     imageUrl: string;
     title: string;
     description?: string;
+    productPrice?: number;
     additionalImages?: string[];
     durationDays: number;
 }
@@ -22,6 +23,7 @@ export interface ListingResponse {
     title: string;
     description?: string;
     additionalImages?: string[];
+    productPrice?: number;
     pricePerDay: number;
     durationDays: number;
     totalCost: number;
@@ -35,6 +37,7 @@ export interface ProductPreviewDTO {
     imageUrl: string;
     description?: string;
     url: string;
+    productPrice?: number;
 }
 
 @Injectable({
@@ -64,6 +67,10 @@ export class MarketplaceService {
 
     getListingById(id: string): Observable<ListingResponse> {
         return this.http.get<ListingResponse>(`${this.apiUrl}/listings/${id}`);
+    }
+
+    updateListing(id: string, request: ListingRequest): Observable<ListingResponse> {
+        return this.http.put<ListingResponse>(`${this.apiUrl}/listings/${id}`, request);
     }
 
     processPayment(id: string): Observable<ListingResponse> {

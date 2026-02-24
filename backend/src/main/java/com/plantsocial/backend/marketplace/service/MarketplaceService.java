@@ -37,6 +37,8 @@ public class MarketplaceService {
                 .productUrl(request.productUrl())
                 .imageUrl(request.imageUrl())
                 .title(request.title())
+                .description(request.description())
+                .productPrice(request.productPrice())
                 .pricePerDay(PRICE_PER_DAY)
                 .durationDays(request.durationDays())
                 .status(ListingStatus.PENDING_PAYMENT)
@@ -98,6 +100,28 @@ public class MarketplaceService {
         }
 
         listingRepository.delete(listing);
+    }
+
+    @Transactional
+    public ListingResponse updateListing(UUID id, ListingRequest request, String userEmail) {
+        MarketplaceListing listing = listingRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("LISTING_NOT_FOUND", "Listing not found"));
+
+        if (!listing.getUser().getEmail().equals(userEmail)) {
+            throw new BusinessException("ACCESS_DENIED", "You are not authorized to update this listing");
+        }
+
+        listing.setTitle(request.title());
+        listing.setDescription(request.description());
+        listing.setImageUrl(request.imageUrl());
+        listing.setProductPrice(request.productPrice());
+
+        if (request.additionalImages() != null) {
+            listing.setAdditionalImages(request.additionalImages());
+        }
+
+        MarketplaceListing updatedListing = listingRepository.save(listing);
+        return ListingResponse.fromEntity(updatedListing);
     }
 
     @org.springframework.scheduling.annotation.Scheduled(cron = "0 0 * * * *")

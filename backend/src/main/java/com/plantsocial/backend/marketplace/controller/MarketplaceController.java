@@ -75,4 +75,12 @@ public class MarketplaceController {
         marketplaceService.deleteListing(id, userDetails.getUsername());
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/listings/{id}")
+    public ResponseEntity<ListingResponse> updateListing(
+            @PathVariable UUID id,
+            @Valid @RequestBody ListingRequest request,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(marketplaceService.updateListing(id, request, userDetails.getUsername()));
+    }
 }

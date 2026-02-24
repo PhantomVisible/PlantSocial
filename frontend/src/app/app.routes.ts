@@ -32,6 +32,7 @@ export const routes: Routes = [
     // Marketplace Routes
     { path: 'marketplace', loadComponent: () => import('./features/marketplace/marketplace-list/marketplace-list.component').then(m => m.MarketplaceListComponent) },
     { path: 'marketplace/add', loadComponent: () => import('./features/marketplace/marketplace-add/marketplace-add.component').then(m => m.MarketplaceAddComponent), canActivate: [authGuard] },
+    { path: 'marketplace/edit/:id', loadComponent: () => import('./features/marketplace/marketplace-add/marketplace-add.component').then(m => m.MarketplaceAddComponent), canActivate: [authGuard] },
     { path: 'marketplace/create', loadComponent: () => import('./features/marketplace/listing-create/listing-create.component').then(m => m.ListingCreateComponent), canActivate: [authGuard] },
     { path: 'marketplace/listing/:id', loadComponent: () => import('./features/marketplace/listing-detail/listing-detail.component').then(m => m.ListingDetailComponent) },
     { path: '**', redirectTo: '' }
