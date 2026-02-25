@@ -1,0 +1,202 @@
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+
+:host {
+  --gb-darkest: #0f380f;
+  --gb-dark: #306230;
+  --gb-light: #8bac0f;
+  --gb-lightest: #9bbc0f;
+  display: block;
+}
+
+* {
+  font-family: "Press Start 2P", cursive !important;
+  box-sizing: border-box;
+}
+
+img,
+svg {
+  image-rendering: pixelated;
+}
+
+.gameboy-wrapper {
+  min-height: 100vh;
+  /* Dark wrapper to contrast with the bright green screen */
+  background-color: #1a1a1a;
+}
+
+.gameboy-screen {
+  background-color: var(--gb-light);
+  border: 8px solid var(--gb-darkest);
+  box-shadow: inset 6px 6px 0px rgba(0, 0, 0, 0.15);
+  color: var(--gb-darkest);
+  width: 100%;
+  padding: 1.5rem;
+  border-radius: 4px;
+}
+
+.gb-header {
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  border-bottom: 4px solid var(--gb-darkest);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.gb-sprite-container {
+  height: 220px;
+  border: 4px dashed var(--gb-darkest);
+  background-color: var(--gb-lightest);
+  margin-bottom: 1.5rem;
+  /* Additional settings to sit the plant nicely at the bottom floor */
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 10px;
+
+  .sprite-placeholder {
+    font-size: 5rem;
+    animation: float 2s infinite ease-in-out;
+  }
+  
+  .pixel-sprite {
+    display: flex;
+    width: 120px;
+    height: 120px;
+    background-size: 500% 500%;
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+    animation: float 2s infinite ease-in-out;
+    mix-blend-mode: multiply;
+    filter: contrast(120%) brightness(90%) sepia(100%) hue-rotate(50deg) saturate(400%);
+  }
+
+  .pot-shadow {
+    width: 60px;
+    height: 8px;
+    background-color: var(--gb-dark);
+    border-radius: 50%;
+    margin-top: -4px;
+    opacity: 0.5;
+  }
+}
+
+.shimmer-effect {
+  animation: float 2s infinite ease-in-out, shimmer 3s infinite linear !important;
+}
+
+@keyframes shimmer {
+  0% { filter: brightness(1) drop-shadow(0 0 0px rgba(255,215,0,0)); }
+  50% { filter: brightness(1.3) drop-shadow(0 0 10px rgba(255,215,0,0.8)); }
+  100% { filter: brightness(1) drop-shadow(0 0 0px rgba(255,215,0,0)); }
+}
+
+.breathing-sprite {
+  animation: breathe 3s infinite ease-in-out;
+}
+
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.gb-stats {
+  margin-bottom: 2rem;
+
+  .gb-stat-label {
+    font-size: 0.8rem;
+    width: 140px;
+    text-transform: uppercase;
+  }
+}
+
+.gb-progress-bar {
+  height: 20px;
+  border: 4px solid var(--gb-darkest);
+  background-color: var(--gb-lightest);
+
+  .gb-progress-fill {
+    height: 100%;
+    background-color: var(--gb-dark);
+  }
+}
+
+.gb-actions {
+  margin-bottom: 2rem;
+
+  .gb-btn {
+    background-color: transparent;
+    color: var(--gb-darkest);
+    border: 4px solid var(--gb-darkest);
+    padding: 0.8rem 1rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.1s;
+    box-shadow: 4px 4px 0 var(--gb-darkest);
+    outline: none;
+
+    &:hover,
+    &:active {
+      background-color: var(--gb-darkest);
+      color: var(--gb-light);
+      box-shadow: 0 0 0 var(--gb-darkest);
+      transform: translate(4px, 4px);
+    }
+  }
+}
+
+.gb-dialogue-box {
+  border: 4px solid var(--gb-darkest);
+  padding: 1rem 1rem 1.5rem 1rem;
+  background-color: var(--gb-lightest);
+  position: relative;
+
+  p {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.6;
+  }
+
+  &::after {
+    content: "▼";
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    font-size: 0.8rem;
+    animation: blink 1s infinite;
+  }
+}
+
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.blink-text {
+  animation: blink-fast 0.5s infinite;
+}
+
+@keyframes blink-fast {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}

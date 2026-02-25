@@ -41,6 +41,11 @@ import { FormsModule } from '@angular/forms';
           <span>Marketplace</span>
         </a>
 
+        <a *ngIf="user()" routerLink="/greenhouse" routerLinkActive="active" class="nav-item">
+          <i class="pi pi-sparkles"></i>
+          <span>Greenhouse</span>
+        </a>
+
         <!-- Cart temporarily hidden implementation of Marketplace is direct pay
         <a *ngIf="shopService.cartItemCount() > 0" routerLink="/shop/cart" routerLinkActive="active" class="nav-item nav-item--cart">
           <i class="pi pi-shopping-cart"></i>

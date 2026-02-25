@@ -20,6 +20,7 @@ export const routes: Routes = [
     { path: 'profile/:username', component: UserProfileComponent, data: { animation: 'ProfilePage' } },
     { path: 'chat', component: ChatPageComponent, canActivate: [authGuard], data: { animation: 'ChatPage' } },
     { path: 'notifications', component: NotificationsPageComponent, canActivate: [authGuard], data: { animation: 'NotificationsPage' } },
+    { path: 'greenhouse', loadComponent: () => import('./components/greenhouse/greenhouse.component').then(m => m.GreenhouseComponent), canActivate: [authGuard], data: { animation: 'GreenhousePage' } },
 
     // Shop Routes
     { path: 'shop', loadComponent: () => import('./features/shop/shop-page.component').then(m => m.ShopPageComponent) },

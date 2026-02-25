@@ -19,6 +19,13 @@ public class CorsConfig {
                         .allowedHeaders("*")
                         .allowCredentials(true);
             }
+
+            @Override
+            public void addResourceHandlers(
+                    org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry registry) {
+                registry.addResourceHandler("/sprites/**")
+                        .addResourceLocations("classpath:/static/sprites/");
+            }
         };
     }
 }
