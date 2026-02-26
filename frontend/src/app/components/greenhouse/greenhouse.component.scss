@@ -56,16 +56,15 @@ svg {
   .sprite-placeholder {
     font-size: 5rem;
     animation: float 2s infinite ease-in-out;
-  }
+  }   
   
   .pixel-sprite {
     display: flex;
-    width: 120px;
-    height: 120px;
+    width: 150px;
+    height: 180px;
     background-size: 500% 500%;
     background-repeat: no-repeat;
     image-rendering: pixelated;
-    animation: float 2s infinite ease-in-out;
     mix-blend-mode: multiply;
     filter: contrast(120%) brightness(90%) sepia(100%) hue-rotate(50deg) saturate(400%);
   }
@@ -179,6 +178,60 @@ svg {
     font-size: 0.8rem;
     animation: blink 1s infinite;
   }
+
+  /* Additional dialogue box style, possibly for a nested box */
+  .gb-dialogue-box {
+    margin-top: auto;
+    border: 3px solid #0f380f;
+    padding: 1rem;
+    font-size: 1.1rem;
+    line-height: 1.4;
+    background-color: #8bac0f;
+    color: #0f380f;
+    min-height: 80px;
+    box-shadow: inset 2px 2px 0px #9bbc0f, inset -2px -2px 0px #306230;
+  }
+
+  /* Cartridge Grid Styles */
+  .gb-cartridge {
+    background-color: #8bac0f;
+    border: 3px solid #0f380f;
+    box-shadow: 3px 3px 0px #306230;
+    transition: transform 0.1s, box-shadow 0.1s;
+
+    &:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0px #306230;
+    }
+  }
+
+  .cartridge-empty {
+    font-weight: bold;
+    color: #306230;
+  }
+  
+  .cartridge-new {
+    color: #0f380f;
+  }
+
+  .mini-sprite {
+    width: 60px;
+    height: 90px;
+    background-size: 500% 500%;
+  }
+
+  .gb-btn-small {
+    background-color: transparent;
+    border: none;
+    color: #0f380f;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    &:hover {
+      color: #306230;
+    }
+  }
 }
 
 @keyframes blink {
@@ -199,4 +252,107 @@ svg {
 @keyframes blink-fast {
   0%, 49% { opacity: 1; }
   50%, 100% { opacity: 0; }
+}
+
+/* Info Button and Modal Overlay */
+.gameboy-wrapper {
+  .gb-info-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 100;
+    width: 35px;
+    height: 35px;
+    background-color: transparent;
+    color: #0f380f;
+    border: 3px solid #0f380f;
+    font-family: 'Press Start 2P', monospace, cursive;
+    font-size: 0.8rem;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.1s, color 0.1s;
+    
+    &:hover {
+      background-color: #0f380f;
+      color: #8bac0f;
+    }
+  }
+
+  .gb-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Solid gameboy green matching the inner screen */
+    background-color: #8bac0f; 
+    /* Match wrapper border radius */
+    border-radius: 10px 10px 40px 10px; 
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Simulate the padding of the wrapper */
+    padding: 1.5rem; 
+    box-sizing: border-box;
+
+    .gb-modal-content {
+      background-color: #8bac0f;
+      width: 100%;
+      height: 100%;
+      color: #0f380f;
+      image-rendering: pixelated;
+      display: flex;
+      flex-direction: column;
+      /* Give it the same border & inset shadow as the real gameboy screen */
+      border: 8px solid #0f380f; 
+      box-shadow: inset 6px 6px 0px rgba(0, 0, 0, 0.15);
+      padding: 1.5rem;
+      border-radius: 4px;
+
+      .gb-header {
+        font-size: 1.2rem;
+        text-transform: uppercase;
+        border-bottom: 4px solid #0f380f;
+        padding-bottom: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+      
+      .gb-btn-small {
+        background-color: transparent;
+        border: none;
+        color: #0f380f;
+        font-family: inherit;
+        font-weight: bold;
+        cursor: pointer;
+        text-transform: uppercase;
+        &:hover {
+          color: #306230;
+        }
+      }
+    }
+
+    .gb-instructions-list {
+      line-height: 1.6;
+      overflow-y: auto;
+      flex-grow: 1;
+      
+      .instruction-item {
+        padding: 10px;
+        border-bottom: 2px dashed #0f380f;
+        
+        &:last-child {
+          border-bottom: none;
+        }
+        
+        strong {
+          display: block;
+          margin-bottom: 5px;
+        }
+      }
+    }
+  }
 }

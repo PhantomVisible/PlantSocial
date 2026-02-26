@@ -25,13 +25,22 @@ public class VirtualPlant {
     private String name;
 
     @Column(nullable = false)
-    private int hydration = 100;
+    private String species;
 
     @Column(nullable = false)
-    private int cleanliness = 100;
+    private int hydration = 80;
 
     @Column(nullable = false)
-    private String stage = "SEED"; // SEED, SPROUT, VEGETATIVE, BLOOMING
+    private int cleanliness = 80;
+
+    @Column(nullable = false)
+    private String stage = "SEED"; // SEED, SPROUT, SAPLING, BLOOM, ANCIENT
+
+    @Column(name = "last_watered")
+    private LocalDateTime lastWatered;
+
+    @Column(name = "last_cleaned")
+    private LocalDateTime lastCleaned;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

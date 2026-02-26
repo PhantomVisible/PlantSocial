@@ -7,11 +7,19 @@ export interface VirtualPlant {
     id: number;
     userId: number;
     name: string;
+    species: string;
     hydration: number;
     cleanliness: number;
     stage: string;
+    lastWatered?: string;
+    lastCleaned?: string;
     createdAt?: string;
     updatedAt?: string;
+}
+
+export interface VirtualPlantResponse {
+    plant: VirtualPlant;
+    message: string;
 }
 
 @Injectable({
@@ -22,15 +30,19 @@ export class VirtualPlantService {
 
     constructor(private http: HttpClient) { }
 
-    getMyPlant(userId: number): Observable<VirtualPlant> {
-        return this.http.get<VirtualPlant>(`${this.apiUrl}/plant/${userId}`);
+    getMyPlants(userId: number): Observable<VirtualPlant[]> {
+        return this.http.get<VirtualPlant[]>(`${this.apiUrl}/plant/${userId}`);
     }
 
-    waterPlant(plantId: number): Observable<VirtualPlant> {
-        return this.http.post<VirtualPlant>(`${this.apiUrl}/plant/${plantId}/water`, {});
+    plantSeed(userId: number, species: string): Observable<VirtualPlantResponse> {
+        return this.http.post<VirtualPlantResponse>(`${this.apiUrl}/plant/${userId}?species=${species}`, {});
     }
 
-    cleanPlant(plantId: number): Observable<VirtualPlant> {
-        return this.http.post<VirtualPlant>(`${this.apiUrl}/plant/${plantId}/clean`, {});
+    waterPlant(plantId: number): Observable<VirtualPlantResponse> {
+        return this.http.post<VirtualPlantResponse>(`${this.apiUrl}/plant/${plantId}/water`, {});
+    }
+
+    cleanPlant(plantId: number): Observable<VirtualPlantResponse> {
+        return this.http.post<VirtualPlantResponse>(`${this.apiUrl}/plant/${plantId}/clean`, {});
     }
 }

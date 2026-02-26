@@ -4,26 +4,55 @@
       <div class="loading-text mb-4 text-2xl blink-text">LOADING...</div>
       <div class="loading-bar">[■■■□□□□]</div>
     </div>
-  } @else if (hasActivePlant) {
+  } @else if (selectedSlotIndex === null) {
+    <div class="gameboy-screen col-12 lg:col-10 xl:col-8 mx-auto flex flex-column" style="min-height: 480px;">
+      <div class="gb-header flex justify-content-center align-items-center mb-4">
+        <div class="plant-name">SAVE FILES</div>
+      </div>
+      
+      <div class="grid grid-nogutter gap-3 justify-content-center mb-4 flex-grow-1">
+        @for (slot of plantSlots; track $index) {
+          <div class="col-5 gb-cartridge p-2 flex flex-column align-items-center justify-content-center cursor-pointer" (click)="selectSlot($index)">
+            @if (slot) {
+              <div class="cartridge-icon mb-2">
+                <div class="pixel-sprite mini-sprite" 
+                     [style.background-image]="'url(' + getSpriteUrl(slot.species) + ')'"
+                     [style.background-position]="getStageOffset(slot.stage)"></div>
+              </div>
+              <div class="cartridge-name text-center text-sm font-bold">{{ slot.species | uppercase }}</div>
+              <div class="cartridge-stage text-center text-xs mt-1">{{ slot.stage }}</div>
+            } @else {
+              <div class="cartridge-empty text-center">EMPTY SLOT</div>
+              <div class="cartridge-new text-center text-xs mt-2 blink-text">NEW GAME</div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="gb-dialogue-box mt-auto">
+        <p>"{{ phantomMessage }}"</p>
+      </div>
+    </div>
+  } @else if (plant) {
     <div class="gameboy-screen col-12 lg:col-10 xl:col-8 mx-auto flex flex-column">
       
       <!-- Header -->
-      <div class="gb-header flex justify-content-between align-items-center">
-        <div class="plant-name">{{ plant.name }}</div>
-        <div class="plant-stage">{{ plant.stage }}</div>
-      </div>
-      
-      <!-- Plant Sprite Placeholder -->
-      <div class="gb-sprite-container breathing-sprite">
-        <!-- <span class="sprite-placeholder">{{ spriteMap[plant.name]?.[plant.stage] || '🌿' }}</span> -->
-        <div class="flex flex-column align-items-center">
-          <div class="pixel-sprite" 
-               [style.background-image]="'url(' + getSpriteUrl(plant.name) + ')'"
-               [style.background-position]="getSpritePosition(plant.stage)"
-               [class.shimmer-effect]="plant.stage === 'ANCIENT'"></div>
-          <div class="pot-shadow"></div>
+        <div class="gb-header flex justify-content-between align-items-center">
+          <button class="gb-btn-small" (click)="goBackToSlots()">[ BACK ]</button>
+          <div class="plant-name">{{ plant.species | uppercase }}</div>
+          <div class="plant-stage">{{ plant.stage }}</div>
         </div>
-      </div>
+        
+        <!-- Plant Sprite Placeholder -->
+        <div class="gb-sprite-container breathing-sprite">
+          <div class="flex flex-column align-items-center">
+            <div class="pixel-sprite" 
+                 [style.background-image]="'url(' + getSpriteUrl(plant.species) + ')'"
+                 [style.background-position]="getStageOffset(plant.stage)"
+                 [class.shimmer-effect]="plant.stage === 'ANCIENT'"></div>
+            <div class="pot-shadow"></div>
+          </div>
+        </div>
       
       <!-- Stats / Progress Bars -->
       <div class="gb-stats flex flex-column gap-3">
@@ -41,23 +70,24 @@
         </div>
       </div>
       
-      <!-- Actions -->
-      <div class="gb-actions flex justify-content-center gap-4">
-        <button class="gb-btn">WATER</button>
-        <button class="gb-btn">CLEAN</button>
-      </div>
-      
-      <!-- RPG Dialogue Box -->
-      <div class="gb-dialogue-box">
-        <p>"{{ getPhantomDialogue(plant.stage) }}"</p>
-      </div>
+        <div class="gb-actions flex justify-content-center gap-4">
+          <button class="gb-btn" (click)="water()">WATER</button>
+          <button class="gb-btn" (click)="clean()">CLEAN</button>
+        </div>
+        
+        <!-- RPG Dialogue Box -->
+        <div class="gb-dialogue-box">
+          <p>"{{ phantomMessage }}"</p>
+        </div>
 
     </div>
   } @else {
-    <div class="gameboy-screen col-12 lg:col-10 xl:col-8 mx-auto flex flex-column">
+    <div class="gameboy-screen col-12 lg:col-10 xl:col-8 mx-auto flex flex-column" style="min-height: 480px;">
       <!-- Header -->
-      <div class="gb-header flex justify-content-center align-items-center">
+      <div class="gb-header flex justify-content-between align-items-center mb-4">
+        <button class="gb-btn-small" (click)="goBackToSlots()">[ BACK ]</button>
         <div class="plant-name">SEED INVENTORY</div>
+        <div style="width: 60px;"></div> <!-- spacer -->
       </div>
       
       <!-- Seed Selection List -->
@@ -71,7 +101,37 @@
 
       <!-- RPG Dialogue Box -->
       <div class="gb-dialogue-box mt-auto">
-        <p>"Behold, Guardian! The arena of life has expanded! The cosmic soil of the Greenhouse is ready for your first vessel!"</p>
+        <p>"{{ phantomMessage }}"</p>
+      </div>
+    </div>
+  }
+  
+  <!-- Info Button Overlay (Anchored to wrapper) -->
+  <button class="gb-info-btn text-xl" (click)="toggleInfo()">?</button>
+
+  <!-- Instructions Modal Overlay (Anchored to wrapper) -->
+  @if (showInfo) {
+    <div class="gb-modal-backdrop" (click)="toggleInfo()">
+      <div class="gb-modal-content" (click)="$event.stopPropagation()">
+        <div class="gb-header flex justify-content-between align-items-center mb-3 line-height-1">
+          <div class="plant-name" style="font-size: 1.1rem;">TACTICAL BRIEFING</div>
+          <button class="gb-btn-small" (click)="toggleInfo()">[ X ]</button>
+        </div>
+        
+        <div class="gb-instructions-list flex flex-column gap-2 text-sm">
+          <div class="instruction-item">
+            <strong>Evolution:</strong> Plants evolve through 5 stages: SEED, SPROUT, SAPLING, BLOOM, and ANCIENT.
+          </div>
+          <div class="instruction-item">
+            <strong>Care:</strong> Use WATER and CLEAN to keep stats above 80%.
+          </div>
+          <div class="instruction-item">
+            <strong>Growth:</strong> Keeping a plant healthy for 24 hours (real-time) triggers progress toward the next evolution.
+          </div>
+          <div class="instruction-item">
+            <strong>Slots:</strong> You can manage up to 4 distinct plant "vessels" at once.
+          </div>
+        </div>
       </div>
     </div>
   }

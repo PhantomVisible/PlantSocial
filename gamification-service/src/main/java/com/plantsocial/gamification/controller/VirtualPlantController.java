@@ -1,52 +1,46 @@
 package com.plantsocial.gamification.controller;
 
+import com.plantsocial.gamification.dto.VirtualPlantResponse;
 import com.plantsocial.gamification.model.VirtualPlant;
-import com.plantsocial.gamification.repository.VirtualPlantRepository;
+import com.plantsocial.gamification.service.VirtualPlantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/game/plant")
 @RequiredArgsConstructor
 public class VirtualPlantController {
 
-    private final VirtualPlantRepository plantRepository;
+    private final VirtualPlantService plantService;
 
     @GetMapping("/{userId}")
-    public ResponseEntity<VirtualPlant> getPlantStatus(@PathVariable Long userId) {
-        Optional<VirtualPlant> plantOpt = plantRepository.findByUserId(userId);
-        return plantOpt.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<List<VirtualPlant>> getPlantStatus(@PathVariable Long userId) {
+        return ResponseEntity.ok(plantService.getPlantsByUserId(userId));
+    }
+
+    @PostMapping("/{userId}")
+    public ResponseEntity<VirtualPlantResponse> plantSeed(@PathVariable Long userId, @RequestParam String species) {
+        try {
+            return ResponseEntity.ok(plantService.plantSeed(userId, species));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PostMapping("/{plantId}/water")
-    public ResponseEntity<VirtualPlant> waterPlant(@PathVariable Long plantId) {
-        return plantRepository.findById(plantId).map(plant -> {
-            plant.setHydration(100);
-            return ResponseEntity.ok(plantRepository.save(plant));
-        }).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<VirtualPlantResponse> waterPlant(@PathVariable Long plantId) {
+        return plantService.waterPlant(plantId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping("/{plantId}/clean")
-    public ResponseEntity<VirtualPlant> cleanPlant(@PathVariable Long plantId) {
-        return plantRepository.findById(plantId).map(plant -> {
-            plant.setCleanliness(100);
-            return ResponseEntity.ok(plantRepository.save(plant));
-        }).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    // Helper to create a plant for testing purposes
-    @PostMapping("/create/{userId}")
-    public ResponseEntity<VirtualPlant> createPlant(@PathVariable Long userId, @RequestParam String name) {
-        if (plantRepository.findByUserId(userId).isPresent()) {
-            return ResponseEntity.badRequest().build();
-        }
-        VirtualPlant plant = new VirtualPlant();
-        plant.setUserId(userId);
-        plant.setName(name);
-        return ResponseEntity.ok(plantRepository.save(plant));
+    public ResponseEntity<VirtualPlantResponse> cleanPlant(@PathVariable Long plantId) {
+        return plantService.cleanPlant(plantId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
