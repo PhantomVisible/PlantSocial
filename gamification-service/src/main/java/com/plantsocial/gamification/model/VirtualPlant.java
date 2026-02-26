@@ -48,6 +48,20 @@ public class VirtualPlant {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Transient
+    private long daysAlive;
+
+    @PostLoad
+    @PostPersist
+    @PostUpdate
+    protected void calculateDaysAlive() {
+        if (this.createdAt != null) {
+            this.daysAlive = java.time.temporal.ChronoUnit.DAYS.between(this.createdAt, LocalDateTime.now());
+        } else {
+            this.daysAlive = 0;
+        }
+    }
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

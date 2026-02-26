@@ -43,7 +43,7 @@ svg {
 }
 
 .gb-sprite-container {
-  height: 220px;
+  aspect-ratio: 4 / 5;
   border: 4px dashed var(--gb-darkest);
   background-color: var(--gb-lightest);
   margin-bottom: 1.5rem;
@@ -51,7 +51,7 @@ svg {
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  padding-bottom: 10px;
+  padding-bottom: 20px;
 
   .sprite-placeholder {
     font-size: 5rem;
@@ -60,23 +60,53 @@ svg {
   
   .pixel-sprite {
     display: flex;
-    width: 150px;
-    height: 180px;
-    background-size: 500% 500%;
+    width: 500px;
+    height: 625px;
+    background-size: contain;
+    background-position: bottom center;
     background-repeat: no-repeat;
     image-rendering: pixelated;
     mix-blend-mode: multiply;
     filter: contrast(120%) brightness(90%) sepia(100%) hue-rotate(50deg) saturate(400%);
   }
+  
+  .pest-overlay {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 200;
+    pointer-events: none;
+    overflow: hidden;
 
-  .pot-shadow {
-    width: 60px;
-    height: 8px;
-    background-color: var(--gb-dark);
-    border-radius: 50%;
-    margin-top: -4px;
-    opacity: 0.5;
+    .cockroach {
+      width: 32px;
+      height: 32px;
+      background-size: 400% 100%;
+      background-repeat: no-repeat;
+      image-rendering: pixelated;
+      mix-blend-mode: multiply;
+      position: absolute;
+      filter: contrast(120%) brightness(90%) sepia(100%) hue-rotate(50deg) saturate(400%);
+      animation: walk-cycle 0.4s steps(4) infinite, scuttleLoop 10s infinite linear;
+    }
   }
+}
+
+@keyframes walk-cycle {
+  from { background-position: 0%; }
+  to { background-position: 100%; }
+}
+
+@keyframes scuttleLoop {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  25% { transform: translate(60px, -20px) rotate(45deg); }
+  50% { transform: translate(120px, 10px) rotate(-20deg); }
+  75% { transform: translate(180px, -40px) rotate(90deg); }
+  90% { opacity: 1; }
+  100% { transform: translate(240px, 0) rotate(180deg); opacity: 0; }
 }
 
 .shimmer-effect {
@@ -215,9 +245,8 @@ svg {
   }
 
   .mini-sprite {
-    width: 60px;
-    height: 90px;
-    background-size: 500% 500%;
+    width: 60px !important;
+    height: 60px !important;
   }
 
   .gb-btn-small {
@@ -353,6 +382,45 @@ svg {
           margin-bottom: 5px;
         }
       }
+    }
+  }
+
+  .gb-btn-delete {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 25px;
+    height: 25px;
+    background-color: #8bac0f;
+    color: #0f380f;
+    border: 3px solid #0f380f;
+    font-family: 'Press Start 2P', monospace, cursive;
+    font-size: 0.7rem;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: background-color 0.1s, color 0.1s;
+    
+    &:hover {
+      background-color: #8b0000;
+      color: #8bac0f;
+    }
+  }
+
+  .gb-btn-danger {
+    color: #8b0000 !important;
+    border-color: #8b0000 !important;
+    box-shadow: 4px 4px 0 #8b0000 !important;
+
+    &:hover, &:active {
+      background-color: #8b0000 !important;
+      color: #8bac0f !important;
+      box-shadow: 0 0 0 #5a0000 !important;
+      border-color: #5a0000 !important;
+      transform: translate(4px, 4px);
     }
   }
 }

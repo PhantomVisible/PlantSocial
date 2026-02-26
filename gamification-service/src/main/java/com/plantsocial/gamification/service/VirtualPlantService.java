@@ -21,6 +21,10 @@ public class VirtualPlantService {
         return plantRepository.findByUserId(userId);
     }
 
+    public List<VirtualPlant> getLeaderboard() {
+        return plantRepository.findTop10ByOrderByCreatedAtAsc();
+    }
+
     @Transactional
     public VirtualPlantResponse plantSeed(Long userId, String species) {
         List<VirtualPlant> userPlants = plantRepository.findByUserId(userId);
@@ -62,5 +66,14 @@ public class VirtualPlantService {
             VirtualPlant savedPlant = plantRepository.save(plant);
             return new VirtualPlantResponse(savedPlant, "The corruption is purged! The champion shines once more!");
         });
+    }
+
+    @Transactional
+    public boolean deletePlant(Long plantId) {
+        if (plantRepository.existsById(plantId)) {
+            plantRepository.deleteById(plantId);
+            return true;
+        }
+        return false;
     }
 }

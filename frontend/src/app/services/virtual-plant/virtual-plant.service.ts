@@ -11,6 +11,7 @@ export interface VirtualPlant {
     hydration: number;
     cleanliness: number;
     stage: string;
+    daysAlive: number;
     lastWatered?: string;
     lastCleaned?: string;
     createdAt?: string;
@@ -44,5 +45,9 @@ export class VirtualPlantService {
 
     cleanPlant(plantId: number): Observable<VirtualPlantResponse> {
         return this.http.post<VirtualPlantResponse>(`${this.apiUrl}/plant/${plantId}/clean`, {});
+    }
+
+    deletePlant(plantId: number): Observable<void> {
+        return this.http.delete<void>(`${this.apiUrl}/plant/${plantId}`);
     }
 }

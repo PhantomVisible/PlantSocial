@@ -21,6 +21,11 @@ public class VirtualPlantController {
         return ResponseEntity.ok(plantService.getPlantsByUserId(userId));
     }
 
+    @GetMapping("/leaderboard")
+    public ResponseEntity<List<VirtualPlant>> getLeaderboard() {
+        return ResponseEntity.ok(plantService.getLeaderboard());
+    }
+
     @PostMapping("/{userId}")
     public ResponseEntity<VirtualPlantResponse> plantSeed(@PathVariable Long userId, @RequestParam String species) {
         try {
@@ -42,5 +47,13 @@ public class VirtualPlantController {
         return plantService.cleanPlant(plantId)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{plantId}")
+    public ResponseEntity<Void> deletePlant(@PathVariable Long plantId) {
+        if (plantService.deletePlant(plantId)) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }
