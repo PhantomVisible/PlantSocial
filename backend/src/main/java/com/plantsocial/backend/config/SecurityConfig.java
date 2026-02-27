@@ -38,6 +38,9 @@ public class SecurityConfig {
                                                                 "/api/v1/marketplace/listings/**",
                                                                 "/api/v1/marketplace/listing/**")
                                                 .permitAll()
+                                                .requestMatchers(org.springframework.http.HttpMethod.POST,
+                                                                "/api/v1/notifications/system")
+                                                .permitAll()
                                                 .anyRequest().authenticated())
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -34,6 +35,20 @@ public class NotificationRestController {
     @PostMapping("/{id}/read")
     public void markAsRead(@PathVariable UUID id) {
         notificationService.markAsRead(id);
+    }
+
+    @PostMapping("/system")
+    public void createSystemNotification(@RequestBody Map<String, Object> payload) {
+        UUID userId = UUID.fromString((String) payload.get("userId"));
+        String content = (String) payload.get("content");
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+
+        // System notifications have no sender (or we can pass a dummy 'system' user if
+        // needed).
+        notificationService.createNotification(user, user,
+                com.plantsocial.backend.notification.model.NotificationType.MESSAGE, content, null);
     }
 
     private User getUser(Authentication auth) {

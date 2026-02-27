@@ -1,5 +1,6 @@
 package com.plantsocial.gamification.service;
 
+import com.plantsocial.gamification.client.NotificationClient;
 import com.plantsocial.gamification.dto.VirtualPlantResponse;
 import com.plantsocial.gamification.model.VirtualPlant;
 import com.plantsocial.gamification.repository.VirtualPlantRepository;
@@ -16,6 +17,7 @@ import java.util.Optional;
 public class VirtualPlantService {
 
     private final VirtualPlantRepository plantRepository;
+    private final NotificationClient notificationClient;
 
     public List<VirtualPlant> getPlantsByUserId(Long userId) {
         return plantRepository.findByUserId(userId);
@@ -75,5 +77,19 @@ public class VirtualPlantService {
             return true;
         }
         return false;
+    }
+
+    private void triggerEvolutionNotification(VirtualPlant plant) {
+        if (plant.getUserId() == null)
+            return;
+
+        String message = String.format(
+                "🌟 [PHANTOM VISIBLE SYSTEM ALERT] 🌟\n" +
+                        "A miraculous occurrence! The life energy within %s has burst forth!\n" +
+                        "Your %s has evolved into its %s stage!\n" +
+                        "Continue your meticulous care, and witness the true power of nature!",
+                plant.getName(), plant.getSpecies(), plant.getStage());
+
+        notificationClient.sendSystemNotification(plant.getUserId().toString(), message);
     }
 }

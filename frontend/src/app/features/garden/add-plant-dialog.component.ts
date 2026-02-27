@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PlantData } from './plant.service';
 import { PlantIdService, PlantNetResult } from '../../core/services/plant-id.service';
+import confetti from 'canvas-confetti';
 
 @Component({
   selector: 'app-add-plant-dialog',
@@ -140,7 +141,7 @@ import { PlantIdService, PlantNetResult } from '../../core/services/plant-id.ser
                </button>
              </div>
            </div>
-        </div>
+         </div>
 
         <!-- Conflict Dialog -->
         <div class="conflict-dialog" *ngIf="showConflict()">
@@ -163,6 +164,15 @@ import { PlantIdService, PlantNetResult } from '../../core/services/plant-id.ser
                </button>
              </div>
            </div>
+        </div>
+
+        <!-- Celebration Overlay -->
+        <div class="achievement-overlay" *ngIf="showCelebrationOverlay()">
+          <div class="achievement-card">
+            <div class="achievement-icon">✅</div>
+            <h3 class="achievement-title">Species Verified!</h3>
+            <p class="achievement-subtitle">{{ species }} confirmed by Phantom Visible</p>
+          </div>
         </div>
       </div>
     </div>
@@ -397,6 +407,81 @@ import { PlantIdService, PlantNetResult } from '../../core/services/plant-id.ser
       color: var(--trellis-text);
       width: 100%;
     }
+
+    /* === Strava-Style Celebration Overlay === */
+    .achievement-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 10000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: fade-in 0.2s ease;
+    }
+
+    @keyframes strava-pop {
+      0%   { transform: scale(0.5); opacity: 0; }
+      60%  { transform: scale(1.15); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .achievement-card {
+      position: relative;
+      overflow: hidden;
+      background: var(--surface-card, #1e1e1e);
+      border-radius: 20px;
+      padding: 40px 48px;
+      text-align: center;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255,255,255,0.08);
+      animation: strava-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      max-width: 360px;
+      width: 85%;
+    }
+
+    @keyframes sweep {
+      0%   { left: -100%; }
+      100% { left: 200%; }
+    }
+
+    .achievement-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 50%; height: 100%;
+      background: linear-gradient(
+        to right,
+        rgba(255,255,255,0) 0%,
+        rgba(255,255,255,0.4) 50%,
+        rgba(255,255,255,0) 100%
+      );
+      transform: skewX(-45deg);
+      animation: sweep 1.5s ease-in-out 0.6s forwards;
+    }
+
+    .achievement-icon {
+      font-size: 3.5rem;
+      margin-bottom: 12px;
+      filter: drop-shadow(0 4px 12px rgba(76, 175, 80, 0.4));
+    }
+
+    .achievement-title {
+      margin: 0 0 8px;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--trellis-text, #fff);
+      letter-spacing: -0.02em;
+    }
+
+    .achievement-subtitle {
+      margin: 0;
+      font-size: 0.92rem;
+      color: var(--trellis-text-secondary, #aaa);
+      font-weight: 500;
+    }
   `]
 })
 export class AddPlantDialogComponent implements OnInit {
@@ -418,6 +503,7 @@ export class AddPlantDialogComponent implements OnInit {
   showConflict = signal<boolean>(false);
   showErrorDialog = signal<boolean>(false);
   suggestedPlant = signal<PlantNetResult | null>(null);
+  showCelebrationOverlay = signal<boolean>(false);
 
   ngOnInit() {
     if (this.plantToEdit) {
@@ -502,8 +588,21 @@ export class AddPlantDialogComponent implements OnInit {
       common.some(c => c.includes(userSpecies) || userSpecies.includes(c));
 
     if (isMatch) {
-      // console.log('Match confirmed.');
-      this.emitSave(true);
+      // Trigger premium celebration overlay
+      this.showCelebrationOverlay.set(true);
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: ['#FFD700', '#FFFFFF', '#4CAF50'],
+        disableForReducedMotion: true,
+        zIndex: 10001
+      });
+      // Auto-dismiss after 4 seconds, then emit save
+      setTimeout(() => {
+        this.showCelebrationOverlay.set(false);
+        this.emitSave(true);
+      }, 4000);
     } else {
       // console.log('Conflict detected!');
       this.suggestedPlant.set(bestMatch);
@@ -524,7 +623,25 @@ export class AddPlantDialogComponent implements OnInit {
       }
     }
     this.showConflict.set(false);
-    this.emitSave(useSuggested); // If they accepted suggestion, it is verified
+
+    if (useSuggested) {
+      // Trigger the same premium celebration for accepting the AI suggestion
+      this.showCelebrationOverlay.set(true);
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: ['#FFD700', '#FFFFFF', '#4CAF50'],
+        disableForReducedMotion: true,
+        zIndex: 10001
+      });
+      setTimeout(() => {
+        this.showCelebrationOverlay.set(false);
+        this.emitSave(true);
+      }, 4000);
+    } else {
+      this.emitSave(false);
+    }
   }
 
   skipAndSave() {

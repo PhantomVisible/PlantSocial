@@ -1,5 +1,6 @@
 package com.plantsocial.gamification.service;
 
+import com.plantsocial.gamification.client.NotificationClient;
 import com.plantsocial.gamification.model.VirtualPlant;
 import com.plantsocial.gamification.repository.VirtualPlantRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.List;
 public class GameLoopScheduler {
 
     private final VirtualPlantRepository plantRepository;
+    private final NotificationClient notificationClient;
 
     @Scheduled(cron = "0 0 * * * *") // Runs at the top of every hour
     @Transactional
@@ -52,7 +54,9 @@ public class GameLoopScheduler {
                 plant.getName(), plant.getHydration(), plant.getCleanliness());
 
         log.warn(warning);
-        // TODO: Future integration with Notification queue/service to push this to the
-        // user's client.
+
+        if (plant.getUserId() != null) {
+            notificationClient.sendSystemNotification(plant.getUserId().toString(), warning);
+        }
     }
 }
