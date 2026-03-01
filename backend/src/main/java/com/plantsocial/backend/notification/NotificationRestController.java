@@ -47,7 +47,7 @@ public class NotificationRestController {
 
         // System notifications have no sender (or we can pass a dummy 'system' user if
         // needed).
-        notificationService.createNotification(user, user,
+        notificationService.createNotification(user, null,
                 com.plantsocial.backend.notification.model.NotificationType.MESSAGE, content, null);
     }
 

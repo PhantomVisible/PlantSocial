@@ -88,27 +88,8 @@ public class PlantController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/logs/{logId}")
-    public ResponseEntity<com.plantsocial.backend.dto.LogResponse> updateLog(
-            @PathVariable UUID logId,
-            @RequestBody String notes) {
-        // Note: RequestBody String might need quotes if passing raw string, or simple
-        // text.
-        // Better to use a DTO or @RequestParam for simplicity if just one field?
-        // Let's use @RequestBody with a wrapper or just simple string.
-        // For simplicity, let's use @RequestParam or a wrapper DTO.
-        // But the requirement said "Input: String notes".
-        // Let's try @RequestBody String notes.
-        // Actually, Angular POST/PUT usually sends JSON.
-        // I'll accept a Map or DTO, or simple String if content-type is text.
-        // I'll stick to @RequestBody java.util.Map<String, String> payload for JSON
-        // safety.
-        return ResponseEntity.ok(plantService.updateLog(logId, notes)); // This expects string
-    }
-
-    // Changing updateLog signature to be safer with JSON
     @PutMapping(value = "/logs/{logId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<com.plantsocial.backend.dto.LogResponse> updateLogJson(
+    public ResponseEntity<com.plantsocial.backend.dto.LogResponse> updateLog(
             @PathVariable UUID logId,
             @RequestBody java.util.Map<String, String> payload) {
         return ResponseEntity.ok(plantService.updateLog(logId, payload.get("notes")));

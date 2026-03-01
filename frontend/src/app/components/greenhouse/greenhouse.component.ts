@@ -4,6 +4,7 @@ import { VirtualPlantService, VirtualPlant, VirtualPlantResponse } from '../../s
 
 export type PlantStage = 'SEED' | 'SPROUT' | 'SAPLING' | 'BLOOM' | 'ANCIENT';
 const ALL_STAGES: PlantStage[] = ['SEED', 'SPROUT', 'SAPLING', 'BLOOM', 'ANCIENT'];
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-greenhouse',
@@ -26,11 +27,11 @@ export class GreenhouseComponent implements OnInit {
   
   phantomMessage: string = "The Hall of Guardians! Which of our latent warriors shall we commune with today, Commander?";
 
-  constructor(private virtualPlantService: VirtualPlantService) {}
+  constructor(private virtualPlantService: VirtualPlantService, private authService: AuthService) {}
 
   ngOnInit() {
-    // Currently hardcoding userId=1 until AuthContext covers gamification-service
-    const userId = 1;
+    const userId = this.authService.currentUser()?.id;
+    if (!userId) return;
     this.virtualPlantService.getMyPlants(userId).subscribe({
       next: (plants) => {
         plants.forEach((p, i) => {
@@ -130,7 +131,8 @@ export class GreenhouseComponent implements OnInit {
 
   selectSeed(species: string) {
     this.isLoading = true;
-    const userId = 1; // Hardcoded
+    const userId = this.authService.currentUser()?.id;
+    if (!userId) return;
     this.virtualPlantService.plantSeed(userId, species).subscribe({
       next: (response) => {
         this.plant = response.plant;

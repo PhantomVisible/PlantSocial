@@ -19,7 +19,7 @@ public class VirtualPlantService {
     private final VirtualPlantRepository plantRepository;
     private final NotificationClient notificationClient;
 
-    public List<VirtualPlant> getPlantsByUserId(Long userId) {
+    public List<VirtualPlant> getPlantsByUserId(String userId) {
         return plantRepository.findByUserId(userId);
     }
 
@@ -28,7 +28,7 @@ public class VirtualPlantService {
     }
 
     @Transactional
-    public VirtualPlantResponse plantSeed(Long userId, String species) {
+    public VirtualPlantResponse plantSeed(String userId, String species) {
         List<VirtualPlant> userPlants = plantRepository.findByUserId(userId);
         if (userPlants.size() >= 4) {
             throw new IllegalStateException("User already has maximum number of active plants (4).");
@@ -79,17 +79,4 @@ public class VirtualPlantService {
         return false;
     }
 
-    private void triggerEvolutionNotification(VirtualPlant plant) {
-        if (plant.getUserId() == null)
-            return;
-
-        String message = String.format(
-                "🌟 [PHANTOM VISIBLE SYSTEM ALERT] 🌟\n" +
-                        "A miraculous occurrence! The life energy within %s has burst forth!\n" +
-                        "Your %s has evolved into its %s stage!\n" +
-                        "Continue your meticulous care, and witness the true power of nature!",
-                plant.getName(), plant.getSpecies(), plant.getStage());
-
-        notificationClient.sendSystemNotification(plant.getUserId().toString(), message);
-    }
 }

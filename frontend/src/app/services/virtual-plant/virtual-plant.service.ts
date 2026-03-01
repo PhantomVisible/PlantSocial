@@ -5,7 +5,7 @@ import { environment } from '../../../environments/environment';
 
 export interface VirtualPlant {
     id: number;
-    userId: number;
+    userId: string;
     name: string;
     species: string;
     hydration: number;
@@ -31,11 +31,11 @@ export class VirtualPlantService {
 
     constructor(private http: HttpClient) { }
 
-    getMyPlants(userId: number): Observable<VirtualPlant[]> {
+    getMyPlants(userId: string): Observable<VirtualPlant[]> {
         return this.http.get<VirtualPlant[]>(`${this.apiUrl}/plant/${userId}`);
     }
 
-    plantSeed(userId: number, species: string): Observable<VirtualPlantResponse> {
+    plantSeed(userId: string, species: string): Observable<VirtualPlantResponse> {
         return this.http.post<VirtualPlantResponse>(`${this.apiUrl}/plant/${userId}?species=${species}`, {});
     }
 

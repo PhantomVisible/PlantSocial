@@ -6,7 +6,7 @@ import { ToastService } from '../../core/toast.service';
 
 export interface Notification {
     id: string;
-    type: 'LIKE' | 'COMMENT' | 'FOLLOW' | 'MESSAGE';
+    type: 'LIKE' | 'COMMENT' | 'FOLLOW' | 'MESSAGE' | 'SYSTEM';
     content: string;
     senderName: string;
     senderHandle: string;

@@ -35,7 +35,7 @@ interface GroupedNotification {
           <div class="avatar-wrapper">
             <app-avatar 
               [imageUrl]="resolveImageUrl(group.latestNotification.senderProfilePicture)" 
-              [name]="group.latestNotification.senderName" 
+              [name]="group.latestNotification.senderName || 'System'" 
               [size]="44"
             ></app-avatar>
             <span *ngIf="group.count > 1" class="count-badge">{{ group.count }}</span>
@@ -43,9 +43,12 @@ interface GroupedNotification {
           
           <div class="notification-content">
             <p class="notification-text">
-              <span class="user-name">{{ group.latestNotification.senderHandle }}</span>
+              <span class="user-name">{{ group.latestNotification.senderHandle || 'Plant Social Guardian' }}</span>
               <ng-container [ngSwitch]="group.latestNotification.type">
                 <span *ngSwitchCase="'FOLLOW'"> started following you.</span>
+                <span *ngSwitchCase="'SYSTEM'">
+                  sent an alert: {{ group.latestNotification.content }}
+                </span>
                 <span *ngSwitchCase="'MESSAGE'">
                   sent you {{ group.count > 1 ? group.count + ' messages' : 'a message' }}.
                 </span>
@@ -184,7 +187,7 @@ export class NotificationsPageComponent {
     const groupMap = new Map<string, GroupedNotification>();
 
     for (const n of all) {
-      const key = `${n.senderHandle}__${n.type}`;
+      const key = `${n.senderHandle || 'SYSTEM'}__${n.type}`;
       const existing = groupMap.get(key);
       if (existing) {
         existing.count++;
@@ -222,6 +225,10 @@ export class NotificationsPageComponent {
       case 'LIKE':
       case 'COMMENT':
         this.router.navigate(['/post', n.relatedId]);
+        break;
+      case 'SYSTEM':
+        // Navigate to greenhouse for plant updates
+        this.router.navigate(['/greenhouse']);
         break;
       default:
         console.warn('Unknown notification type:', n.type);

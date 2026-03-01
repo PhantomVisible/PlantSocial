@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface VirtualPlantRepository extends JpaRepository<VirtualPlant, Long> {
-    List<VirtualPlant> findByUserId(Long userId);
+    List<VirtualPlant> findByUserId(String userId);
 
     List<VirtualPlant> findTop10ByOrderByCreatedAtAsc();
 }

@@ -9,6 +9,7 @@ import com.plantsocial.backend.marketplace.repository.MarketplaceListingReposito
 import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MarketplaceService {
@@ -129,7 +131,7 @@ public class MarketplaceService {
     public void expireOldListings() {
         int expiredCount = listingRepository.expireListings();
         if (expiredCount > 0) {
-            System.out.println("Scheduled Task: Expired " + expiredCount + " marketplace listings.");
+            log.info("Scheduled Task: Expired {} marketplace listings.", expiredCount);
         }
     }
 }

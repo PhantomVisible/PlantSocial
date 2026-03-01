@@ -4,6 +4,7 @@ import com.plantsocial.backend.dto.plantnet.PlantNetResponse;
 import com.plantsocial.backend.dto.plantnet.PlantNetResult;
 import com.plantsocial.backend.service.PlantNetService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/plant-id")
 @RequiredArgsConstructor
@@ -26,13 +28,12 @@ public class PlantIdController {
         PlantNetResponse response = plantNetService.identify(file);
 
         if (response != null && response.getResults() != null) {
-            // Log top result for debugging
             if (!response.getResults().isEmpty()) {
                 PlantNetResult top = response.getResults().get(0);
-                System.out.println("DEBUG: PlantNet Top Result: " + top.getSpecies().getScientificNameWithoutAuthor()
-                        + " Score: " + top.getScore());
+                log.debug("PlantNet Top Result: {} Score: {}", top.getSpecies().getScientificNameWithoutAuthor(),
+                        top.getScore());
             } else {
-                System.out.println("DEBUG: PlantNet returned 0 results");
+                log.debug("PlantNet returned 0 results");
             }
 
             // Return top 3 results
@@ -42,7 +43,7 @@ public class PlantIdController {
             return ResponseEntity.ok(topResults);
         }
 
-        System.out.println("DEBUG: PlantNet response was null or empty");
+        log.debug("PlantNet response was null or empty");
         return ResponseEntity.ok(List.of());
     }
 }

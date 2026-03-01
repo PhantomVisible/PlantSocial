@@ -5,6 +5,7 @@ import com.plantsocial.backend.user.Role;
 import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -44,10 +46,7 @@ public class AuthService {
         repository.save(user);
 
         // Mock Email
-        System.out.println("==========================================");
-        System.out.println("VERIFICATION CODE for " + user.getEmail());
-        System.out.println("Code: " + code);
-        System.out.println("==========================================");
+        log.info("VERIFICATION CODE for {}: {}", user.getEmail(), code);
 
         var jwtToken = jwtService.generateToken(buildClaims(user), user);
         return new AuthenticationResponse(jwtToken);
@@ -91,12 +90,8 @@ public class AuthService {
         repository.save(user);
 
         // Mock Email
-        System.out.println("==========================================");
-        System.out.println("PASSWORD RESET REQUEST");
-        System.out.println("Email: " + user.getEmail());
-        System.out.println("Token: " + token);
-        System.out.println("Link: http://localhost:4200/reset-password?token=" + token);
-        System.out.println("==========================================");
+        log.info("PASSWORD RESET REQUEST for {} — Link: http://localhost:4200/reset-password?token={}", user.getEmail(),
+                token);
     }
 
     public void resetPassword(ResetPasswordRequest request) {

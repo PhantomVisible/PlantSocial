@@ -6,6 +6,7 @@ import com.plantsocial.backend.chat.dto.CreateRoomRequest;
 import com.plantsocial.backend.user.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/chat")
 @RequiredArgsConstructor
@@ -94,7 +96,7 @@ public class ChatRestController {
                 Files.createDirectories(uploadPath);
             }
 
-            System.out.println("Uploading file to: " + uploadPath.toString());
+            log.debug("Uploading file to: {}", uploadPath);
 
             String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
             Path filePath = uploadPath.resolve(fileName);

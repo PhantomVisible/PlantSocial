@@ -2,6 +2,8 @@ package com.plantsocial.gamification.controller;
 
 import com.plantsocial.gamification.dto.VirtualPlantResponse;
 import com.plantsocial.gamification.model.VirtualPlant;
+import com.plantsocial.gamification.repository.VirtualPlantRepository;
+import com.plantsocial.gamification.service.GameLoopScheduler;
 import com.plantsocial.gamification.service.VirtualPlantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +17,11 @@ import java.util.List;
 public class VirtualPlantController {
 
     private final VirtualPlantService plantService;
+    private final VirtualPlantRepository plantRepository;
+    private final GameLoopScheduler gameLoopScheduler;
 
     @GetMapping("/{userId}")
-    public ResponseEntity<List<VirtualPlant>> getPlantStatus(@PathVariable Long userId) {
+    public ResponseEntity<List<VirtualPlant>> getPlantStatus(@PathVariable String userId) {
         return ResponseEntity.ok(plantService.getPlantsByUserId(userId));
     }
 
@@ -27,7 +31,7 @@ public class VirtualPlantController {
     }
 
     @PostMapping("/{userId}")
-    public ResponseEntity<VirtualPlantResponse> plantSeed(@PathVariable Long userId, @RequestParam String species) {
+    public ResponseEntity<VirtualPlantResponse> plantSeed(@PathVariable String userId, @RequestParam String species) {
         try {
             return ResponseEntity.ok(plantService.plantSeed(userId, species));
         } catch (IllegalStateException e) {
@@ -55,5 +59,19 @@ public class VirtualPlantController {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    // ===== TEMPORARY TEST ENDPOINT — Remove after testing =====
+    @PostMapping("/test/dehydrate-all")
+    public ResponseEntity<String> dehydrateAll() {
+        List<VirtualPlant> plants = plantRepository.findAll();
+        for (VirtualPlant plant : plants) {
+            plant.setHydration(10);
+            plant.setCleanliness(15);
+        }
+        plantRepository.saveAll(plants);
+        // Immediately trigger the decay loop to fire notifications
+        gameLoopScheduler.runHourlyDecay();
+        return ResponseEntity.ok("Dehydrated " + plants.size() + " plants and triggered decay loop.");
     }
 }

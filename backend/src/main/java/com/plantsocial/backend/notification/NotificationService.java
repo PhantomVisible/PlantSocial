@@ -6,6 +6,7 @@ import com.plantsocial.backend.notification.model.NotificationType;
 import com.plantsocial.backend.notification.repository.NotificationRepository;
 import com.plantsocial.backend.user.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
@@ -24,11 +26,10 @@ public class NotificationService {
     @Transactional
     public void createNotification(User recipient, User sender, NotificationType type, String content, UUID relatedId) {
         // Log entry
-        System.out.println(
-                "NotificationService: creating notification type=" + type + " for user=" + recipient.getUsername());
+        log.info("Creating notification type={} for user={}", type, recipient.getUsername());
 
-        if (recipient.getId().equals(sender.getId()) && type != NotificationType.MESSAGE) {
-            System.out.println("NotificationService: blocked self-notification");
+        if (sender != null && recipient.getId().equals(sender.getId()) && type != NotificationType.MESSAGE) {
+            log.debug("Blocked self-notification");
             return; // Don't notify self for likes/comments
         }
 
@@ -65,11 +66,10 @@ public class NotificationService {
     private void sendRealTimeNotification(Notification notification) {
         try {
             String destination = "/topic/notifications/" + notification.getRecipient().getId();
-            System.out.println("NotificationService: Sending WS to " + destination);
+            log.info("Sending WebSocket notification to {}", destination);
             messagingTemplate.convertAndSend(destination, mapToDTO(notification));
         } catch (Exception e) {
-            System.err.println("NotificationService: Failed to send WS message: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Failed to send WebSocket notification: {}", e.getMessage(), e);
         }
     }
 

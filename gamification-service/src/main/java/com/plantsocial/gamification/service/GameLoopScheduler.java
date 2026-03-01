@@ -32,31 +32,21 @@ public class GameLoopScheduler {
 
             // Check if health drops below 30%
             if (plant.getHydration() < 30 || plant.getCleanliness() < 30) {
-                triggerPhantomVisibleWarning(plant);
+                log.warn(
+                        "⚠️ [PHANTOM VISIBLE SYSTEM ALERT] ⚠️\nGuardian! Your plant's life force fades! Hydration: {}%, Cleanliness: {}%. Act now!",
+                        plant.getHydration(), plant.getCleanliness());
+
+                String message = "⚠️ Guardian! Your plant's life force fades! " +
+                        "Hydration: " + plant.getHydration() + "%, Cleanliness: " + plant.getCleanliness() + "%. " +
+                        "Cleanse and water it now before it perishes!";
+
+                if (plant.getUserId() != null) {
+                    notificationClient.sendSystemNotification(plant.getUserId().toString(), message);
+                }
             }
         }
 
         plantRepository.saveAll(plants);
         log.info("Hourly decay loop completed. Processed {} plants.", plants.size());
-    }
-
-    private void triggerPhantomVisibleWarning(VirtualPlant plant) {
-        // AI Persona Hook: Phantom Visible
-        // "1000 Light novels about heroic main character energy" voice
-        String warning = String.format(
-                "⚠️ [PHANTOM VISIBLE SYSTEM ALERT] ⚠️\n" +
-                        "Heed my words, guardian of %s! The life force of your verdant companion is fading into the abyss!\n"
-                        +
-                        "Hydration is at %d%% and Cleanliness rests at %d%%.\n" +
-                        "If you do not act with the swiftness of a falling star, this manifestation of nature shall perish from our realm!\n"
-                        +
-                        "Awaken your power, summon the waters of revival, and cleanse this corruption before it is too late!",
-                plant.getName(), plant.getHydration(), plant.getCleanliness());
-
-        log.warn(warning);
-
-        if (plant.getUserId() != null) {
-            notificationClient.sendSystemNotification(plant.getUserId().toString(), warning);
-        }
     }
 }
