@@ -4,6 +4,7 @@ import { slideInAnimation } from './core/route-animations';
 import { GlobalLoaderComponent } from './shared/global-loader/global-loader.component';
 import { ToastContainerComponent } from './shared/toast-container/toast-container.component';
 import { SidebarComponent } from './layout/sidebar.component';
+import { BottomNavComponent } from './layout/bottom-nav.component';
 import { WikiSidebarComponent } from './features/feed/wiki-sidebar.component';
 import { NewsWidgetComponent } from './shared/components/news-widget/news-widget.component';
 import { TrendsWidgetComponent } from './shared/components/trends-widget/trends-widget.component';
@@ -28,6 +29,7 @@ import { ShopService } from './features/shop/shop.service';
     GlobalLoaderComponent,
     ToastContainerComponent,
     SidebarComponent,
+    BottomNavComponent,
     AuthPromptDialogComponent,
     NewsWidgetComponent,
     TrendsWidgetComponent,
@@ -65,6 +67,7 @@ import { ShopService } from './features/shop/shop.service';
         <app-wiki-sidebar *ngIf="!isPlantSelected()"></app-wiki-sidebar>
       </aside>
     </div>
+    <app-bottom-nav *ngIf="!isAuthRoute() && !isFullWidthRoute()"></app-bottom-nav>
     <app-floating-chat-container *ngIf="authService.currentUser() && !isChatRoute()"></app-floating-chat-container>
     
     <app-plant-doctor-dialog 
@@ -158,6 +161,7 @@ import { ShopService } from './features/shop/shop.service';
       .app-main {
         border: none;
         max-width: 100%;
+        padding-bottom: 72px;
       }
     }
   `]
