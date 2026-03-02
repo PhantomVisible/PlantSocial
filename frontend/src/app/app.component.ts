@@ -67,7 +67,7 @@ import { ShopService } from './features/shop/shop.service';
         <app-wiki-sidebar *ngIf="!isPlantSelected()"></app-wiki-sidebar>
       </aside>
     </div>
-    <app-bottom-nav *ngIf="!isAuthRoute() && !isFullWidthRoute()"></app-bottom-nav>
+    <app-bottom-nav *ngIf="shouldShowBottomNav()"></app-bottom-nav>
     <app-floating-chat-container *ngIf="authService.currentUser() && !isChatRoute()"></app-floating-chat-container>
     
     <app-plant-doctor-dialog 
@@ -153,15 +153,27 @@ import { ShopService } from './features/shop/shop.service';
 
     @media (max-width: 860px) {
       .app-right {
-        display: none;
+        display: none !important;
       }
     }
 
     @media (max-width: 768px) {
+      .app-layout {
+        flex-direction: column;
+      }
+
       .app-main {
         border: none;
         max-width: 100%;
         padding-bottom: 72px;
+      }
+
+      .app-right {
+        display: none !important;
+      }
+
+      app-floating-chat-container {
+        display: none !important;
       }
     }
   `]
@@ -182,6 +194,7 @@ export class AppComponent implements OnInit {
   isAuthRoute = signal(false);
   isExploreRoute = signal(false);
   isChatRoute = signal(false);
+  shouldShowBottomNav = signal(true);
 
   ngOnInit() {
     this.notificationService.init();
@@ -212,6 +225,12 @@ export class AppComponent implements OnInit {
       url.startsWith('/shop') ||
       url.startsWith('/marketplace') ||
       url.startsWith('/auth')
+    );
+
+    this.shouldShowBottomNav.set(
+      !url.startsWith('/auth') &&
+      !url.startsWith('/shop') &&
+      !url.startsWith('/marketplace')
     );
   }
 

@@ -355,7 +355,7 @@ export class FloatingChatContainerComponent implements OnInit {
     resolveImageUrl(url: string | null): string {
         if (!url) return '';
         if (url.startsWith('http')) return url;
-        return 'http://localhost:8080' + url;
+        return 'http://192.168.1.162:8080' + url;
     }
 
     isOwnMessage(msg: any): boolean {

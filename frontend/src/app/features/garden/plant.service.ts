@@ -28,7 +28,7 @@ export interface PlantLog {
 })
 export class PlantService {
     private http = inject(HttpClient);
-    private baseUrl = 'http://localhost:8080/api/v1/plants';
+    private baseUrl = 'http://192.168.1.162:8080/api/v1/plants';
 
     addPlant(nickname: string, species: string, status: string, plantedDate: string, isVerified: boolean, image?: File): Observable<PlantData> {
         const formData = new FormData();

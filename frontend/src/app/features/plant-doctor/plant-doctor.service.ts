@@ -9,7 +9,7 @@ import { DiagnosisDTO } from './plant-doctor.model';
 })
 export class PlantDoctorService {
     private http = inject(HttpClient);
-    private apiUrl = 'http://localhost:8080/api/v1/plant-doctor/diagnose';
+    private apiUrl = 'http://192.168.1.162:8080/api/v1/plant-doctor/diagnose';
 
     isOpen = signal(false);
     mode = signal<'standalone' | 'post-compose'>('standalone');

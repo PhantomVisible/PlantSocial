@@ -31,7 +31,7 @@ export class NotificationService {
     public notificationsList = computed(() => this.notifications());
     public unreadCount = computed(() => this.unreadCountSignal());
 
-    private apiUrl = 'http://localhost:8080/api/v1/notifications';
+    private apiUrl = 'http://192.168.1.162:8080/api/v1/notifications';
 
     private effectRef = effect(() => {
         const user = this.auth.currentUser();

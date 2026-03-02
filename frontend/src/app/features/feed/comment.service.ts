@@ -17,7 +17,7 @@ export interface CommentData {
 })
 export class CommentService {
     private http = inject(HttpClient);
-    private baseUrl = 'http://localhost:8080/api/v1';
+    private baseUrl = 'http://192.168.1.162:8080/api/v1';
 
     getComments(postId: string): Observable<CommentData[]> {
         return this.http.get<CommentData[]>(`${this.baseUrl}/feed/${postId}/comments`);

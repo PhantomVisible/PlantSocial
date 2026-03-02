@@ -61,7 +61,7 @@ export interface FloatingChatState {
     providedIn: 'root'
 })
 export class ChatService {
-    private apiUrl = 'http://localhost:8080/api/v1/chat';
+    private apiUrl = 'http://192.168.1.162:8080/api/v1/chat';
 
     // ─── Signals ──────────────────────────────────────────────────
     rooms = signal<ChatRoom[]>([]);

@@ -238,6 +238,6 @@ export class NotificationsPageComponent {
   resolveImageUrl(url: string | null): string | null {
     if (!url) return null;
     if (url.startsWith('http')) return url;
-    return 'http://localhost:8080' + url;
+    return 'http://192.168.1.162:8080' + url;
   }
 }

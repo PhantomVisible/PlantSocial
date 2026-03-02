@@ -664,7 +664,7 @@ export class PostComposerComponent implements OnInit {
 
   resolveUrl(url: string): string {
     if (url.startsWith('http')) return url;
-    return 'http://localhost:8080' + url;
+    return 'http://192.168.1.162:8080' + url;
   }
 
   submitPost() {

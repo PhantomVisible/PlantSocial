@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { NotificationService } from '../features/notifications/notification.service';
+import { ThemeService } from '../shared/theme.service';
 
 @Component({
   selector: 'app-bottom-nav',
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-    <nav class="bottom-nav">
+    <nav class="bottom-nav" [class.dark-nav]="themeService.isDarkMode()">
       <a
         routerLink="/feed"
         routerLinkActive="active"
@@ -37,6 +38,16 @@ import { NotificationService } from '../features/notifications/notification.serv
       >
         <i class="pi pi-sparkles"></i>
         <span>Garden</span>
+      </a>
+
+      <a
+        *ngIf="user()"
+        routerLink="/chat"
+        routerLinkActive="active"
+        class="bottom-nav__item"
+      >
+        <i class="pi pi-comments"></i>
+        <span>Chat</span>
       </a>
 
       <a
@@ -90,7 +101,7 @@ import { NotificationService } from '../features/notifications/notification.serv
           justify-content: space-around;
           align-items: center;
 
-          /* Glassmorphic background */
+        /* Glassmorphic background */
           background: rgba(255, 255, 255, 0.82);
           backdrop-filter: blur(20px) saturate(180%);
           -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -99,8 +110,7 @@ import { NotificationService } from '../features/notifications/notification.serv
         }
 
         /* Dark mode support */
-        :host-context(.dark-mode) .bottom-nav,
-        :host-context([data-theme='dark']) .bottom-nav {
+        .bottom-nav.dark-nav {
           background: rgba(30, 30, 30, 0.88);
           border-top-color: rgba(255, 255, 255, 0.08);
         }
@@ -201,6 +211,7 @@ import { NotificationService } from '../features/notifications/notification.serv
 export class BottomNavComponent {
   private authService = inject(AuthService);
   private notifService = inject(NotificationService);
+  themeService = inject(ThemeService);
 
   user = this.authService.currentUser;
   unreadCount = this.notifService.unreadCount;

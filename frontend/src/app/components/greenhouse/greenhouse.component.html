@@ -1,29 +1,58 @@
 <div class="gameboy-wrapper p-4 flex justify-content-center align-items-center">
   @if (isLoading) {
-    <div class="gameboy-screen col-12 lg:col-10 xl:col-8 mx-auto flex flex-column justify-content-center align-items-center" style="min-height: 480px;">
+    <div
+      class="gameboy-screen col-12 lg:col-10 xl:col-8 mx-auto flex flex-column justify-content-center align-items-center"
+      style="min-height: 480px"
+    >
       <div class="loading-text mb-4 text-2xl blink-text">LOADING...</div>
       <div class="loading-bar">[■■■□□□□]</div>
     </div>
   } @else if (selectedSlotIndex === null) {
-    <div class="gameboy-screen col-12 lg:col-10 xl:col-8 mx-auto flex flex-column" style="min-height: 480px;">
-      <div class="gb-header flex justify-content-center align-items-center mb-4">
+    <div
+      class="gameboy-screen col-12 lg:col-10 xl:col-8 mx-auto flex flex-column"
+      style="min-height: 480px"
+    >
+      <div
+        class="gb-header flex justify-content-center align-items-center mb-4"
+      >
         <div class="plant-name">SAVE FILES</div>
       </div>
-      
-      <div class="grid grid-nogutter gap-3 justify-content-center mb-4 flex-grow-1">
+
+      <div
+        class="grid grid-nogutter gap-3 justify-content-center mb-4 flex-grow-1"
+      >
         @for (slot of plantSlots; track $index) {
-          <div class="col-5 gb-cartridge p-2 flex flex-column align-items-center justify-content-center cursor-pointer" style="position: relative;" (click)="selectSlot($index)">
+          <div
+            class="col-5 gb-cartridge p-2 flex flex-column align-items-center justify-content-center cursor-pointer"
+            style="position: relative"
+            (click)="selectSlot($index)"
+          >
             @if (slot) {
-              <button class="gb-btn-delete" (click)="openDeleteConfirmation($index, $event)">X</button>
+              <button
+                class="gb-btn-delete"
+                (click)="openDeleteConfirmation($index, $event)"
+              >
+                X
+              </button>
               <div class="cartridge-icon mb-2">
-                <div class="pixel-sprite mini-sprite" 
-                     [style.background-image]="'url(' + getSpriteUrl(slot.species, slot.stage) + ')'"></div>
+                <div
+                  class="pixel-sprite mini-sprite"
+                  [style.background-image]="
+                    'url(' + getSpriteUrl(slot.species, slot.stage) + ')'
+                  "
+                ></div>
               </div>
-              <div class="cartridge-name text-center text-sm font-bold">{{ slot.species | uppercase }}</div>
-              <div class="cartridge-stage text-center text-xs mt-1">{{ slot.stage }}</div>
+              <div class="cartridge-name text-center text-sm font-bold">
+                {{ slot.species | uppercase }}
+              </div>
+              <div class="cartridge-stage text-center text-xs mt-1">
+                {{ slot.stage }}
+              </div>
             } @else {
               <div class="cartridge-empty text-center">EMPTY SLOT</div>
-              <div class="cartridge-new text-center text-xs mt-2 blink-text">NEW GAME</div>
+              <div class="cartridge-new text-center text-xs mt-2 blink-text">
+                NEW GAME
+              </div>
             }
           </div>
         }
@@ -34,84 +63,134 @@
       </div>
     </div>
   } @else if (plant) {
-    <div class="gameboy-screen col-12 lg:col-10 xl:col-8 mx-auto flex flex-column">
-      
+    <div
+      class="gameboy-screen col-12 lg:col-10 xl:col-8 mx-auto flex flex-column"
+    >
       <!-- Header -->
-        <div class="gb-header flex justify-content-between align-items-center mb-3 line-height-1">
-          <button class="gb-btn-small" (click)="goBackToSlots()"> BACK </button>
-          <div class="flex flex-column align-items-center justify-content-center text-center line-height-2 w-full mt-2">
-            <div class="plant-name w-full" style="font-size: 0.65rem; word-break: break-all;">
-              {{ plant.species | uppercase }}
-              <button class="gb-btn-small" style="padding: 2px 4px; font-size: 0.5rem; margin-left: 5px; border-color: var(--gb-dark);" (click)="cycleEvolution()">★</button>
-            </div>
-            <div class="plant-age w-full" style="font-size: 0.55rem; color: #306230; margin-top: 2px;">AGE: {{ plant.daysAlive | number:'3.0-0' }} DAYS</div>
+      <div
+        class="gb-header flex justify-content-between align-items-center mb-3 line-height-1"
+      >
+        <button class="gb-btn-small" (click)="goBackToSlots()">BACK</button>
+        <div
+          class="flex flex-column align-items-center justify-content-center text-center line-height-2 w-full mt-2"
+        >
+          <div
+            class="plant-name w-full"
+            style="font-size: 0.65rem; word-break: break-all"
+          >
+            {{ plant.species | uppercase }}
+            <button
+              class="gb-btn-small"
+              style="
+                padding: 2px 4px;
+                font-size: 0.5rem;
+                margin-left: 5px;
+                border-color: var(--gb-dark);
+              "
+              (click)="cycleEvolution()"
+            >
+              ★
+            </button>
           </div>
-          <div class="plant-stage">[{{ plant.stage | uppercase }}]</div>
+          <div
+            class="plant-age w-full"
+            style="font-size: 0.55rem; color: #306230; margin-top: 2px"
+          >
+            AGE: {{ plant.daysAlive | number: "3.0-0" }} DAYS
+          </div>
         </div>
-        
-        <!-- Plant Sprite Placeholder -->
-        <div class="gb-sprite-container breathing-sprite" style="position: relative;">
-          
-          <div class="flex flex-column align-items-center">
-            <div class="pixel-sprite" 
-                 [style.background-image]="'url(' + getSpriteUrl(plant.species, plant.stage) + ')'"
-                 [class.shimmer-effect]="plant.stage === 'ANCIENT'"></div>
-          </div>
+        <div class="plant-stage">[{{ plant.stage | uppercase }}]</div>
+      </div>
 
-          <!-- Pest Overlay -->
-          @if (plant.cleanliness < 90) {
-            <div class="pest-overlay">
-              @for (pest of cockroaches; track pest.id) {
-                <div class="cockroach"
-                     [style.left.%]="pest.left"
-                     [style.top.%]="pest.top"
-                     [style.background-image]="'url(http://localhost:8081/sprites/cockroach_' + pest.spriteNum + '.png)'"
-                     [style.animation-delay]="pest.delay + 's'"></div>
-              }
-            </div>
-          }
+      <!-- Plant Sprite Placeholder -->
+      <div
+        class="gb-sprite-container breathing-sprite"
+        style="position: relative"
+      >
+        <div class="flex flex-column align-items-center">
+          <div
+            class="pixel-sprite"
+            [style.background-image]="
+              'url(' + getSpriteUrl(plant.species, plant.stage) + ')'
+            "
+            [class.shimmer-effect]="plant.stage === 'ANCIENT'"
+          ></div>
         </div>
-      
+
+        <!-- Pest Overlay -->
+        @if (plant.cleanliness < 90) {
+          <div class="pest-overlay">
+            @for (pest of cockroaches; track pest.id) {
+              <div
+                class="cockroach"
+                [style.left.%]="pest.left"
+                [style.top.%]="pest.top"
+                [style.background-image]="
+                  'url(http://192.168.1.162:8081/sprites/cockroach_' +
+                  pest.spriteNum +
+                  '.png)'
+                "
+                [style.animation-delay]="pest.delay + 's'"
+              ></div>
+            }
+          </div>
+        }
+      </div>
+
       <!-- Stats / Progress Bars -->
       <div class="gb-stats flex flex-column gap-3">
         <div class="gb-stat-row flex align-items-center">
           <span class="gb-stat-label">Hydration</span>
           <div class="gb-progress-bar w-full ml-2">
-            <div class="gb-progress-fill" [style.width.%]="plant.hydration"></div>
+            <div
+              class="gb-progress-fill"
+              [style.width.%]="plant.hydration"
+            ></div>
           </div>
         </div>
         <div class="gb-stat-row flex align-items-center">
           <span class="gb-stat-label">Cleanliness</span>
           <div class="gb-progress-bar w-full ml-2">
-            <div class="gb-progress-fill" [style.width.%]="plant.cleanliness"></div>
+            <div
+              class="gb-progress-fill"
+              [style.width.%]="plant.cleanliness"
+            ></div>
           </div>
         </div>
       </div>
-      
-        <div class="gb-actions flex justify-content-center gap-4">
-          <button class="gb-btn" (click)="water()">WATER</button>
-          <button class="gb-btn" (click)="clean()">CLEAN</button>
-        </div>
-        
-        <!-- RPG Dialogue Box -->
-        <div class="gb-dialogue-box">
-          <p>"{{ phantomMessage }}"</p>
-        </div>
 
+      <div class="gb-actions flex justify-content-center gap-4">
+        <button class="gb-btn" (click)="water()">WATER</button>
+        <button class="gb-btn" (click)="clean()">CLEAN</button>
+      </div>
+
+      <!-- RPG Dialogue Box -->
+      <div class="gb-dialogue-box">
+        <p>"{{ phantomMessage }}"</p>
+      </div>
     </div>
   } @else {
-    <div class="gameboy-screen col-12 lg:col-10 xl:col-8 mx-auto flex flex-column" style="min-height: 480px;">
+    <div
+      class="gameboy-screen col-12 lg:col-10 xl:col-8 mx-auto flex flex-column"
+      style="min-height: 480px"
+    >
       <!-- Header -->
-      <div class="gb-header flex justify-content-between align-items-center mb-4">
+      <div
+        class="gb-header flex justify-content-between align-items-center mb-4"
+      >
         <button class="gb-btn-small" (click)="goBackToSlots()">[ BACK ]</button>
         <div class="plant-name">SEED INVENTORY</div>
-        <div style="width: 60px;"></div> <!-- spacer -->
+        <div style="width: 60px"></div>
+        <!-- spacer -->
       </div>
-      
+
       <!-- Seed Selection List -->
       <div class="gb-stats flex flex-column gap-3 mb-5">
         @for (seed of availableSeeds; track seed) {
-          <button class="gb-btn flex justify-content-start align-items-center gap-3" (click)="selectSeed(seed)">
+          <button
+            class="gb-btn flex justify-content-start align-items-center gap-3"
+            (click)="selectSeed(seed)"
+          >
             <span>💠</span> {{ seed }}
           </button>
         }
@@ -123,7 +202,7 @@
       </div>
     </div>
   }
-  
+
   <!-- Info Button Overlay (Anchored to wrapper) -->
   <button class="gb-info-btn text-xl" (click)="toggleInfo()">?</button>
 
@@ -131,18 +210,33 @@
   @if (showDeleteModal && plantToDelete) {
     <div class="gb-modal-backdrop" (click)="cancelDelete()">
       <div class="gb-modal-content" (click)="$event.stopPropagation()">
-        <div class="gb-header flex justify-content-center align-items-center mb-3 line-height-1 text-center" style="border-bottom: 4px dashed #0f380f;">
-          <div class="plant-name" style="font-size: 1.1rem;">WARNING</div>
+        <div
+          class="gb-header flex justify-content-center align-items-center mb-3 line-height-1 text-center"
+          style="border-bottom: 4px dashed #0f380f"
+        >
+          <div class="plant-name" style="font-size: 1.1rem">WARNING</div>
         </div>
-        
-        <div class="gb-instructions-list flex flex-column justify-content-center text-center text-sm mb-4 line-height-2" style="flex-grow: 0; padding: 1rem 0;">
-          Are you sure you wish to release this vessel back to the void?<br><br>
-          All progress for this <strong>{{ plantToDelete.species | uppercase }}</strong> will be lost forever!
+
+        <div
+          class="gb-instructions-list flex flex-column justify-content-center text-center text-sm mb-4 line-height-2"
+          style="flex-grow: 0; padding: 1rem 0"
+        >
+          Are you sure you wish to release this vessel back to the void?<br /><br />
+          All progress for this
+          <strong>{{ plantToDelete.species | uppercase }}</strong> will be lost
+          forever!
         </div>
 
         <div class="flex flex-column gap-3 mt-auto">
-          <button class="gb-btn gb-btn-danger w-full text-center" (click)="confirmDelete()">RELEASE</button>
-          <button class="gb-btn w-full text-center" (click)="cancelDelete()">CANCEL</button>
+          <button
+            class="gb-btn gb-btn-danger w-full text-center"
+            (click)="confirmDelete()"
+          >
+            RELEASE
+          </button>
+          <button class="gb-btn w-full text-center" (click)="cancelDelete()">
+            CANCEL
+          </button>
         </div>
       </div>
     </div>
@@ -152,23 +246,30 @@
   @if (showInfo) {
     <div class="gb-modal-backdrop" (click)="toggleInfo()">
       <div class="gb-modal-content" (click)="$event.stopPropagation()">
-        <div class="gb-header flex justify-content-between align-items-center mb-3 line-height-1">
-          <div class="plant-name" style="font-size: 1.1rem;">TACTICAL BRIEFING</div>
+        <div
+          class="gb-header flex justify-content-between align-items-center mb-3 line-height-1"
+        >
+          <div class="plant-name" style="font-size: 1.1rem">
+            TACTICAL BRIEFING
+          </div>
           <button class="gb-btn-small" (click)="toggleInfo()">[ X ]</button>
         </div>
-        
+
         <div class="gb-instructions-list flex flex-column gap-2 text-sm">
           <div class="instruction-item">
-            <strong>Evolution:</strong> Plants evolve through 5 stages: SEED, SPROUT, SAPLING, BLOOM, and ANCIENT.
+            <strong>Evolution:</strong> Plants evolve through 5 stages: SEED,
+            SPROUT, SAPLING, BLOOM, and ANCIENT.
           </div>
           <div class="instruction-item">
             <strong>Care:</strong> Use WATER and CLEAN to keep stats above 80%.
           </div>
           <div class="instruction-item">
-            <strong>Growth:</strong> Keeping a plant healthy for 24 hours (real-time) triggers progress toward the next evolution.
+            <strong>Growth:</strong> Keeping a plant healthy for 24 hours
+            (real-time) triggers progress toward the next evolution.
           </div>
           <div class="instruction-item">
-            <strong>Slots:</strong> You can manage up to 4 distinct plant "vessels" at once.
+            <strong>Slots:</strong> You can manage up to 4 distinct plant
+            "vessels" at once.
           </div>
         </div>
       </div>

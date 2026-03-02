@@ -180,7 +180,7 @@ export class GreenhouseComponent implements OnInit {
   }
 
   getSpriteUrl(species: string, stage: string): string {
-    return 'http://localhost:8081/sprites/' + species.toLowerCase() + '_' + stage.toLowerCase() + '.png';
+    return 'http://192.168.1.162:8081/sprites/' + species.toLowerCase() + '_' + stage.toLowerCase() + '.png';
   }
 
   cycleEvolution() {

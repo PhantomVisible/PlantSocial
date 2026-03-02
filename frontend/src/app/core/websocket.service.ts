@@ -28,7 +28,7 @@ export class WebSocketService implements OnDestroy {
         if (!token) return;
 
         this.client = new Client({
-            brokerURL: 'ws://localhost:8080/ws',
+            brokerURL: 'ws://192.168.1.162:8080/ws',
             connectHeaders: {
                 Authorization: `Bearer ${token}`
             },

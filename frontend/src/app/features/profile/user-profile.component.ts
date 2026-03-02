@@ -95,6 +95,14 @@ import { EditProfileDialogComponent } from './edit-profile-dialog.component';
                 Edit profile
               </button>
               <button
+                *ngIf="isOwner()"
+                class="btn btn--logout"
+                (click)="logout()"
+                title="Log out"
+              >
+                <i class="pi pi-sign-out"></i> Logout
+              </button>
+              <button
                 *ngIf="!isOwner()"
                 class="btn btn--filled"
                 [class.btn--following]="isFollowing()"
@@ -396,6 +404,22 @@ import { EditProfileDialogComponent } from './edit-profile-dialog.component';
       font-size: 0.85rem;
     }
 
+    .btn--logout {
+      background: transparent;
+      color: #E53E3E;
+      border-color: #E53E3E;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn--logout:hover {
+      background: #E53E3E;
+      color: #fff;
+    }
+    .btn--logout i {
+      font-size: 0.85rem;
+    }
+
     /* ---- Profile 3-dot Menu ---- */
     .profile-menu-wrap {
       position: relative;
@@ -672,6 +696,11 @@ export class UserProfileComponent implements OnInit, OnDestroy {
     return !!user && !!p && user.id === p.id;
   }
 
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/feed']);
+  }
+
   isFollowing = computed(() => this.profile()?.isFollowing ?? false);
 
   openChat() {
@@ -897,6 +926,6 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   resolveImageUrl(url: string | undefined | null): string | null {
     if (!url) return null;
     if (url.startsWith('http')) return url;
-    return 'http://localhost:8080' + url;
+    return 'http://192.168.1.162:8080' + url;
   }
 }

@@ -310,7 +310,7 @@ export class FloatingChatWindowComponent implements OnInit, AfterViewChecked {
     const options: any = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
 
     // Fetch messages independently
-    this.http.get<any>(`http://localhost:8080/api/v1/chat/rooms/${this.chatState.roomId}/messages?page=0&size=50`, options)
+    this.http.get<any>(`http://192.168.1.162:8080/api/v1/chat/rooms/${this.chatState.roomId}/messages?page=0&size=50`, options)
       .subscribe({
         next: (response: any) => {
           const msgs: ChatMessage[] = response.content || [];
@@ -384,7 +384,7 @@ export class FloatingChatWindowComponent implements OnInit, AfterViewChecked {
   resolveImageUrl(url: string | null): string {
     if (!url) return '';
     if (url.startsWith('http')) return url;
-    return 'http://localhost:8080' + url;
+    return 'http://192.168.1.162:8080' + url;
   }
 
   scrollToBottom(): void {

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 export interface TrendDTO {
   postId: string; // UUID from backend is string in JS
@@ -109,7 +110,7 @@ export interface TrendDTO {
 })
 export class TrendsWidgetComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8080/api/v1';
+  private apiUrl = environment.apiUrl;
   private route = inject(ActivatedRoute);
 
   trends = signal<TrendDTO[]>([]);

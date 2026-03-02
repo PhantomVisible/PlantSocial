@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface Post {
   id: string;
@@ -31,7 +32,7 @@ export interface CommentRequest {
 })
 export class FeedService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8080/api/v1/feed';
+  private apiUrl = `${environment.apiUrl}/feed`;
 
   getFeed(page: number = 0, size: number = 10, plant?: string, query?: string): Observable<{ content: Post[] }> {
     let url = `${this.apiUrl}?page=${page}&size=${size}`;

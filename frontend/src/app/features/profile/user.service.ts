@@ -13,7 +13,7 @@ export { UserProfile }; // Re-export for backward compatibility or just let cons
 })
 export class UserService {
     private http = inject(HttpClient);
-    private baseUrl = 'http://localhost:8080/api/v1';
+    private baseUrl = 'http://192.168.1.162:8080/api/v1';
 
     getUserProfile(username: string): Observable<UserProfile> {
         return this.http.get<UserProfile>(`${this.baseUrl}/users/${username}`);
