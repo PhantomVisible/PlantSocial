@@ -117,7 +117,7 @@ import confetti from 'canvas-confetti';
             </svg>
 
             <h3 class="text-color m-0 mb-2">Identifying Species...</h3>
-            <p class="text-color-secondary m-0">Phantom Visible is cross-referencing the global database.</p>
+            <p class="text-color-secondary m-0">Xyla is cross-referencing the global database.</p>
           </div>
         </div>
 
@@ -126,7 +126,7 @@ import confetti from 'canvas-confetti';
            <div class="conflict-content">
              <h3>Oops! ⚠️</h3>
              <p>
-               Phantom Visible encountered an error while trying to identify your plant.
+               Xyla encountered an error while trying to identify your plant.
              </p>
              <p class="sub-text">
                Would you like to try again or skip identification and save as unverified?
@@ -171,7 +171,7 @@ import confetti from 'canvas-confetti';
           <div class="achievement-card">
             <div class="achievement-icon">✅</div>
             <h3 class="achievement-title">Species Verified!</h3>
-            <p class="achievement-subtitle">{{ species }} confirmed by Phantom Visible</p>
+            <p class="achievement-subtitle">{{ species }} confirmed by Xyla</p>
           </div>
         </div>
       </div>
@@ -522,7 +522,7 @@ export class AddPlantDialogComponent implements OnInit {
 
   resolveUrl(url: string): string {
     if (url.startsWith('http')) return url;
-    return 'http://192.168.1.162:8080' + url;
+    return 'http://192.168.1.250:8080' + url;
   }
 
   onFileSelected(event: Event) {

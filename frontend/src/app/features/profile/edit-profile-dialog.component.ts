@@ -338,7 +338,7 @@ export class EditProfileDialogComponent {
     if (!url) return null;
     if (url.startsWith('data:')) return url;
     if (url.startsWith('http')) return url;
-    return 'http://192.168.1.162:8080' + url;
+    return 'http://192.168.1.250:8080' + url;
   }
 
   getInitials(name: string): string {

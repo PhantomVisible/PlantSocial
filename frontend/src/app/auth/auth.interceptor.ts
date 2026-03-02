@@ -6,7 +6,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     const platformId = inject(PLATFORM_ID);
 
     // Only attach token for requests to our own backend
-    const isBackend = req.url.startsWith('http://192.168.1.162:8080') || req.url.startsWith('http://192.168.1.162:8081') || req.url.startsWith('/api');
+    const isBackend = req.url.startsWith('http://192.168.1.250:8080') || req.url.startsWith('http://192.168.1.250:8081') || req.url.startsWith('/api');
 
     if (isPlatformBrowser(platformId) && isBackend) {
         const token = localStorage.getItem('token');

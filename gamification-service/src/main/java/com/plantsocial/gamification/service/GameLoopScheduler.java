@@ -33,7 +33,7 @@ public class GameLoopScheduler {
             // Check if health drops below 30%
             if (plant.getHydration() < 30 || plant.getCleanliness() < 30) {
                 log.warn(
-                        "⚠️ [PHANTOM VISIBLE SYSTEM ALERT] ⚠️\nGuardian! Your plant's life force fades! Hydration: {}%, Cleanliness: {}%. Act now!",
+                        "⚠️ [XYLA SYSTEM ALERT] ⚠️\nGuardian! Your plant's life force fades! Hydration: {}%, Cleanliness: {}%. Act now!",
                         plant.getHydration(), plant.getCleanliness());
 
                 String message = "⚠️ Guardian! Your plant's life force fades! " +

@@ -33,7 +33,7 @@ export interface CurrentUser {
     providedIn: 'root'
 })
 export class AuthService {
-    private apiUrl = 'http://192.168.1.162:8080/api/v1/auth';
+    private apiUrl = 'http://192.168.1.250:8080/api/v1/auth';
 
     isAuthenticated = signal<boolean>(false);
     currentUser = signal<CurrentUser | null>(null);

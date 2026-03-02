@@ -18,7 +18,7 @@ export interface PlantNetResult {
 })
 export class PlantIdService {
     private http = inject(HttpClient);
-    private apiUrl = 'http://192.168.1.162:8080/api/v1'; // Hardcoded to fix build error
+    private apiUrl = 'http://192.168.1.250:8080/api/v1'; // Hardcoded to fix build error
 
     verify(file: File): Observable<PlantNetResult[]> {
         const formData = new FormData();

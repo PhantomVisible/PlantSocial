@@ -54,7 +54,7 @@ public class VirtualPlant {
     @PostLoad
     @PostPersist
     @PostUpdate
-    protected void calculateDaysAlive() {
+    public void calculateDaysAlive() {
         if (this.createdAt != null) {
             this.daysAlive = java.time.temporal.ChronoUnit.DAYS.between(this.createdAt, LocalDateTime.now());
         } else {
@@ -63,13 +63,17 @@ public class VirtualPlant {
     }
 
     @PrePersist
-    protected void onCreate() {
+    public void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
-    protected void onUpdate() {
+    public void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public boolean isDead() {
+        return this.hydration <= 0;
     }
 }

@@ -62,7 +62,7 @@ export class MarketplaceListComponent implements OnInit {
   getImageUrl(url: string | null | undefined): string {
     if (!url) return '/assets/placeholder-plant.jpg';
     if (url.startsWith('/images/')) {
-      return `http://192.168.1.162:8080${url}`;
+      return `http://192.168.1.250:8080${url}`;
     }
     return url;
   }

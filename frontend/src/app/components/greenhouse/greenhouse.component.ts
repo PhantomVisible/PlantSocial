@@ -179,8 +179,11 @@ export class GreenhouseComponent implements OnInit {
     });
   }
 
-  getSpriteUrl(species: string, stage: string): string {
-    return 'http://192.168.1.162:8081/sprites/' + species.toLowerCase() + '_' + stage.toLowerCase() + '.png';
+  getSpriteUrl(species: string, stage: string, isDead: boolean = false): string {
+    if (isDead) {
+      return 'http://192.168.1.250:8081/sprites/tombstone.png';
+    }
+    return 'http://192.168.1.250:8081/sprites/' + species.toLowerCase() + '_' + stage.toLowerCase() + '.png';
   }
 
   cycleEvolution() {

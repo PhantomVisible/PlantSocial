@@ -270,7 +270,7 @@ export class PlantDoctorDialogComponent implements OnInit {
   onSelectImage(url: string) {
     this.loading.set(true);
     // Resolve URL (handle localhost)
-    const fullUrl = url.startsWith('http') ? url : `http://192.168.1.162:8080${url}`;
+    const fullUrl = url.startsWith('http') ? url : `http://192.168.1.250:8080${url}`;
 
     this.service.fetchImageAsBlob(fullUrl).subscribe({
       next: (blob) => {
@@ -285,7 +285,7 @@ export class PlantDoctorDialogComponent implements OnInit {
 
   resolveUrl(url: string): string {
     if (url.startsWith('http')) return url;
-    return 'http://192.168.1.162:8080' + url;
+    return 'http://192.168.1.250:8080' + url;
   }
 
   onDragOver(event: DragEvent) {

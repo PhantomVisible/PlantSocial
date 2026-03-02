@@ -441,7 +441,7 @@ export class PlantDetailsDialogComponent implements OnInit {
   resolveUrl(url: string | null): string {
     if (!url) return 'assets/placeholder-plant.jpg'; // Fallback
     if (url.startsWith('http')) return url;
-    return 'http://192.168.1.162:8080' + url;
+    return 'http://192.168.1.250:8080' + url;
   }
 
   formatDate(dateStr: string): string {

@@ -172,6 +172,9 @@ import { ShopService } from './features/shop/shop.service';
         display: none !important;
       }
 
+      app-news-widget,
+      app-trends-widget,
+      app-wiki-sidebar,
       app-floating-chat-container {
         display: none !important;
       }

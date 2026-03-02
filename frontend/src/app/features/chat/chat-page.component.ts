@@ -151,7 +151,7 @@ import { TooltipModule } from 'primeng/tooltip';
                     <div class="message-sender">{{ msg.senderFullName }}</div>
                   }
                   @if (msg.messageType === 'IMAGE' && msg.mediaUrl) {
-                    <img [src]="'http://192.168.1.162:8080' + msg.mediaUrl" class="message-image" (click)="openImage(msg.mediaUrl!)">
+                    <img [src]="'http://192.168.1.250:8080' + msg.mediaUrl" class="message-image" (click)="openImage(msg.mediaUrl!)">
                   } @else {
                     <div class="message-text">{{ msg.content }}</div>
                   }
@@ -1134,7 +1134,7 @@ export class ChatPageComponent implements OnInit, OnDestroy {
   resolveImageUrl(url: string | null | undefined): string | undefined {
     if (!url) return undefined;
     if (url.startsWith('http')) return url;
-    return 'http://192.168.1.162:8080' + url;
+    return 'http://192.168.1.250:8080' + url;
   }
 
   getOtherMember(room: ChatRoom): any {
@@ -1179,7 +1179,7 @@ export class ChatPageComponent implements OnInit, OnDestroy {
   }
 
   openImage(url: string): void {
-    window.open('http://192.168.1.162:8080' + url, '_blank');
+    window.open('http://192.168.1.250:8080' + url, '_blank');
   }
 
   private scrollToBottom(): void {

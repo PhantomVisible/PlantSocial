@@ -359,7 +359,7 @@ export class CommentThreadComponent {
 
   resolveImageUrl(url: string | null): string {
     if (!url) return '';
-    return url.startsWith('http') ? url : `http://192.168.1.162:8080${url}`;
+    return url.startsWith('http') ? url : `http://192.168.1.250:8080${url}`;
   }
 
   /** Extended interface with UI-only fields */
