@@ -2,6 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
 import { AuthService } from '../auth/auth.service';
 import { Subject, Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 /**
  * WebSocket service using native WebSocket (STOMP).
@@ -28,7 +29,7 @@ export class WebSocketService implements OnDestroy {
         if (!token) return;
 
         this.client = new Client({
-            brokerURL: 'ws://192.168.1.250:8080/ws',
+            brokerURL: environment.wsUrl,
             connectHeaders: {
                 Authorization: `Bearer ${token}`
             },

@@ -3,6 +3,7 @@ import { GreenhouseComponent, PlantStage } from './greenhouse.component';
 import { VirtualPlantService, VirtualPlant } from '../../services/virtual-plant/virtual-plant.service';
 import { AuthService } from '../../auth/auth.service';
 import { of } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 describe('GreenhouseComponent', () => {
   let component: GreenhouseComponent;
@@ -47,7 +48,7 @@ describe('GreenhouseComponent', () => {
       const url = component.getSpriteUrl('Monstera', 'ANCIENT', false);
       
       // Assert
-      expect(url).toBe('http://192.168.1.250:8081/sprites/monstera_ancient.png');
+      expect(url).toBe(environment.gamificationBaseUrl + '/sprites/monstera_ancient.png');
     });
   });
 
@@ -57,7 +58,7 @@ describe('GreenhouseComponent', () => {
       const url = component.getSpriteUrl('Monstera', 'ANCIENT', true);
       
       // Assert
-      expect(url).toBe('http://192.168.1.250:8081/sprites/tombstone.png');
+      expect(url).toBe(environment.gamificationBaseUrl + '/sprites/tombstone.png');
     });
   });
 

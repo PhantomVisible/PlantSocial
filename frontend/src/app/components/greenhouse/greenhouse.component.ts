@@ -5,6 +5,7 @@ import { VirtualPlantService, VirtualPlant, VirtualPlantResponse } from '../../s
 export type PlantStage = 'SEED' | 'SPROUT' | 'SAPLING' | 'BLOOM' | 'ANCIENT';
 const ALL_STAGES: PlantStage[] = ['SEED', 'SPROUT', 'SAPLING', 'BLOOM', 'ANCIENT'];
 import { AuthService } from '../../auth/auth.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-greenhouse',
@@ -181,9 +182,13 @@ export class GreenhouseComponent implements OnInit {
 
   getSpriteUrl(species: string, stage: string, isDead: boolean = false): string {
     if (isDead) {
-      return 'http://192.168.1.250:8081/sprites/tombstone.png';
+      return environment.gamificationBaseUrl + '/sprites/tombstone.png';
     }
-    return 'http://192.168.1.250:8081/sprites/' + species.toLowerCase() + '_' + stage.toLowerCase() + '.png';
+    return environment.gamificationBaseUrl + '/sprites/' + species.toLowerCase() + '_' + stage.toLowerCase() + '.png';
+  }
+
+  getCockroachSpriteUrl(spriteNum: number): string {
+    return environment.gamificationBaseUrl + '/sprites/cockroach_' + spriteNum + '.png';
   }
 
   cycleEvolution() {

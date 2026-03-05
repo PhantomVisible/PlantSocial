@@ -5,6 +5,7 @@ import { MarketplaceService, ListingResponse } from '../marketplace.service';
 import { AuthService } from '../../../auth/auth.service';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-listing-detail',
@@ -149,7 +150,7 @@ export class ListingDetailComponent implements OnInit {
   getImageUrl(url: string | null | undefined): string {
     if (!url) return '/assets/placeholder-plant.jpg';
     if (url.startsWith('/images/')) {
-      return `http://192.168.1.250:8080${url}`;
+      return `${environment.baseUrl}${url}`;
     }
     return url;
   }

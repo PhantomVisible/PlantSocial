@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface AuthResponse {
     token: string;
@@ -33,7 +34,7 @@ export interface CurrentUser {
     providedIn: 'root'
 })
 export class AuthService {
-    private apiUrl = 'http://192.168.1.250:8080/api/v1/auth';
+    private apiUrl = environment.apiUrl + '/auth';
 
     isAuthenticated = signal<boolean>(false);
     currentUser = signal<CurrentUser | null>(null);

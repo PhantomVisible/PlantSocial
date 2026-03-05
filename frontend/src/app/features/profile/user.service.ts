@@ -5,6 +5,7 @@ import { tap } from 'rxjs/operators';
 import { Post } from '../feed/feed.service';
 
 import { UserProfile } from './user.model';
+import { environment } from '../../../environments/environment';
 export { UserProfile }; // Re-export for backward compatibility or just let consumers import from model
 
 
@@ -13,7 +14,7 @@ export { UserProfile }; // Re-export for backward compatibility or just let cons
 })
 export class UserService {
     private http = inject(HttpClient);
-    private baseUrl = 'http://192.168.1.250:8080/api/v1';
+    private baseUrl = environment.apiUrl;
 
     getUserProfile(username: string): Observable<UserProfile> {
         return this.http.get<UserProfile>(`${this.baseUrl}/users/${username}`);

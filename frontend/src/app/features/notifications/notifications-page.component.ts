@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { NotificationService, Notification } from './notification.service';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
+import { environment } from '../../../environments/environment';
 
 interface GroupedNotification {
   latestNotification: Notification;
@@ -238,6 +239,6 @@ export class NotificationsPageComponent {
   resolveImageUrl(url: string | null): string | null {
     if (!url) return null;
     if (url.startsWith('http')) return url;
-    return 'http://192.168.1.250:8080' + url;
+    return environment.baseUrl + url;
   }
 }

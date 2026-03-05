@@ -12,6 +12,7 @@ import { UserProfile } from './user.model';
 import { MessageService } from 'primeng/api';
 import { RippleModule } from 'primeng/ripple';
 import { AuthService } from '../../auth/auth.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-edit-profile-dialog',
@@ -338,7 +339,7 @@ export class EditProfileDialogComponent {
     if (!url) return null;
     if (url.startsWith('data:')) return url;
     if (url.startsWith('http')) return url;
-    return 'http://192.168.1.250:8080' + url;
+    return environment.baseUrl + url;
   }
 
   getInitials(name: string): string {

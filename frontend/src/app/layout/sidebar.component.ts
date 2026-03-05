@@ -11,6 +11,7 @@ import { ShopService } from '../features/shop/shop.service';
 import { ThemeService } from '../shared/theme.service';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-sidebar',
@@ -393,6 +394,6 @@ export class SidebarComponent implements OnInit {
   resolveImageUrl(url: string | undefined | null): string | null {
     if (!url) return null;
     if (url.startsWith('http')) return url;
-    return 'http://192.168.1.250:8080' + url;
+    return environment.baseUrl + url;
   }
 }

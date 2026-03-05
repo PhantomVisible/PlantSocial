@@ -2,6 +2,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { AuthService } from '../../auth/auth.service';
 import { ToastService } from '../../core/toast.service';
+import { environment } from '../../../environments/environment';
 
 export interface Product {
     id: string;
@@ -61,7 +62,7 @@ export interface Order {
     updatedAt: string | null;
 }
 
-const API = 'http://192.168.1.250:8080/api/v1/shop';
+const API = environment.apiUrl + '/shop';
 
 @Injectable({ providedIn: 'root' })
 export class ShopService {
@@ -172,7 +173,7 @@ export class ShopService {
     getProductImage(imageUrl: string | null): string {
         if (!imageUrl) return 'https://placehold.co/400x400/e8f5e9/2e7d32?text=🌱';
         if (imageUrl.startsWith('http')) return imageUrl;
-        return 'http://192.168.1.250:8080' + imageUrl;
+        return environment.baseUrl + imageUrl;
     }
 
     getCategoryLabel(cat: string): string {

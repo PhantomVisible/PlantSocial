@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 import { Router } from '@angular/router';
+import { environment } from '../../../environments/environment';
 import { DiagnosisDTO } from './plant-doctor.model';
 
 @Injectable({
@@ -9,7 +10,7 @@ import { DiagnosisDTO } from './plant-doctor.model';
 })
 export class PlantDoctorService {
     private http = inject(HttpClient);
-    private apiUrl = 'http://192.168.1.250:8080/api/v1/plant-doctor/diagnose';
+    private apiUrl = environment.apiUrl + '/plant-doctor/diagnose';
 
     isOpen = signal(false);
     mode = signal<'standalone' | 'post-compose'>('standalone');

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap, map, Subject, Subscription } from 'rxjs';
 import { WebSocketService } from '../../core/websocket.service';
 import { AuthService } from '../../auth/auth.service';
+import { environment } from '../../../environments/environment';
 
 export interface ChatRoom {
     id: string;
@@ -61,7 +62,7 @@ export interface FloatingChatState {
     providedIn: 'root'
 })
 export class ChatService {
-    private apiUrl = 'http://192.168.1.250:8080/api/v1/chat';
+    private apiUrl = environment.apiUrl + '/chat';
 
     // ─── Signals ──────────────────────────────────────────────────
     rooms = signal<ChatRoom[]>([]);

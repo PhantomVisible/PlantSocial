@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface PlantData {
     id: string;
@@ -28,7 +29,7 @@ export interface PlantLog {
 })
 export class PlantService {
     private http = inject(HttpClient);
-    private baseUrl = 'http://192.168.1.250:8080/api/v1/plants';
+    private baseUrl = environment.apiUrl + '/plants';
 
     addPlant(nickname: string, species: string, status: string, plantedDate: string, isVerified: boolean, image?: File): Observable<PlantData> {
         const formData = new FormData();

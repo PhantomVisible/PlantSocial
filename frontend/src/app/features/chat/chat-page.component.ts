@@ -11,6 +11,7 @@ import { DialogModule } from 'primeng/dialog';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-chat-page',
@@ -151,7 +152,7 @@ import { TooltipModule } from 'primeng/tooltip';
                     <div class="message-sender">{{ msg.senderFullName }}</div>
                   }
                   @if (msg.messageType === 'IMAGE' && msg.mediaUrl) {
-                    <img [src]="'http://192.168.1.250:8080' + msg.mediaUrl" class="message-image" (click)="openImage(msg.mediaUrl!)">
+                    <img [src]="environment.baseUrl + msg.mediaUrl" class="message-image" (click)="openImage(msg.mediaUrl!)">
                   } @else {
                     <div class="message-text">{{ msg.content }}</div>
                   }
@@ -889,6 +890,7 @@ import { TooltipModule } from 'primeng/tooltip';
   `]
 })
 export class ChatPageComponent implements OnInit, OnDestroy {
+  environment = environment;
   chatService = inject(ChatService);
   private authService = inject(AuthService);
   private userService = inject(UserService);
@@ -1134,7 +1136,7 @@ export class ChatPageComponent implements OnInit, OnDestroy {
   resolveImageUrl(url: string | null | undefined): string | undefined {
     if (!url) return undefined;
     if (url.startsWith('http')) return url;
-    return 'http://192.168.1.250:8080' + url;
+    return environment.baseUrl + url;
   }
 
   getOtherMember(room: ChatRoom): any {
@@ -1179,7 +1181,7 @@ export class ChatPageComponent implements OnInit, OnDestroy {
   }
 
   openImage(url: string): void {
-    window.open('http://192.168.1.250:8080' + url, '_blank');
+    window.open(environment.baseUrl + url, '_blank');
   }
 
   private scrollToBottom(): void {

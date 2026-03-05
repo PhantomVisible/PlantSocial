@@ -5,6 +5,7 @@ import { PlantService } from '../garden/plant.service';
 import { DiagnosisDTO } from './plant-doctor.model';
 import { HttpClientModule } from '@angular/common/http';
 import { DiagnosisResultComponent } from './diagnosis-result.component';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-plant-doctor-dialog',
@@ -270,7 +271,7 @@ export class PlantDoctorDialogComponent implements OnInit {
   onSelectImage(url: string) {
     this.loading.set(true);
     // Resolve URL (handle localhost)
-    const fullUrl = url.startsWith('http') ? url : `http://192.168.1.250:8080${url}`;
+    const fullUrl = url.startsWith('http') ? url : `${environment.baseUrl}${url}`;
 
     this.service.fetchImageAsBlob(fullUrl).subscribe({
       next: (blob) => {
@@ -285,7 +286,7 @@ export class PlantDoctorDialogComponent implements OnInit {
 
   resolveUrl(url: string): string {
     if (url.startsWith('http')) return url;
-    return 'http://192.168.1.250:8080' + url;
+    return environment.baseUrl + url;
   }
 
   onDragOver(event: DragEvent) {

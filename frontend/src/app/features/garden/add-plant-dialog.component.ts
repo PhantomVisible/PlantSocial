@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { PlantData } from './plant.service';
 import { PlantIdService, PlantNetResult } from '../../core/services/plant-id.service';
 import confetti from 'canvas-confetti';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-add-plant-dialog',
@@ -522,7 +523,7 @@ export class AddPlantDialogComponent implements OnInit {
 
   resolveUrl(url: string): string {
     if (url.startsWith('http')) return url;
-    return 'http://192.168.1.250:8080' + url;
+    return environment.baseUrl + url;
   }
 
   onFileSelected(event: Event) {

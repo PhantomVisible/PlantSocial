@@ -19,6 +19,7 @@ import { ToastService } from '../../core/toast.service';
 
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { EditProfileDialogComponent } from './edit-profile-dialog.component';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-user-profile',
@@ -926,6 +927,6 @@ export class UserProfileComponent implements OnInit, OnDestroy {
   resolveImageUrl(url: string | undefined | null): string | null {
     if (!url) return null;
     if (url.startsWith('http')) return url;
-    return 'http://192.168.1.250:8080' + url;
+    return environment.baseUrl + url;
   }
 }

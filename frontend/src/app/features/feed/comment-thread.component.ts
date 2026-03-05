@@ -5,6 +5,7 @@ import { CommentService, CommentData } from './comment.service';
 import { AuthService } from '../../auth/auth.service';
 import { AuthGatekeeperService } from '../../auth/auth-gatekeeper.service';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-comment-thread',
@@ -359,7 +360,7 @@ export class CommentThreadComponent {
 
   resolveImageUrl(url: string | null): string {
     if (!url) return '';
-    return url.startsWith('http') ? url : `http://192.168.1.250:8080${url}`;
+    return url.startsWith('http') ? url : `${environment.baseUrl}${url}`;
   }
 
   /** Extended interface with UI-only fields */

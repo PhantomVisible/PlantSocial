@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { PlantData } from './plant.service';
 import { PlantDoctorService } from '../plant-doctor/plant-doctor.service';
 import { DialogModule } from 'primeng/dialog';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-plant-card',
@@ -359,7 +360,7 @@ export class PlantCardComponent {
 
   resolveUrl(url: string): string {
     if (url.startsWith('http')) return url;
-    return 'http://192.168.1.250:8080' + url;
+    return environment.baseUrl + url;
   }
 
   onDiagnose(event: Event) {

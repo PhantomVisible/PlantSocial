@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
+import { environment } from '../../../environments/environment';
 export interface CommentData {
     id: string;
     content: string;
@@ -17,7 +17,7 @@ export interface CommentData {
 })
 export class CommentService {
     private http = inject(HttpClient);
-    private baseUrl = 'http://192.168.1.250:8080/api/v1';
+    private baseUrl = environment.apiUrl;
 
     getComments(postId: string): Observable<CommentData[]> {
         return this.http.get<CommentData[]>(`${this.baseUrl}/feed/${postId}/comments`);

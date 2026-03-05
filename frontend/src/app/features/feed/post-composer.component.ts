@@ -5,6 +5,7 @@ import { PlantService, PlantData } from '../garden/plant.service';
 import { AuthService } from '../../auth/auth.service';
 import { WikipediaService } from '../../shared/wikipedia.service';
 import { PlantDoctorService } from '../plant-doctor/plant-doctor.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-post-composer',
@@ -664,7 +665,7 @@ export class PostComposerComponent implements OnInit {
 
   resolveUrl(url: string): string {
     if (url.startsWith('http')) return url;
-    return 'http://192.168.1.250:8080' + url;
+    return environment.baseUrl + url;
   }
 
   submitPost() {

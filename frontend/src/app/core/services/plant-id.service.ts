@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
+import { environment } from '../../../environments/environment';
 
 export interface PlantNetSpecies {
     scientificNameWithoutAuthor: string;
@@ -18,7 +18,7 @@ export interface PlantNetResult {
 })
 export class PlantIdService {
     private http = inject(HttpClient);
-    private apiUrl = 'http://192.168.1.250:8080/api/v1'; // Hardcoded to fix build error
+    private apiUrl = environment.apiUrl; // Hardcoded to fix build error
 
     verify(file: File): Observable<PlantNetResult[]> {
         const formData = new FormData();

@@ -6,6 +6,7 @@ import { AvatarComponent } from '../avatar/avatar.component';
 import { AuthService } from '../../../auth/auth.service';
 import { Router } from '@angular/router';
 import { ChatService } from '../../../features/chat/chat.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-hover-card',
@@ -91,7 +92,7 @@ export class HoverCardComponent implements OnInit {
   resolveImageUrl(url?: string): string {
     if (!url) return '';
     if (url.startsWith('http')) return url;
-    return 'http://192.168.1.250:8080' + url;
+    return environment.baseUrl + url;
   }
 
   isSelf(): boolean {

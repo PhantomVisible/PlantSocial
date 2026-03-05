@@ -16,6 +16,7 @@ import { AvatarComponent } from '../../shared/components/avatar/avatar.component
 
 import { HoverCardComponent } from '../../shared/components/hover-card/hover-card.component';
 import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-post-card',
@@ -1204,7 +1205,7 @@ export class PostCardComponent implements OnChanges {
   resolveImageUrl(url: string | undefined): string {
     if (!url) return '';
     if (url.startsWith('http')) return url;
-    return `http://192.168.1.250:8080${url}`;
+    return `${environment.baseUrl}${url}`;
   }
 
   openLightbox() {

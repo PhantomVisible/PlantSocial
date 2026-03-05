@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { WebSocketService } from '../../core/websocket.service';
 import { AuthService } from '../../auth/auth.service';
 import { ToastService } from '../../core/toast.service';
+import { environment } from '../../../environments/environment';
 
 export interface Notification {
     id: string;
@@ -31,7 +32,7 @@ export class NotificationService {
     public notificationsList = computed(() => this.notifications());
     public unreadCount = computed(() => this.unreadCountSignal());
 
-    private apiUrl = 'http://192.168.1.250:8080/api/v1/notifications';
+    private apiUrl = environment.apiUrl + '/notifications';
 
     private effectRef = effect(() => {
         const user = this.auth.currentUser();

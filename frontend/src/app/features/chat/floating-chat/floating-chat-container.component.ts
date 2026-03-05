@@ -4,6 +4,7 @@ import { ChatService, ChatRoom } from '../chat.service';
 import { FloatingChatWindowComponent } from './floating-chat-window.component';
 import { AuthService } from '../../../auth/auth.service';
 import { AvatarComponent } from '../../../shared/components/avatar/avatar.component';
+import { environment } from '../../../../environments/environment';
 
 @Component({
     selector: 'app-floating-chat-container',
@@ -355,7 +356,7 @@ export class FloatingChatContainerComponent implements OnInit {
     resolveImageUrl(url: string | null): string {
         if (!url) return '';
         if (url.startsWith('http')) return url;
-        return 'http://192.168.1.250:8080' + url;
+        return environment.baseUrl + url;
     }
 
     isOwnMessage(msg: any): boolean {

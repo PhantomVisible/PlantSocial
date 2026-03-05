@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { MarketplaceService, ListingResponse } from '../marketplace.service';
 import { AuthGatekeeperService } from '../../../auth/auth-gatekeeper.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-marketplace-list',
@@ -62,7 +63,7 @@ export class MarketplaceListComponent implements OnInit {
   getImageUrl(url: string | null | undefined): string {
     if (!url) return '/assets/placeholder-plant.jpg';
     if (url.startsWith('/images/')) {
-      return `http://192.168.1.250:8080${url}`;
+      return `${environment.baseUrl}${url}`;
     }
     return url;
   }

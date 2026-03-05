@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { AuthGatekeeperService } from '../../auth/auth-gatekeeper.service';
 import { AuthService } from '../../auth/auth.service';
 import { AddLogDialogComponent } from './add-log-dialog.component';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-plant-details-dialog',
@@ -441,7 +442,7 @@ export class PlantDetailsDialogComponent implements OnInit {
   resolveUrl(url: string | null): string {
     if (!url) return 'assets/placeholder-plant.jpg'; // Fallback
     if (url.startsWith('http')) return url;
-    return 'http://192.168.1.250:8080' + url;
+    return environment.baseUrl + url;
   }
 
   formatDate(dateStr: string): string {
