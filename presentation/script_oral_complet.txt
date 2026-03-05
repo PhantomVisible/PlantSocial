@@ -1,0 +1,457 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║           PLANTSOCIAL — SCRIPT ORAL COMPLET DE PRÉSENTATION                ║
+║                        16 Slides — 4 Membres                               ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SLIDE 1 : COVER — PlantSocial
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ Personne 1 prend la parole ]
+
+"Bonjour à toutes et à tous. Merci de nous accorder ce temps.
+ Aujourd'hui, nous allons vous présenter notre projet de fin d'études : PlantSocial.
+ Nous sommes une équipe de 4 développeurs, et chacun d'entre nous a contribué à
+ une partie spécifique de ce projet. Je suis [Prénom], et je vais commencer par
+ vous présenter le contexte et la vision de ce projet."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SLIDE 2 : SOMMAIRE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ Personne 1 ]
+
+"Voici comment nous allons dérouler notre présentation.
+ Nous allons d'abord vous expliquer le problème que nous avons identifié, puis
+ nos objectifs, l'architecture technique, chaque fonctionnalité clé, y compris
+ nos intégrations d'Intelligence Artificielle, et enfin le modèle économique du projet.
+ Et pour finir, nous vous ferons une démonstration live de l'application."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SLIDE 3 : INTRODUCTION — Le problème à résoudre
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ Personne 1 ]
+
+"Permettez-moi de vous poser une question simple : combien d'entre vous ont déjà
+ tué accidentellement une plante chez eux ?
+
+ Ce n'est pas un hasard. S'occuper de plantes demande de la connaissance, et
+ aujourd'hui, cette connaissance est éparpillée partout : dans des groupes Facebook
+ peu fiables, des forums abandonnés, des Subreddits en anglais non adaptés.
+
+ Le marché des plantes d'intérieur a explosé après la pandémie. Des millions de
+ passionnés cherchent une communauté dédiée. Et pourtant, cette communauté n'existe
+ pas encore sous une forme numérique réellement adaptée.
+
+ Deuxième problème : lorsque quelqu'un veut acheter ou vendre une plante rare — comme
+ un Monstera Variegata qui peut valoir plus de 300 euros —, il se retrouve sur
+ Leboncoin... entre deux annonces de voitures d'occasion. L'acheteur ne peut pas
+ vérifier l'expertise du vendeur. Il n'y a aucune confiance, aucune communauté,
+ aucune spécialisation.
+
+ C'est exactement ce problème que nous avons décidé de résoudre."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SLIDE 4 : OBJECTIFS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ Personne 1 ]
+
+"Face à ce problème, nous nous sommes fixé 4 objectifs clés :
+
+ Premier objectif : créer une communauté. Un espace dédié où les passionnés peuvent
+ partager, poser des questions, et s'inspirer.
+
+ Deuxième objectif : construire une Marketplace de confiance. Une place de marché où
+ chaque annonce est rattachée au profil social du vendeur — sa réputation est visible,
+ ses plantes aussi.
+
+ Troisième objectif : garantir l'instantanéité. Un réseau social sans temps réel, ce
+ n'est pas vraiment un réseau social. Nous avons donc implémenté le chat en direct et
+ les notifications push.
+
+ Quatrième objectif : offrir une expérience utilisateur premium. Un design soigné,
+ un mode sombre, une interface 100% responsive.
+
+ Je vais maintenant laisser la parole à [Prénom Membre 2], notre expert en architecture
+ et fonctionnalités interactives."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SLIDE 5 : STACK & ARCHITECTURE (Vue globale)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ Personne 2 — VOUS ]
+
+"Merci [Prénom]. Bonjour à tous.
+
+ Avant de vous montrer les fonctionnalités, laissez-moi vous expliquer les bases
+ techniques sur lesquelles PlantSocial est construit.
+
+ Nous avons choisi une architecture Monolithique Modulaire. Ce n'est pas une
+ architecture microservices — chaque fonctionnalité est dans une même application
+ mais organisée en modules parfaitement séparés, comme des pièces dans une maison
+ bien rangée.
+
+ Pour le Backend, nous utilisons Java avec Spring Boot — une technologie robuste,
+ sécurisée et très utilisée en entreprise.
+
+ Pour le Frontend, Angular — un framework moderne qui nous offre une navigation
+ ultra-fluide sans rechargement de page.
+
+ La base de données est PostgreSQL, les communications sont sécurisées par des
+ tokens JWT, et nous avons un serveur Docker pour faciliter le déploiement.
+
+ Le flux est simple : Le frontend Angular communique avec notre API Spring Boot,
+ qui elle-même accède à la base de données PostgreSQL."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SLIDE 6 : BACKEND DÉTAILLÉ — Spring Boot
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ Personne 2 — VOUS ]
+
+"Allons maintenant plus loin dans le backend.
+
+ Notre backend Spring Boot est organisé en couches claires :
+
+ 1. Sécurité : toutes les requêtes passent d'abord par un filtre Spring Security qui
+    vérifie le token JWT. Aucun accès non autorisé n'est possible.
+
+ 2. Les REST Controllers : chaque domaine a ses propres endpoints. Par exemple :
+    /marketplace pour les annonces, /chat pour les messages, /plants pour le jardin IA.
+
+ 3. La couche Service : c'est là que vit toute la logique métier. Chaque fonctionnalité
+    a son propre service Spring, ce qui rend le code propre et maintenable.
+
+ 4. JPA et les Repositories : nous accédons à PostgreSQL via Spring Data JPA.
+    Les requêtes complexes sont gérées avec l'annotation @Query.
+
+ 5. WebSocket avec le protocole STOMP : c'est ce qui permet le chat en temps réel.
+    STOMP gère les abonnements aux topics de messages côté serveur.
+
+ 6. Les APIs externes : nous appelons l'API Pl@ntNet pour identifier les plantes, et
+    une NewsAPI pour afficher les actualités. Ces appels se font via RestTemplate
+    depuis notre backend Spring Boot."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SLIDE 7 : FRONTEND DÉTAILLÉ — Angular
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ Personne 2 — VOUS ]
+
+"Côté frontend Angular, nous avons appliqué les meilleures pratiques du framework.
+
+ L'application est divisée en Feature Modules : chaque grande fonctionnalité
+ (l'authentification, le marketplace, le chat, le profil) est dans son propre module
+ Angular, chargé à la demande. Cela améliore les performances au démarrage.
+
+ Pour les données asynchrones, nous utilisons RxJS et les Observables. Quand le
+ frontend fait une requête à l'API, il s'abonne à l'Observable et met à jour
+ l'interface automatiquement à la réception des données.
+
+ La sécurité côté client est gérée par les Guards : si un utilisateur non connecté
+ essaie d'accéder au marketplace, il est automatiquement redirigé vers le login.
+ Et un Interceptor HTTP injecte le token JWT dans chaque requête sortante.
+
+ Pour le style, nous avons un système de thème complet basé sur des variables CSS.
+ En changeant quelques variables, toute l'interface bascule du mode clair au mode
+ sombre.
+
+ Pour le chat temps réel côté client, nous utilisons la bibliothèque SockJS avec
+ le protocole STOMP pour se connecter au serveur WebSocket et recevoir les messages
+ en temps réel.
+
+ Et pour les composants UI, nous utilisons PrimeNG, une bibliothèque de composants
+ Angular que nous avons entièrement personnalisée avec notre propre SCSS."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SLIDE 8 : CHAT & NOTIFICATIONS EN TEMPS RÉEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ Personne 2 — VOUS ]
+
+"Parlons maintenant du défi technique majeur que j'ai personnellement relevé :
+ le temps réel.
+
+ Un réseau social sans instantanéité, c'est comme un téléphone sans réseau.
+ Ça ne fonctionne pas.
+
+ Pour comprendre pourquoi les WebSockets sont révolutionnaires, voici une analogie
+ simple : imaginez que vous attendez un colis. Avec HTTP classique, vous devez appeler
+ le livreur vous-même toutes les 5 minutes pour demander 'est-ce que mon colis est
+ là ?' C'est lent et inutile. Avec WebSocket, le livreur vous appelle directement dès
+ qu'il arrive devant votre porte.
+
+ C'est exactement ce mécanisme que j'ai implémenté. Notre serveur Spring Boot maintient
+ une connexion permanente ouverte avec chaque utilisateur connecté. Dès qu'un message
+ est envoyé, il est diffusé instantanément au destinataire — sans délai, sans
+ rechargement.
+
+ J'ai également développé les Notifications Push : quand quelqu'un commente votre
+ post ou vous envoie un message, une alerte apparaît immédiatement dans l'interface,
+ même si vous êtes sur une autre page de l'application."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SLIDE 9 : LA MARKETPLACE INTÉGRÉE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ Personne 2 — VOUS ]
+
+"Le deuxième grand pilier dont j'ai eu la responsabilité est la Marketplace.
+
+ Aujourd'hui, si vous voulez vendre une plante rare, vous allez sur Leboncoin.
+ L'acheteur ne sait rien de vous. Il ne peut pas vérifier si vous êtes un vrai
+ passionné ou non. Sur PlantSocial, chaque annonce est directement liée au profil
+ public du vendeur. L'acheteur voit ses posts, ses photos, son historique dans la
+ communauté. Cette transparence crée une confiance naturelle.
+
+ Techniquement, j'ai développé la logique complète de gestion des annonces : la
+ création avec galeries photos multiples, la détection automatique des informations
+ produit via URL, la gestion des statuts (actif, expiré, brouillon).
+
+ Et pour l'expérience de paiement, j'ai créé une animation de paiement séquentielle
+ complète : l'utilisateur voit une carte bancaire s'insérer, se faire scanner, puis
+ un écran de succès avec animation. C'est une simulation premium qui impressionne
+ vraiment les utilisateurs.
+
+ Je passe maintenant la parole à [Prénom Membre 3] pour vous présenter les fonctionnalités
+ globales de l'application."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SLIDE 10 : CE QUE PLANTSOCIAL OFFRE (Vue globale)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ Personne 3 ]
+
+"Merci [Prénom]. Voici une vue d'ensemble de toutes les fonctionnalités de PlantSocial.
+
+ Un utilisateur peut créer son profil, constituer sa collection de plantes, publier
+ des posts dans le fil d'actualité, recevoir des likes et des commentaires.
+
+ L'interface s'adapte parfaitement au mode sombre ou clair selon la préférence de
+ l'utilisateur. L'authentification est sécurisée avec validation stricte des mots
+ de passe. L'application est entièrement responsive : elle s'affiche parfaitement
+ sur mobile, tablette et ordinateur.
+
+ Et pour la Marketplace, nous avons implémenté une galerie photos style Shopify :
+ les miniatures s'affichent à gauche, et la grande image principale s'affiche à
+ droite, exactement comme les grandes plateformes e-commerce professionnelles.
+
+ Je laisse maintenant la parole à [Prénom Membre 4] qui va vous présenter nos
+ intégrations d'Intelligence Artificielle."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SLIDE 11 : MY GARDEN — Pl@ntNet API (IA intégrée)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ Personne 4 ]
+
+"Merci [Prénom]. L'une des fonctionnalités dont nous sommes les plus fiers est
+ 'Mon Jardin', et c'est une vraie intégration d'Intelligence Artificielle — pas un
+ projet futur, c'est déjà en production dans notre application.
+
+ Voici comment ça fonctionne en 4 étapes simples :
+
+ Étape 1 : L'utilisateur prend en photo une plante avec son téléphone et l'uploade
+ dans l'application.
+
+ Étape 2 : Notre backend Spring Boot envoie cette image à l'API Pl@ntNet. Pl@ntNet
+ est une intelligence artificielle botanique développée par des chercheurs français,
+ capable d'identifier plus de 300 000 espèces de plantes dans le monde.
+
+ Étape 3 : L'API nous renvoie en quelques secondes le nom scientifique et le nom
+ commun de la plante.
+
+ Étape 4 : La plante identifiée est automatiquement sauvegardée dans le profil de
+ l'utilisateur, dans sa collection personnelle 'Mon Jardin'.
+
+ L'avantage ? L'utilisateur n'a besoin de rien connaître en botanique. Il pointe,
+ il photographie et l'IA fait le reste."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SLIDE 12 : DOCTOR PLANT — Diagnostic IA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ Personne 4 ]
+
+"Notre deuxième fonctionnalité IA s'appelle 'Doctor Plant', et c'est là que
+ PlantSocial devient vraiment unique.
+
+ Le problème que cette fonctionnalité résout est très concret : votre plante a les
+ feuilles qui jaunissent, ou des taches brunes, et vous ne savez pas pourquoi.
+ Avant, vous pouviez poster une photo sur un forum et attendre des heures une réponse.
+ Avec Doctor Plant, l'IA vous répond en quelques secondes.
+
+ Voici le parcours :
+
+ L'utilisateur uploade une photo de sa plante malade. Notre système envoie l'image à
+ un modèle d'intelligence artificielle de vision qui analyse les symptômes visuels :
+ jaunissement des feuilles, pourriture des racines, présence de parasites, taches
+ caracteristiques de maladies fongiques...
+
+ L'application génère ensuite un rapport de santé complet : le diagnostic du problème,
+ le niveau de gravité, et les recommandations de traitement.
+
+ Ce qui rend cette fonctionnalité différenciante, c'est qu'elle est impossible à
+ trouver sur n'importe quelle plateforme généraliste. C'est une valeur ajoutée
+ exclusive à PlantSocial."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SLIDE 13 : SECTION NEWS — Actualités plantes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ Personne 3 ]
+
+"Notre troisième fonctionnalité complémentaire est la Section News.
+
+ Nous avons intégré une API d'actualités externe dans notre application. Chaque fois
+ qu'un utilisateur ouvre la section News de PlantSocial, il voit les dernières
+ actualités du monde botanique : conseils d'entretien saisonniers, nouvelles espèces
+ découvertes, tendances de jardinage, événements horticoles à venir.
+
+ L'intérêt stratégique est important : cela maintient l'utilisateur actif sur notre
+ plateforme même quand il n'a pas d'interactions sociales à faire.
+ Il y a toujours quelque chose de nouveau à découvrir.
+
+ PlantSocial ne devient plus seulement un réseau social, mais une source de
+ connaissance vivante sur les plantes.
+
+ Je cède maintenant la parole à [Prénom Membre 4] pour le modèle économique."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SLIDE 14 : MODÈLE ÉCONOMIQUE & PERSPECTIVES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ Personne 4 ]
+
+"Parlons maintenant de viabilité économique. Un projet sans modèle de revenus
+ n'est pas un produit, c'est un prototype.
+
+ Notre stratégie repose sur 6 sources de revenus :
+
+ 1. Le réseau social est entièrement GRATUIT. C'est notre moteur d'acquisition.
+    On attire le maximum d'utilisateurs sans barrière d'entrée.
+
+ 2. La Marketplace fonctionne avec un Listing Fee — des frais de mise en ligne
+    proportionnels à la durée d'exposition de l'annonce. Simple et transparent.
+
+ 3. Un Abonnement Pro pour les professionnels : pépinières, fleuristes, créateurs
+    de terrarium qui veulent une boutique dédiée et plus de visibilité.
+
+ 4. My Garden Premium : pour les utilisateurs passionnés qui veulent des identifications
+    de plantes illimitées et l'accès complet à la base botanique Pl@ntNet.
+
+ 5. Doctor Plant Pro : pour un suivi médical complet de toute leur collection
+    de plantes, avec diagnostics illimités.
+
+ 6. La Publicité ciblée : notre audience est 100% qualifiée — ce sont des gens
+    qui aiment les plantes. Cela permet des publicités ultra-pertinentes pour des
+    engrais, des pots, des lampes UV, des outils de jardinage — avec un taux de
+    conversion bien supérieur à une plateforme généraliste."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SLIDE 15 : DÉMONSTRATION LIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ Personne 3 — prend le contrôle de la souris / l'écran ]
+
+"Nous allons maintenant vous montrer l'application en direct. Ce que vous allez
+ voir tourne sur de vraies machines, avec de vraies données.
+
+ Étape 1 — Inscription :
+ Voici la page d'inscription. Vous remarquerez que les champs sont validés en
+ temps réel. Le mot de passe exige un niveau de sécurité minimum, et toutes ces
+ validations se font des deux côtés, frontend ET backend.
+
+ [ naviguer vers le feed ]
+
+ Étape 2 — Feed & Profil :
+ Une fois connecté, l'utilisateur atterrit sur son fil d'actualité. Il peut voir
+ les posts de la communauté, liker, commenter.
+ Voici le profil d'un utilisateur avec sa collection de plantes.
+
+ [ naviguer vers le chat ]
+
+ Étape 3 — Chat en direct :
+ Ouvrons le chat. Je vais envoyer un message maintenant...
+ Vous voyez ? Il apparaît instantanément, pas de rechargement, pas de délai.
+ C'est la magie des WebSockets dont vous a parlé [Prénom Membre 2].
+
+ [ naviguer vers la marketplace ]
+
+ Étape 4 — Marketplace :
+ Voici la liste des annonces disponibles. Je clique sur un produit...
+ Vous voyez la galerie photos Shopify-style, les miniatures à gauche, la grande
+ image à droite.
+ Et voici l'animation de paiement — [ montrer l'animation ]
+
+ [ naviguer vers Mon Jardin ]
+
+ Étape 5 — My Garden (IA) :
+ Voici la fonctionnalité 'Mon Jardin'. Je uploade une photo de plante...
+ L'API Pl@ntNet identifie la plante et nous donne son nom.
+
+ [ naviguer vers Doctor Plant ]
+
+ Étape 6 — Doctor Plant (IA) :
+ Voici Doctor Plant. Je charge une photo de plante avec les feuilles qui jaunissent...
+ Et voilà le diagnostic généré par l'IA.
+
+ Je passe la parole pour la conclusion."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SLIDE 16 : CONCLUSION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ Personne 4 — ou Personne 1 ]
+
+"PlantSocial, c'est 4 développeurs, 6 modules majeurs, du temps réel, et une vraie
+ intégration d'Intelligence Artificielle.
+
+ Ce projet nous a appris à travailler ensemble sous pression, à prendre des décisions
+ techniques complexes — comme le choix du protocole WebSocket, ou l'intégration
+ d'APIs externes — et surtout à livrer un produit cohérent, fonctionnel et
+ visuellement abouti.
+
+ PlantSocial est né d'un vrai problème, construit sur de vraies technologies,
+ avec un vrai modèle économique, et vise un vrai marché en pleine croissance.
+
+ Nous vous remercions chaleureusement pour votre attention et votre temps.
+ Nous sommes maintenant à votre entière disposition pour répondre à toutes vos questions."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUESTIONS TYPES DU JURY — RÉPONSES PRÊTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q1 : "Quelle différence avec Facebook ou Instagram ?"
+R : "Ces plateformes sont généralistes. Sur PlantSocial, TOUT est conçu pour
+     les plantes : les profils montrent les collections, les annonces sont liées
+     aux vendeurs passionnés, et les fonctionnalités IA (My Garden, Doctor Plant)
+     sont impossibles à trouver ailleurs. C'est la différence entre un supermarché
+     et une épicerie fine spécialisée."
+
+Q2 : "Pourquoi une architecture monolithique et non microservices ?"
+R : "Pour un projet de cette échelle et à ce stade, le monolithe modulaire est
+     le meilleur choix : déploiement simple, maintenance facile, performance
+     optimale. Les microservices ont du sens quand une équipe de 30+ développeurs
+     travaille sur des centaines de fonctionnalités. Pour notre contexte, c'était
+     sur-ingénierie."
+
+Q3 : "Comment sécurisez-vous les paiements ?"
+R : "Pour cette version, le paiement est simulé. Dans une version production, nous
+     intègrerons Stripe qui gère toute la sécurité PCI DSS. Notre rôle serait de
+     gérer les webhooks Stripe et de mettre à jour les statuts des annonces."
+
+Q4 : "Pl@ntNet est-elle une IA que vous avez entraînée vous-mêmes ?"
+R : "Non, et c'est un choix délibéré. Pl@ntNet est une IA botanique académique
+     développée par l'INRIA, ayant analysé des millions de photos de plantes pendant
+     des années. Utiliser cette API nous permet d'offrir une précision d'identification
+     que nous aurions mis des années à développer seuls. C'est l'approche 'API-first',
+     standard dans l'industrie."
+
+Q5 : "Comment acquérir les premiers utilisateurs ?"
+R : "Par la stratégie de niche. Nous contactons les créateurs de contenu jardinage
+     sur Instagram et TikTok (les 'Plantfluencers') pour en faire des ambassadeurs.
+     Nous ciblons aussi les groupes Facebook d'échange de boutures existants.
+     Ces utilisateurs sont déjà passionnés et cherchent exactement ce que nous offrons."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONSEILS POUR LE JOUR J
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Regardez le jury, pas vos notes
+✅ Parlez lentement — vous connaissez votre sujet mieux qu'eux
+✅ Pour la démo : testez-la 3 fois la veille, ayez un plan B (vidéo enregistrée)
+✅ Si la démo bug : "Voici l'avantage d'un environnement de développement." + sourire
+✅ Si vous ne savez pas répondre : "C'est une excellente question. Notre réflexion
+   actuelle est... mais nous n'avons pas encore finalisé cette partie."
+✅ Restez zen : votre travail est solide.
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                         BON COURAGE À TOUTE L'ÉQUIPE !                     ║
+╚══════════════════════════════════════════════════════════════════════════════╝
