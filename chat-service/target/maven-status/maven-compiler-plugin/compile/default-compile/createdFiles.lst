@@ -1,0 +1,10 @@
+com/plantsocial/chat/config/WebSocketConfig.class
+com/plantsocial/chat/model/ChatMessage$MessageType.class
+com/plantsocial/chat/config/SecurityConfig.class
+com/plantsocial/chat/config/RedisConfig$RedisChatSubscriber.class
+com/plantsocial/chat/model/ChatMessage$ChatMessageBuilder.class
+com/plantsocial/chat/config/RedisConfig.class
+com/plantsocial/chat/ChatServiceApplication.class
+com/plantsocial/chat/model/ChatMessage.class
+com/plantsocial/chat/config/WebSocketConfig$1.class
+com/plantsocial/chat/controller/ChatController.class

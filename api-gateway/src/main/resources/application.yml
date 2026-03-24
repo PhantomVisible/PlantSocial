@@ -31,6 +31,10 @@ spring:
           uri: http://localhost:8081
           predicates:
             - Path=/api/gamification/**
+        - id: chat_websocket_route
+          uri: http://localhost:8083
+          predicates:
+            - Path=/ws/**
 
 management:
   endpoints:
