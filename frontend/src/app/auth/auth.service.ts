@@ -1,125 +1,100 @@
-import { Injectable, signal, Inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, signal, computed, inject, PLATFORM_ID, effect } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
-import { tap } from 'rxjs/operators';
-import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { OAuthService } from 'angular-oauth2-oidc';
+import { filter } from 'rxjs/operators';
 
-export interface AuthResponse {
-    token: string;
-}
-
-export interface LoginRequest {
-    email: string;
-    password: string;
-}
-
-export interface RegisterRequest {
-    fullName: string;
-    username: string; // Added
-    email: string;
-    password: string;
-}
+// ─── Public models (kept for backward compatibility with consumers) ──────────
 
 export interface CurrentUser {
     id: string;
     email: string;
-    username: string; // Added
+    username: string;
     fullName: string;
-    profilePictureUrl?: string; // Added
+    profilePictureUrl?: string;
 }
+
+// ─── Service ──────────────────────────────────────────────────────────────────
 
 @Injectable({
     providedIn: 'root'
 })
 export class AuthService {
-    private apiUrl = environment.apiUrl + '/auth';
+    private oauthService = inject(OAuthService);
+    private platformId = inject(PLATFORM_ID);
 
-    isAuthenticated = signal<boolean>(false);
-    currentUser = signal<CurrentUser | null>(null);
+    // ─── Signals ──────────────────────────────────────────────────
+    readonly isAuthenticated = signal<boolean>(false);
+    readonly currentUser = signal<CurrentUser | null>(null);
 
-    constructor(
-        private http: HttpClient,
-        private router: Router,
-        @Inject(PLATFORM_ID) private platformId: Object
-    ) {
+    constructor() {
         if (isPlatformBrowser(this.platformId)) {
-            const token = localStorage.getItem('token');
-            if (token) {
-                const user = this.decodeToken(token);
-                if (user && user.id) {
-                    // Valid new-format token
-                    this.isAuthenticated.set(true);
-                    this.currentUser.set(user);
-                } else {
-                    // Old token without userId — wipe it and force re-login
-                    localStorage.clear();
-                    this.isAuthenticated.set(false);
-                    this.currentUser.set(null);
-                }
+            // Sync state once on startup (in case the OIDC session is already valid)
+            this.syncState();
+
+            // Re-sync whenever the OAuthService emits a relevant event
+            this.oauthService.events
+                .pipe(
+                    filter(e =>
+                        e.type === 'token_received' ||
+                        e.type === 'token_refreshed' ||
+                        e.type === 'logout' ||
+                        e.type === 'session_terminated' ||
+                        e.type === 'token_expires'
+                    )
+                )
+                .subscribe(() => this.syncState());
+        }
+    }
+
+    // ─── Public API ───────────────────────────────────────────────
+
+    /** Initiates the Keycloak Authorization Code + PKCE flow. */
+    login(): void {
+        this.oauthService.initCodeFlow();
+    }
+
+    /** Logs out and clears the OIDC session on the Keycloak side. */
+    logout(): void {
+        this.oauthService.logOut();
+    }
+
+    /** Returns the raw OIDC access token, or null if not authenticated. */
+    getToken(): string | null {
+        if (!isPlatformBrowser(this.platformId)) return null;
+        const token = this.oauthService.getAccessToken();
+        return token || null;
+    }
+
+    /** Returns true if a valid, non-expired access token exists. */
+    get isLoggedIn(): boolean {
+        return this.oauthService.hasValidAccessToken();
+    }
+
+    /** Returns the raw Keycloak identity claims object. */
+    getUserProfile(): Record<string, any> | null {
+        return (this.oauthService.getIdentityClaims() as Record<string, any>) ?? null;
+    }
+
+    // ─── Private ──────────────────────────────────────────────────
+
+    /** Maps Keycloak claims to our CurrentUser shape and updates signals. */
+    private syncState(): void {
+        if (this.oauthService.hasValidAccessToken()) {
+            const claims = this.oauthService.getIdentityClaims() as Record<string, any> | null;
+            if (claims) {
+                this.currentUser.set({
+                    id: claims['sub'] ?? '',
+                    email: claims['email'] ?? '',
+                    username: claims['preferred_username'] ?? '',
+                    fullName: claims['name'] ?? `${claims['given_name'] ?? ''} ${claims['family_name'] ?? ''}`.trim(),
+                    profilePictureUrl: claims['picture'] ?? undefined
+                });
+                this.isAuthenticated.set(true);
+                return;
             }
         }
-    }
-
-    register(request: RegisterRequest): Observable<AuthResponse> {
-        console.log('HTTP PAYLOAD SENDING (Service):', request);
-        return this.http.post<AuthResponse>(`${this.apiUrl}/register`, request);
-    }
-
-    login(request: LoginRequest): Observable<AuthResponse> {
-        return this.http.post<AuthResponse>(`${this.apiUrl}/authenticate`, request).pipe(
-            tap(response => {
-                if (isPlatformBrowser(this.platformId)) {
-                    localStorage.setItem('token', response.token);
-                    this.isAuthenticated.set(true);
-                    this.currentUser.set(this.decodeToken(response.token));
-                }
-                this.router.navigate(['/feed']);
-            })
-        );
-    }
-
-    logout() {
-        if (isPlatformBrowser(this.platformId)) {
-            localStorage.clear();
-            this.isAuthenticated.set(false);
-            this.currentUser.set(null);
-        }
-        this.router.navigate(['/']);
-    }
-
-    forgotPassword(email: string): Observable<void> {
-        return this.http.post<void>(`${this.apiUrl}/forgot-password`, { email });
-    }
-
-    resetPassword(token: string, password: string): Observable<void> {
-        return this.http.post<void>(`${this.apiUrl}/reset-password`, { token, newPassword: password });
-    }
-
-    verify(email: string, code: string): Observable<void> {
-        return this.http.post<void>(`${this.apiUrl}/verify`, { email, code });
-    }
-
-    getToken(): string | null {
-        if (isPlatformBrowser(this.platformId)) {
-            return localStorage.getItem('token');
-        }
-        return null;
-    }
-
-    private decodeToken(token: string): CurrentUser | null {
-        try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            return {
-                id: payload.userId || '',
-                email: payload.email || payload.sub || '',
-                username: payload.username || '', // Added
-                fullName: payload.fullName || '',
-                profilePictureUrl: payload.profilePictureUrl
-            };
-        } catch {
-            return null;
-        }
+        // Not authenticated / token expired
+        this.currentUser.set(null);
+        this.isAuthenticated.set(false);
     }
 }
