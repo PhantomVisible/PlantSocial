@@ -23,6 +23,17 @@ spring:
               - OPTIONS
             allowedHeaders: "*"
       routes:
+        # WebSocket connections → Centrifugo real-time server
+        - id: centrifugo-ws
+          uri: ws://plantsocial_centrifugo:8000
+          predicates:
+            - Path=/connection/**
+        # Chat REST API → chat-service (must come before backend_route to avoid /api/v1/** swallowing it)
+        - id: chat-service-api
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/v1/chat/**
+        # Main monolith
         - id: backend_route
           uri: http://localhost:8080
           predicates:
@@ -31,10 +42,6 @@ spring:
           uri: http://localhost:8081
           predicates:
             - Path=/api/gamification/**
-        - id: chat_websocket_route
-          uri: http://localhost:8083
-          predicates:
-            - Path=/ws/**
 
 management:
   endpoints:
