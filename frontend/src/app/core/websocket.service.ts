@@ -1,6 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
-import { AuthService } from '../auth/auth.service';
+import { OAuthService } from 'angular-oauth2-oidc';
 import { Subject, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -17,7 +17,7 @@ export class WebSocketService implements OnDestroy {
     private connectionState$ = new Subject<boolean>();
     private reconnectAttempts = 0;
 
-    constructor(private authService: AuthService) { }
+    constructor(private oauthService: OAuthService) { }
 
     /**
      * Connect to WebSocket with JWT authentication.
@@ -25,7 +25,7 @@ export class WebSocketService implements OnDestroy {
     connect(): void {
         if (this.client?.connected) return;
 
-        const token = this.authService.getToken();
+        const token = this.oauthService.getAccessToken();
         if (!token) return;
 
         this.client = new Client({
