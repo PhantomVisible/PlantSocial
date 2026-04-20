@@ -1,139 +1,136 @@
-import { Injectable, OnDestroy } from '@angular/core';
-import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
+import { Injectable, OnDestroy, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Centrifuge, Subscription as CentrifugeSubscription, PublicationContext } from 'centrifuge';
 import { OAuthService } from 'angular-oauth2-oidc';
 import { Subject, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 /**
- * WebSocket service using native WebSocket (STOMP).
- * Manages connection lifecycle, subscriptions, and reconnection.
+ * WebSocket service backed by Centrifugo via centrifuge-js.
+ *
+ * READ  path: subscribe to a Centrifugo channel → receive publications.
+ * WRITE path: delegated to HTTP POST in ChatService (this service is read-only).
+ *
+ * The Keycloak JWT is passed in the `token` option of Centrifuge constructor
+ * (NOT as a custom header), as required by Centrifugo's JWT auth model.
  */
 @Injectable({
     providedIn: 'root'
 })
 export class WebSocketService implements OnDestroy {
-    private client: Client | null = null;
-    private subscriptions = new Map<string, StompSubscription>();
+    private platformId = inject(PLATFORM_ID);
+    private oauthService = inject(OAuthService);
+
+    private centrifuge: Centrifuge | null = null;
+    private subscriptions = new Map<string, CentrifugeSubscription>();
     private connectionState$ = new Subject<boolean>();
-    private reconnectAttempts = 0;
 
-    constructor(private oauthService: OAuthService) { }
+    // ─── Lifecycle ────────────────────────────────────────────────
 
-    /**
-     * Connect to WebSocket with JWT authentication.
-     */
     connect(): void {
-        if (this.client?.connected) return;
+        if (!isPlatformBrowser(this.platformId)) return;
+        if (this.centrifuge) return; // already connected
 
         const token = this.oauthService.getAccessToken();
-        if (!token) return;
+        if (!token) {
+            console.warn('WebSocketService: No access token — aborting Centrifugo connection.');
+            return;
+        }
 
-        this.client = new Client({
-            brokerURL: environment.wsUrl,
-            connectHeaders: {
-                Authorization: `Bearer ${token}`
-            },
-            onConnect: () => {
-                console.log('🟢 WebSocket connected');
-                this.reconnectAttempts = 0;
-                this.connectionState$.next(true);
-            },
-            onDisconnect: () => {
-                console.log('🔴 WebSocket disconnected');
-                this.connectionState$.next(false);
-            },
-            onStompError: (frame) => {
-                console.error('STOMP error:', frame.headers['message']);
-            },
-            reconnectDelay: 5000,
-            heartbeatIncoming: 4000,
-            heartbeatOutgoing: 4000
+        this.centrifuge = new Centrifuge(environment.centrifugoUrl, { token });
+
+        this.centrifuge.on('connected', () => {
+            console.log('🟢 Centrifugo connected');
+            this.connectionState$.next(true);
         });
 
-        this.client.activate();
+        this.centrifuge.on('disconnected', () => {
+            console.log('🔴 Centrifugo disconnected');
+            this.connectionState$.next(false);
+        });
+
+        this.centrifuge.on('error', (ctx) => {
+            console.error('Centrifugo error:', ctx);
+        });
+
+        this.centrifuge.connect();
     }
 
-    /**
-     * Disconnect from WebSocket.
-     */
     disconnect(): void {
         this.subscriptions.forEach(sub => sub.unsubscribe());
         this.subscriptions.clear();
-        this.client?.deactivate();
-        this.client = null;
+        this.centrifuge?.disconnect();
+        this.centrifuge = null;
     }
 
+    // ─── Subscribe ────────────────────────────────────────────────
+
     /**
-     * Subscribe to a STOMP topic/queue.
-     * Returns an Observable that emits parsed JSON messages.
+     * Returns an Observable that emits parsed message data from a Centrifugo channel.
+     * Caller should unsubscribe from the Observable to release the channel subscription.
      */
-    subscribe<T>(destination: string): Observable<T> {
+    subscribe<T>(channel: string): Observable<T> {
         return new Observable<T>(subscriber => {
             const doSubscribe = () => {
-                if (!this.client?.connected) {
-                    // Wait for connection, then subscribe
+                if (!this.centrifuge) {
+                    // Wait for connection then retry
                     const connSub = this.connectionState$.subscribe(connected => {
                         if (connected) {
                             connSub.unsubscribe();
-                            this.performSubscription(destination, subscriber);
+                            this.attachChannelSubscription(channel, subscriber);
                         }
                     });
                     return;
                 }
-                this.performSubscription(destination, subscriber);
+                this.attachChannelSubscription(channel, subscriber);
             };
 
             doSubscribe();
 
             return () => {
-                const sub = this.subscriptions.get(destination);
+                const sub = this.subscriptions.get(channel);
                 if (sub) {
                     sub.unsubscribe();
-                    this.subscriptions.delete(destination);
+                    this.subscriptions.delete(channel);
                 }
             };
         });
     }
 
-    private performSubscription<T>(destination: string, subscriber: any): void {
-        if (!this.client) return;
+    private attachChannelSubscription<T>(channel: string, subscriber: any): void {
+        if (!this.centrifuge || this.subscriptions.has(channel)) return;
 
-        const sub = this.client.subscribe(destination, (message: IMessage) => {
+        const sub = this.centrifuge.newSubscription(channel);
+
+        sub.on('publication', (ctx: PublicationContext) => {
             try {
-                const body = JSON.parse(message.body);
-                subscriber.next(body as T);
+                subscriber.next(ctx.data as T);
             } catch (e) {
-                console.error('Failed to parse WebSocket message:', e);
+                console.error('Failed to process Centrifugo publication:', e);
             }
         });
 
-        this.subscriptions.set(destination, sub);
+        sub.subscribe();
+        this.subscriptions.set(channel, sub);
     }
 
-    /**
-     * Send a message to a STOMP destination.
-     */
-    send(destination: string, body: any): void {
-        if (!this.client?.connected) {
-            console.warn('Cannot send: WebSocket not connected');
-            return;
-        }
+    // ─── Connection state ─────────────────────────────────────────
 
-        this.client.publish({
-            destination,
-            body: JSON.stringify(body)
-        });
-    }
-
-    /**
-     * Observable of connection state.
-     */
     get connected$(): Observable<boolean> {
         return this.connectionState$.asObservable();
     }
 
     get isConnected(): boolean {
-        return this.client?.connected ?? false;
+        return this.centrifuge !== null;
+    }
+
+    // ─── Legacy send stub (no-op) ─────────────────────────────────
+    /**
+     * @deprecated Send is now done via HTTP POST in ChatService.
+     * This stub exists to avoid breaking any residual callers during migration.
+     */
+    send(_destination: string, _body: any): void {
+        console.warn('WebSocketService.send() is deprecated. Use ChatService.sendMessage() which issues an HTTP POST instead.');
     }
 
     ngOnDestroy(): void {

@@ -305,12 +305,20 @@ export class ChatService {
     }
 
     sendMessage(roomId: string, content: string, messageType: string = 'TEXT'): void {
-        console.log(`ChatService: Sending message to room ${roomId}`);
-        this.ws.send(`/app/chat.send/${roomId}`, { content, messageType });
+        console.log(`ChatService: Sending HTTP message to room ${roomId}`);
+        const payload = { roomId, content, messageType };
+        // The interceptor will automatically attach the Keycloak Bearer token
+        this.http.post(`${this.apiUrl}/send`, payload).subscribe({
+            error: err => console.error('Failed to send message via HTTP', err)
+        });
     }
 
     sendTyping(roomId: string): void {
-        this.ws.send(`/app/chat.typing/${roomId}`, {});
+        // Optional: Replace or remove if typing indicator not supported via HTTP.
+        // If typing is still supported, we send it via the API
+        this.http.post(`${this.apiUrl}/typing/${roomId}`, {}).subscribe({
+            error: err => console.debug('Failed to send typing indicator via HTTP', err)
+        });
     }
 
     // ─── REST API ─────────────────────────────────────────────────
