@@ -9,7 +9,7 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8082/realms/plantsocial
-  data:
-    redis:
-      host: localhost
-      port: 6379
+
+centrifugo:
+  api-url: http://plantsocial_centrifugo:8000/api
+  api-key: plantsocial-internal-secret-key

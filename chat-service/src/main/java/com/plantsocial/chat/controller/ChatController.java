@@ -1,35 +1,50 @@
 package com.plantsocial.chat.controller;
 
-import com.plantsocial.chat.config.RedisConfig;
 import com.plantsocial.chat.model.ChatMessage;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
+import com.plantsocial.chat.service.CentrifugoPublisherService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
 import java.time.Instant;
 
-@Controller
+/**
+ * REST endpoint for sending chat messages.
+ * Replaces the old @MessageMapping STOMP controller.
+ * Validates the Keycloak JWT and delegates publishing to CentrifugoPublisherService.
+ */
+@RestController
+@RequestMapping("/api/v1/chat")
+@RequiredArgsConstructor
 public class ChatController {
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private static final String CHANNEL = "plantsocial-chat";
 
-    public ChatController(RedisTemplate<String, Object> redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
+    private final CentrifugoPublisherService centrifugoPublisher;
 
-    @MessageMapping("/chat.send")
-    public void sendMessage(@Payload ChatMessage chatMessage, Authentication authentication) {
-        // Enforce sender from JWT token if authentication is present
-        if (authentication != null && authentication.getName() != null) {
-            chatMessage.setSender(authentication.getName());
+    @PostMapping("/send")
+    public ResponseEntity<Void> sendMessage(
+            @RequestBody ChatMessage chatMessage,
+            Principal principal) {
+
+        // Enforce sender identity from the Keycloak JWT — clients cannot spoof this
+        if (principal instanceof JwtAuthenticationToken jwtAuth) {
+            String username = (String) jwtAuth.getTokenAttributes().get("preferred_username");
+            if (username != null) {
+                chatMessage.setSender(username);
+            }
         }
+
         if (chatMessage.getTimestamp() == null) {
             chatMessage.setTimestamp(Instant.now());
         }
-        
-        // Publish to Redis instead of processing locally
-        redisTemplate.convertAndSend(RedisConfig.CHAT_TOPIC, chatMessage);
+
+        centrifugoPublisher.publish(CHANNEL, chatMessage);
+        return ResponseEntity.ok().build();
     }
 }

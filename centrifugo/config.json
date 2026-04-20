@@ -4,6 +4,7 @@
   "redis_address": "redis://plantsocial_redis:6379",
   "token_jwks_endpoint": "http://plantsocial_keycloak:8080/realms/plantsocial/protocol/openid-connect/certs",
   "allowed_origins": ["*"],
+  "api_key": "plantsocial-internal-secret-key",
   "admin": true,
   "admin_password": "admin",
   "admin_secret": "admin_secret"

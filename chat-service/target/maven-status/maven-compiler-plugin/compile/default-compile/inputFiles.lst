@@ -1,6 +1,5 @@
 /home/phantomvisible/Documents/GitHub/PlantSocial/chat-service/src/main/java/com/plantsocial/chat/ChatServiceApplication.java
-/home/phantomvisible/Documents/GitHub/PlantSocial/chat-service/src/main/java/com/plantsocial/chat/config/RedisConfig.java
 /home/phantomvisible/Documents/GitHub/PlantSocial/chat-service/src/main/java/com/plantsocial/chat/config/SecurityConfig.java
-/home/phantomvisible/Documents/GitHub/PlantSocial/chat-service/src/main/java/com/plantsocial/chat/config/WebSocketConfig.java
 /home/phantomvisible/Documents/GitHub/PlantSocial/chat-service/src/main/java/com/plantsocial/chat/controller/ChatController.java
 /home/phantomvisible/Documents/GitHub/PlantSocial/chat-service/src/main/java/com/plantsocial/chat/model/ChatMessage.java
+/home/phantomvisible/Documents/GitHub/PlantSocial/chat-service/src/main/java/com/plantsocial/chat/service/CentrifugoPublisherService.java

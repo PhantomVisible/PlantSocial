@@ -21,16 +21,10 @@
     </properties>
 
     <dependencies>
-        <!-- WebSocket support for real-time messaging -->
+        <!-- HTTP REST API (replaces WebSocket) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-websocket</artifactId>
-        </dependency>
-
-        <!-- Redis for multi-instance scaling via Pub/Sub -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
         <!-- Security and Keycloak JWT validation -->
