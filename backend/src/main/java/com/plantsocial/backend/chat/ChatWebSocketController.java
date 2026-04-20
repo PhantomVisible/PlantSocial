@@ -2,13 +2,14 @@ package com.plantsocial.backend.chat;
 
 import com.plantsocial.backend.chat.dto.SendMessageRequest;
 import com.plantsocial.backend.user.User;
+import com.plantsocial.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
@@ -25,6 +26,7 @@ public class ChatWebSocketController {
 
     private final ChatService chatService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final UserRepository userRepository;
 
     /**
      * Receives a message from a client and broadcasts it to the room's topic.
@@ -82,10 +84,10 @@ public class ChatWebSocketController {
     }
 
     private User extractUser(Principal principal) {
-        if (principal instanceof UsernamePasswordAuthenticationToken auth) {
-            Object p = auth.getPrincipal();
-            if (p instanceof User user) {
-                return user;
+        if (principal instanceof JwtAuthenticationToken auth) {
+            String username = (String) auth.getTokenAttributes().get("preferred_username");
+            if (username != null) {
+                return userRepository.findByUsername(username).orElse(null);
             }
         }
         return null;

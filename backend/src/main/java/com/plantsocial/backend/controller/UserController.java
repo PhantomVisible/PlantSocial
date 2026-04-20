@@ -11,8 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,8 +28,6 @@ public class UserController {
     private final PostRepository postRepository;
     private final FeedService feedService;
     private final com.plantsocial.backend.service.FileStorageService fileStorageService;
-    @SuppressWarnings("unused")
-    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     /**
      * Get a user's public profile
@@ -224,14 +222,14 @@ public class UserController {
     }
 
     private User getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String email;
-        if (principal instanceof UserDetails) {
-            email = ((UserDetails) principal).getUsername();
-        } else {
-            email = principal.toString();
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth instanceof JwtAuthenticationToken jwtAuth) {
+            String username = (String) jwtAuth.getTokenAttributes().get("preferred_username");
+            if (username != null) {
+                return userRepository.findByUsername(username)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+            }
         }
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        throw new UsernameNotFoundException("Not authenticated");
     }
 }

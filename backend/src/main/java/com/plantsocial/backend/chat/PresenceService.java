@@ -4,10 +4,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
+
+import com.plantsocial.backend.user.User;
+import com.plantsocial.backend.user.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -21,29 +24,33 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PresenceService {
 
     private final SimpMessagingTemplate messagingTemplate;
+    private final UserRepository userRepository;
 
     // userId → session info
     private final Map<String, OnlineUser> onlineUsers = new ConcurrentHashMap<>();
 
-    public PresenceService(SimpMessagingTemplate messagingTemplate) {
+    public PresenceService(SimpMessagingTemplate messagingTemplate, UserRepository userRepository) {
         this.messagingTemplate = messagingTemplate;
+        this.userRepository = userRepository;
     }
 
     @EventListener
     public void handleWebSocketConnect(SessionConnectedEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-        if (accessor.getUser() instanceof UsernamePasswordAuthenticationToken auth) {
-            Object principal = auth.getPrincipal();
-            if (principal instanceof com.plantsocial.backend.user.User user) {
-                String sessionId = accessor.getSessionId();
-                onlineUsers.put(user.getId().toString(), new OnlineUser(
-                        user.getId().toString(),
-                        user.getUsername(),
-                        user.getFullName(),
-                        sessionId,
-                        LocalDateTime.now()));
-                log.info("User connected: {} (session: {})", user.getUsername(), sessionId);
-                broadcastPresence();
+        if (accessor.getUser() instanceof JwtAuthenticationToken auth) {
+            String username = (String) auth.getTokenAttributes().get("preferred_username");
+            if (username != null) {
+                userRepository.findByUsername(username).ifPresent(user -> {
+                    String sessionId = accessor.getSessionId();
+                    onlineUsers.put(user.getId().toString(), new OnlineUser(
+                            user.getId().toString(),
+                            user.getUsername(),
+                            user.getFullName(),
+                            sessionId,
+                            LocalDateTime.now()));
+                    log.info("User connected: {} (session: {})", user.getUsername(), sessionId);
+                    broadcastPresence();
+                });
             }
         }
     }
@@ -51,12 +58,14 @@ public class PresenceService {
     @EventListener
     public void handleWebSocketDisconnect(SessionDisconnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-        if (accessor.getUser() instanceof UsernamePasswordAuthenticationToken auth) {
-            Object principal = auth.getPrincipal();
-            if (principal instanceof com.plantsocial.backend.user.User user) {
-                onlineUsers.remove(user.getId().toString());
-                log.info("User disconnected: {}", user.getUsername());
-                broadcastPresence();
+        if (accessor.getUser() instanceof JwtAuthenticationToken auth) {
+            String username = (String) auth.getTokenAttributes().get("preferred_username");
+            if (username != null) {
+                userRepository.findByUsername(username).ifPresent(user -> {
+                    onlineUsers.remove(user.getId().toString());
+                    log.info("User disconnected: {}", user.getUsername());
+                    broadcastPresence();
+                });
             }
         }
     }

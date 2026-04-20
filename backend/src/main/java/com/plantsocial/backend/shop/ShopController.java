@@ -4,13 +4,15 @@ import com.plantsocial.backend.shop.dto.*;
 import com.plantsocial.backend.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import com.plantsocial.backend.user.UserRepository;
 
 @RestController
 @RequestMapping("/api/v1/shop")
@@ -20,6 +22,7 @@ public class ShopController {
     private final ProductService productService;
     private final CartService cartService;
     private final OrderService orderService;
+    private final UserRepository userRepository;
 
     // ═══════════════════════════════════════════════════════
     // PRODUCTS (public)
@@ -113,10 +116,12 @@ public class ShopController {
     // ═══════════════════════════════════════════════════════
 
     private User extractUser(Principal principal) {
-        if (principal instanceof UsernamePasswordAuthenticationToken token) {
-            Object p = token.getPrincipal();
-            if (p instanceof User user)
-                return user;
+        if (principal instanceof JwtAuthenticationToken auth) {
+            String username = (String) auth.getTokenAttributes().get("preferred_username");
+            if (username != null) {
+                return userRepository.findByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("User not found: " + username));
+            }
         }
         throw new RuntimeException("Not authenticated");
     }
