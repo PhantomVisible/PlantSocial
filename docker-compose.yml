@@ -11,6 +11,8 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - plantsocial_net
 
   # 2. The New Auth Database (Strictly for Keycloak)
   keycloak-db:
@@ -24,6 +26,8 @@ services:
       - "5434:5432" # Mapped to 5434 to avoid clashing with my main DB on 5433
     volumes:
       - keycloak_data:/var/lib/postgresql/data
+    networks:
+      - plantsocial_net
 
   # 3. The IAM Auth Service
   keycloak:
@@ -41,13 +45,40 @@ services:
       - "8082:8080" # Maps Keycloak UI to localhost:8082
     depends_on:
       - keycloak-db
+    networks:
+      - plantsocial_net
 
-  # 4. Redis for Chat Service Pub/Sub
+  # 4. Redis for Pub/Sub (shared by chat-service and Centrifugo)
   redis:
     image: redis:7-alpine
     container_name: plantsocial_redis
     ports:
       - "6379:6379"
+    networks:
+      - plantsocial_net
+
+  # 5. Centrifugo Real-time Messaging Server
+  centrifugo:
+    image: centrifugo/centrifugo:v5
+    container_name: plantsocial_centrifugo
+    command: centrifugo --config config.json
+    volumes:
+      - ./centrifugo/config.json:/centrifugo/config.json
+    ports:
+      - "8000:8000"   # Client WebSocket / HTTP API
+    depends_on:
+      - redis
+      - keycloak
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    networks:
+      - plantsocial_net
+
+networks:
+  plantsocial_net:
+    driver: bridge
 
 volumes:
   postgres_data:

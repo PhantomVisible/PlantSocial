@@ -1,0 +1,10 @@
+{
+  "v3_use_offset": true,
+  "engine": "redis",
+  "redis_address": "redis://plantsocial_redis:6379",
+  "token_jwks_endpoint": "http://plantsocial_keycloak:8080/realms/plantsocial/protocol/openid-connect/certs",
+  "allowed_origins": ["*"],
+  "admin": true,
+  "admin_password": "admin",
+  "admin_secret": "admin_secret"
+}
