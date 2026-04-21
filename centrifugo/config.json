@@ -7,5 +7,15 @@
   "api_key": "plantsocial-internal-secret-key",
   "admin": true,
   "admin_password": "admin",
-  "admin_secret": "admin_secret"
+  "admin_secret": "admin_secret",
+  "allow_anonymous": true,
+  "namespaces": [
+    {
+      "name": "public",
+      "allow_subscribe_for_anonymous": true,
+      "allow_publish_for_anonymous": false,
+      "allow_subscribe_for_client": true,
+      "allow_publish_for_client": false
+    }
+  ]
 }

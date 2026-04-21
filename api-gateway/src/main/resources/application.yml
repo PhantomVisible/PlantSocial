@@ -11,10 +11,15 @@ spring:
           issuer-uri: http://localhost:8082/realms/plantsocial
   cloud:
     gateway:
+      default-filters:
+        # Safety net: if any downstream service leaks its own CORS headers, keep only the first value
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
       globalcors:
         corsConfigurations:
           "[/**]":
-            allowedOrigins: "http://localhost:4200"
+            allowedOrigins:
+              - "http://localhost:4200"
+              - "http://192.168.1.250:4200"
             allowedMethods:
               - GET
               - POST
@@ -22,6 +27,7 @@ spring:
               - DELETE
               - OPTIONS
             allowedHeaders: "*"
+            allowCredentials: true
       routes:
         # WebSocket connections → Centrifugo real-time server
         - id: centrifugo-ws
