@@ -12,34 +12,35 @@ spring:
   cloud:
     gateway:
       default-filters:
-        # Safety net: if any downstream service leaks its own CORS headers, keep only the first value
+        # Safety net to prevent the "Double Bouncer" issue we fixed earlier
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
       globalcors:
-        corsConfigurations:
+        add-to-simple-url-handler-mapping: true
+        # FIX: Changed to kebab-case 'cors-configurations'
+        cors-configurations:
           "[/**]":
             allowedOrigins:
               - "http://localhost:4200"
               - "http://192.168.1.250:4200"
             allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
+              - "GET"
+              - "POST"
+              - "PUT"
+              - "DELETE"
+              - "OPTIONS"
+              - "PATCH"
+            # Allowing "*" headers is critical for the 'Authorization' token to pass through
             allowedHeaders: "*"
             allowCredentials: true
       routes:
-        # WebSocket connections → Centrifugo real-time server
         - id: centrifugo-ws
           uri: ws://plantsocial_centrifugo:8000
           predicates:
             - Path=/connection/**
-        # Chat REST API → chat-service (must come before backend_route to avoid /api/v1/** swallowing it)
         - id: chat-service-api
           uri: http://localhost:8083
           predicates:
             - Path=/api/v1/chat/**
-        # Main monolith
         - id: backend_route
           uri: http://localhost:8080
           predicates:

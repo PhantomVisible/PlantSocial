@@ -11,18 +11,36 @@ spring:
           issuer-uri: http://localhost:8082/realms/plantsocial
   cloud:
     gateway:
+      default-filters:
+        # Safety net to prevent the "Double Bouncer" issue we fixed earlier
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
       globalcors:
-        corsConfigurations:
+        add-to-simple-url-handler-mapping: true
+        # FIX: Changed to kebab-case 'cors-configurations'
+        cors-configurations:
           "[/**]":
-            allowedOrigins: "http://localhost:4200"
+            allowedOrigins:
+              - "http://localhost:4200"
+              - "http://192.168.1.250:4200"
             allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
+              - "GET"
+              - "POST"
+              - "PUT"
+              - "DELETE"
+              - "OPTIONS"
+              - "PATCH"
+            # Allowing "*" headers is critical for the 'Authorization' token to pass through
             allowedHeaders: "*"
+            allowCredentials: true
       routes:
+        - id: centrifugo-ws
+          uri: ws://plantsocial_centrifugo:8000
+          predicates:
+            - Path=/connection/**
+        - id: chat-service-api
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/v1/chat/**
         - id: backend_route
           uri: http://localhost:8080
           predicates:
@@ -31,10 +49,6 @@ spring:
           uri: http://localhost:8081
           predicates:
             - Path=/api/gamification/**
-        - id: chat_websocket_route
-          uri: http://localhost:8083
-          predicates:
-            - Path=/ws/**
 
 management:
   endpoints:

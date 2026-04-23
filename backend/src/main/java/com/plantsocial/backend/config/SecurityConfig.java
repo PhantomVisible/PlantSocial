@@ -13,10 +13,20 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.plantsocial.backend.user.UserRepository;
+import com.plantsocial.backend.security.JwtUserSyncFilter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+        private final UserRepository userRepository;
+
+        public SecurityConfig(UserRepository userRepository) {
+                this.userRepository = userRepository;
+        }
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -50,7 +60,10 @@ public class SecurityConfig {
                         )
                         .sessionManagement(session -> session
                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                        .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
+                        .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+                        
+                        // Register our JIT Provisioning filter AFTER Keycloak auth validates the token
+                        .addFilterAfter(new JwtUserSyncFilter(userRepository), BearerTokenAuthenticationFilter.class);
 
                 return http.build();
         }

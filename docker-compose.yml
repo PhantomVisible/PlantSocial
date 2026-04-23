@@ -43,6 +43,8 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: admin
     ports:
       - "8082:8080" # Maps Keycloak UI to localhost:8082
+    volumes:
+      - ./keycloak-theme/plantsocial:/opt/keycloak/themes/plantsocial
     depends_on:
       - keycloak-db
     networks:
