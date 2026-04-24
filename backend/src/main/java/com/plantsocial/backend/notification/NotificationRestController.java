@@ -1,12 +1,12 @@
 package com.plantsocial.backend.notification;
 
 import com.plantsocial.backend.notification.dto.NotificationDTO;
+import com.plantsocial.backend.security.SecurityUtils;
 import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -19,16 +19,17 @@ public class NotificationRestController {
 
     private final NotificationService notificationService;
     private final UserRepository userRepository;
+    private final SecurityUtils securityUtils;
 
     @GetMapping
-    public Page<NotificationDTO> getNotifications(Authentication authentication, Pageable pageable) {
-        User user = getUser(authentication);
+    public Page<NotificationDTO> getNotifications(Pageable pageable) {
+        User user = securityUtils.getCurrentUser();
         return notificationService.getNotifications(user, pageable);
     }
 
     @GetMapping("/unread-count")
-    public long getUnreadCount(Authentication authentication) {
-        User user = getUser(authentication);
+    public long getUnreadCount() {
+        User user = securityUtils.getCurrentUser();
         return notificationService.getUnreadCount(user);
     }
 
@@ -51,8 +52,4 @@ public class NotificationRestController {
                 com.plantsocial.backend.notification.model.NotificationType.MESSAGE, content, null);
     }
 
-    private User getUser(Authentication auth) {
-        return userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-    }
 }

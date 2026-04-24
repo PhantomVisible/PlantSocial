@@ -5,11 +5,10 @@ import com.plantsocial.backend.marketplace.dto.ListingResponse;
 import com.plantsocial.backend.marketplace.dto.ProductPreviewDTO;
 import com.plantsocial.backend.marketplace.service.MarketplaceService;
 import com.plantsocial.backend.marketplace.service.ScraperService;
+import com.plantsocial.backend.security.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +22,7 @@ public class MarketplaceController {
     private final MarketplaceService marketplaceService;
     private final ScraperService scraperService;
     private final com.plantsocial.backend.service.FileStorageService fileStorageService;
+    private final SecurityUtils securityUtils;
 
     @PostMapping(value = "/upload", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadImage(
@@ -41,10 +41,8 @@ public class MarketplaceController {
     }
 
     @PostMapping("/listings")
-    public ResponseEntity<ListingResponse> createListing(
-            @Valid @RequestBody ListingRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(marketplaceService.createListing(request, userDetails.getUsername()));
+    public ResponseEntity<ListingResponse> createListing(@Valid @RequestBody ListingRequest request) {
+        return ResponseEntity.ok(marketplaceService.createListing(request, securityUtils.getCurrentUser().getEmail()));
     }
 
     @PostMapping("/listings/{id}/pay")
@@ -58,9 +56,8 @@ public class MarketplaceController {
     }
 
     @GetMapping("/my-listings")
-    public ResponseEntity<List<ListingResponse>> getMyListings(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(marketplaceService.getListingsByUser(userDetails.getUsername()));
+    public ResponseEntity<List<ListingResponse>> getMyListings() {
+        return ResponseEntity.ok(marketplaceService.getListingsByUser(securityUtils.getCurrentUser().getEmail()));
     }
 
     @GetMapping("/listings/{id}")
@@ -69,18 +66,15 @@ public class MarketplaceController {
     }
 
     @DeleteMapping("/listings/{id}")
-    public ResponseEntity<Void> deleteListing(
-            @PathVariable UUID id,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        marketplaceService.deleteListing(id, userDetails.getUsername());
+    public ResponseEntity<Void> deleteListing(@PathVariable UUID id) {
+        marketplaceService.deleteListing(id, securityUtils.getCurrentUser().getEmail());
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/listings/{id}")
     public ResponseEntity<ListingResponse> updateListing(
             @PathVariable UUID id,
-            @Valid @RequestBody ListingRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(marketplaceService.updateListing(id, request, userDetails.getUsername()));
+            @Valid @RequestBody ListingRequest request) {
+        return ResponseEntity.ok(marketplaceService.updateListing(id, request, securityUtils.getCurrentUser().getEmail()));
     }
 }

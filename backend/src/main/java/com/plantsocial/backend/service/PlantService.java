@@ -4,14 +4,13 @@ import com.plantsocial.backend.dto.PlantResponse;
 import com.plantsocial.backend.model.Plant;
 import com.plantsocial.backend.model.PlantStatus;
 import com.plantsocial.backend.repository.PlantRepository;
+import com.plantsocial.backend.security.SecurityUtils;
 import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.user.UserRepository;
 import com.plantsocial.backend.model.PlantLog;
 import com.plantsocial.backend.repository.PlantLogRepository;
 import com.plantsocial.backend.dto.LogResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +29,7 @@ public class PlantService {
     private final com.plantsocial.backend.repository.PostRepository postRepository;
     private final PlantLogRepository plantLogRepository;
     private final FileStorageService fileStorageService;
+    private final SecurityUtils securityUtils;
 
     @Transactional
     public PlantResponse addPlant(String nickname, String species, String status, java.time.LocalDate plantedDate,
@@ -227,15 +227,6 @@ public class PlantService {
     }
 
     private User getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username;
-        if (principal instanceof UserDetails) {
-            username = ((UserDetails) principal).getUsername();
-        } else {
-            username = principal.toString();
-        }
-        return userRepository.findByUsername(username)
-                .or(() -> userRepository.findByEmail(username))
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return securityUtils.getCurrentUser();
     }
 }

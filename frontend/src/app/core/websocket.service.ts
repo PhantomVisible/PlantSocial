@@ -1,27 +1,19 @@
 import { Injectable, OnDestroy, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Centrifuge, Subscription as CentrifugeSubscription, PublicationContext } from 'centrifuge';
-import { OAuthService } from 'angular-oauth2-oidc';
-import { Subject, Observable } from 'rxjs';
+import { Subject, Observable, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-/**
- * WebSocket service backed by Centrifugo via centrifuge-js.
- *
- * READ  path: subscribe to a Centrifugo channel → receive publications.
- * WRITE path: delegated to HTTP POST in ChatService (this service is read-only).
- *
- * The Keycloak JWT is passed in the `token` option of Centrifuge constructor
- * (NOT as a custom header), as required by Centrifugo's JWT auth model.
- */
 @Injectable({
     providedIn: 'root'
 })
 export class WebSocketService implements OnDestroy {
     private platformId = inject(PLATFORM_ID);
-    private oauthService = inject(OAuthService);
+    private http = inject(HttpClient);
 
     private centrifuge: Centrifuge | null = null;
+    private connecting = false; // prevents double-init during async token fetch
     private subscriptions = new Map<string, CentrifugeSubscription>();
     private connectionState$ = new Subject<boolean>();
 
@@ -29,31 +21,37 @@ export class WebSocketService implements OnDestroy {
 
     connect(): void {
         if (!isPlatformBrowser(this.platformId)) return;
-        if (this.centrifuge) return; // already connected
+        if (this.centrifuge || this.connecting) return;
 
-        const token = this.oauthService.getAccessToken();
-        if (!token) {
-            console.warn('WebSocketService: No access token — aborting Centrifugo connection.');
-            return;
-        }
+        this.connecting = true;
 
-        this.centrifuge = new Centrifuge(environment.centrifugoUrl, { token });
+        this.fetchCentrifugoToken().subscribe({
+            next: (token) => {
+                this.connecting = false;
 
-        this.centrifuge.on('connected', () => {
-            console.log('🟢 Centrifugo connected');
-            this.connectionState$.next(true);
+                this.centrifuge = new Centrifuge(environment.centrifugoUrl, { token });
+
+                this.centrifuge.on('connected', () => {
+                    console.log('🟢 Centrifugo connected');
+                    this.connectionState$.next(true);
+                });
+
+                this.centrifuge.on('disconnected', () => {
+                    console.log('🔴 Centrifugo disconnected');
+                    this.connectionState$.next(false);
+                });
+
+                this.centrifuge.on('error', (ctx) => {
+                    console.error('Centrifugo error:', ctx);
+                });
+
+                this.centrifuge.connect();
+            },
+            error: (err) => {
+                this.connecting = false;
+                console.error('WebSocketService: Failed to fetch Centrifugo token', err);
+            }
         });
-
-        this.centrifuge.on('disconnected', () => {
-            console.log('🔴 Centrifugo disconnected');
-            this.connectionState$.next(false);
-        });
-
-        this.centrifuge.on('error', (ctx) => {
-            console.error('Centrifugo error:', ctx);
-        });
-
-        this.centrifuge.connect();
     }
 
     disconnect(): void {
@@ -73,7 +71,7 @@ export class WebSocketService implements OnDestroy {
         return new Observable<T>(subscriber => {
             const doSubscribe = () => {
                 if (!this.centrifuge) {
-                    // Wait for connection then retry
+                    // Centrifuge is still connecting — wait for the connected event then retry
                     const connSub = this.connectionState$.subscribe(connected => {
                         if (connected) {
                             connSub.unsubscribe();
@@ -114,6 +112,14 @@ export class WebSocketService implements OnDestroy {
         this.subscriptions.set(channel, sub);
     }
 
+    // ─── Token ────────────────────────────────────────────────────
+
+    private fetchCentrifugoToken(): Observable<string> {
+        return this.http
+            .get<{ token: string }>(`${environment.apiUrl}/realtime/token`)
+            .pipe(map(res => res.token));
+    }
+
     // ─── Connection state ─────────────────────────────────────────
 
     get connected$(): Observable<boolean> {
@@ -125,10 +131,8 @@ export class WebSocketService implements OnDestroy {
     }
 
     // ─── Legacy send stub (no-op) ─────────────────────────────────
-    /**
-     * @deprecated Send is now done via HTTP POST in ChatService.
-     * This stub exists to avoid breaking any residual callers during migration.
-     */
+
+    /** @deprecated Send is now done via HTTP POST in ChatService. */
     send(_destination: string, _body: any): void {
         console.warn('WebSocketService.send() is deprecated. Use ChatService.sendMessage() which issues an HTTP POST instead.');
     }

@@ -8,11 +8,10 @@ import com.plantsocial.backend.notification.NotificationService;
 import com.plantsocial.backend.model.Post;
 import com.plantsocial.backend.repository.CommentRepository;
 import com.plantsocial.backend.repository.PostRepository;
+import com.plantsocial.backend.security.SecurityUtils;
 import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +28,7 @@ public class CommentService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final SecurityUtils securityUtils;
 
     /**
      * Get top-level comments for a post (parentComment IS NULL)
@@ -126,14 +126,6 @@ public class CommentService {
     }
 
     private User getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username;
-        if (principal instanceof UserDetails) {
-            username = ((UserDetails) principal).getUsername();
-        } else {
-            username = principal.toString();
-        }
-        return userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return securityUtils.getCurrentUser();
     }
 }

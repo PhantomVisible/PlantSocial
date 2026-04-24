@@ -3,12 +3,10 @@ package com.plantsocial.backend.service;
 import com.plantsocial.backend.dto.UserHoverCardDTO;
 import com.plantsocial.backend.notification.NotificationService;
 import com.plantsocial.backend.notification.model.NotificationType;
+import com.plantsocial.backend.security.SecurityUtils;
 import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +18,7 @@ public class FollowService {
 
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final SecurityUtils securityUtils;
 
     @Transactional(readOnly = true)
     public UserHoverCardDTO getHoverCard(String username) {
@@ -114,20 +113,6 @@ public class FollowService {
     }
 
     private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()
-                || "anonymousUser".equals(authentication.getPrincipal())) {
-            return null;
-        }
-
-        Object principal = authentication.getPrincipal();
-        String email;
-        if (principal instanceof UserDetails) {
-            email = ((UserDetails) principal).getUsername();
-        } else {
-            email = principal.toString();
-        }
-        return userRepository.findByEmail(email)
-                .orElse(null);
+        return securityUtils.getCurrentUserOrNull();
     }
 }

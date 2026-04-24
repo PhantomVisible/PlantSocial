@@ -1,11 +1,10 @@
 package com.plantsocial.backend.block;
 
+import com.plantsocial.backend.security.SecurityUtils;
 import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -18,13 +17,11 @@ public class BlockController {
 
     private final BlockService blockService;
     private final UserRepository userRepository;
+    private final SecurityUtils securityUtils;
 
     @PostMapping("/{userId}")
-    public ResponseEntity<Void> blockUser(
-            @PathVariable UUID userId,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        User blocker = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    public ResponseEntity<Void> blockUser(@PathVariable UUID userId) {
+        User blocker = securityUtils.getCurrentUser();
         User blocked = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Target user not found"));
 
@@ -33,11 +30,8 @@ public class BlockController {
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> unblockUser(
-            @PathVariable UUID userId,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        User blocker = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    public ResponseEntity<Void> unblockUser(@PathVariable UUID userId) {
+        User blocker = securityUtils.getCurrentUser();
         User blocked = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Target user not found"));
 
@@ -46,11 +40,8 @@ public class BlockController {
     }
 
     @GetMapping("/{userId}/status")
-    public ResponseEntity<Map<String, Boolean>> isBlocked(
-            @PathVariable UUID userId,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        User blocker = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    public ResponseEntity<Map<String, Boolean>> isBlocked(@PathVariable UUID userId) {
+        User blocker = securityUtils.getCurrentUser();
         User blocked = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Target user not found"));
 

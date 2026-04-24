@@ -41,6 +41,11 @@ services:
       KC_DB_PASSWORD: password
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+      # Pin the issuer hostname so every JWT always has iss=http://localhost:8082/realms/plantsocial,
+      # regardless of whether Keycloak is hit from the host or from inside Docker via the container name.
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 8082
+      KC_HOSTNAME_STRICT: "false"
     ports:
       - "8082:8080" # Maps Keycloak UI to localhost:8082
     volumes:
@@ -68,6 +73,9 @@ services:
       - ./centrifugo/config.json:/centrifugo/config.json
     ports:
       - "8000:8000"   # Client WebSocket / HTTP API
+    environment:
+      # Overrides token_hmac_secret_key in config.json — must match CENTRIFUGO_SECRET in backend env
+      CENTRIFUGO_TOKEN_HMAC_SECRET_KEY: ${CENTRIFUGO_SECRET:-xyla-centrifugo-hmac-secret-local-dev-key}
     depends_on:
       - redis
       - keycloak

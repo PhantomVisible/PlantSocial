@@ -37,10 +37,11 @@ spring:
           uri: ws://plantsocial_centrifugo:8000
           predicates:
             - Path=/connection/**
-        - id: chat-service-api
+        - id: chat-service-send
           uri: http://localhost:8083
           predicates:
-            - Path=/api/v1/chat/**
+            - Path=/api/v1/chat/send
+            - Method=POST
         - id: backend_route
           uri: http://localhost:8080
           predicates:
@@ -55,3 +56,8 @@ management:
     web:
       exposure:
         include: health,info
+
+logging:
+  level:
+    org.springframework.security: TRACE
+    org.springframework.security.oauth2: TRACE

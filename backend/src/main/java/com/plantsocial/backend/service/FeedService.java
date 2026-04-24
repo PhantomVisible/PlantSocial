@@ -7,6 +7,7 @@ import com.plantsocial.backend.model.Post;
 import com.plantsocial.backend.model.PostLike;
 import com.plantsocial.backend.notification.model.NotificationType;
 import com.plantsocial.backend.notification.NotificationService;
+import com.plantsocial.backend.security.SecurityUtils;
 import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.repository.CommentRepository;
 import com.plantsocial.backend.repository.PlantRepository;
@@ -16,10 +17,6 @@ import com.plantsocial.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,6 +41,7 @@ public class FeedService {
     private final FileStorageService fileStorageService;
     private final NotificationService notificationService;
     private final BlockService blockService;
+    private final SecurityUtils securityUtils;
 
     public PostResponse getPostById(UUID postId) {
         User currentUser = getCurrentUser();
@@ -157,21 +155,7 @@ public class FeedService {
     }
 
     private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()
-                || "anonymousUser".equals(authentication.getPrincipal())) {
-            return null;
-        }
-
-        Object principal = authentication.getPrincipal();
-        String username;
-        if (principal instanceof UserDetails) {
-            username = ((UserDetails) principal).getUsername();
-        } else {
-            username = principal.toString();
-        }
-        return userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return securityUtils.getCurrentUserOrNull();
     }
 
     public PostResponse mapToPostResponsePublic(Post post, User currentUser) {

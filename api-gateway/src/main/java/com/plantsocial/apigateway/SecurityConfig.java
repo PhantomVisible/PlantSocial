@@ -15,8 +15,12 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
+                .cors(Customizer.withDefaults())  // delegate to the globalcors config in application.yml
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
+
+                        // ── Preflight — must be first, OPTIONS carries no Authorization header ──
+                        .pathMatchers(HttpMethod.OPTIONS).permitAll()
 
                         // ── Fully public (no token required) ─────────────────────────────
                         // WebSocket connections to Centrifugo

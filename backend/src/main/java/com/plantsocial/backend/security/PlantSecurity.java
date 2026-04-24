@@ -2,9 +2,9 @@ package com.plantsocial.backend.security;
 
 import com.plantsocial.backend.model.Plant;
 import com.plantsocial.backend.repository.PlantRepository;
+import com.plantsocial.backend.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -14,6 +14,7 @@ import java.util.UUID;
 public class PlantSecurity {
 
     private final PlantRepository plantRepository;
+    private final SecurityUtils securityUtils;
 
     public boolean isOwner(Authentication authentication, UUID plantId) {
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -21,19 +22,11 @@ public class PlantSecurity {
         }
 
         Plant plant = plantRepository.findById(plantId).orElse(null);
-        if (plant == null) {
-            return false;
-        }
+        if (plant == null) return false;
 
-        String currentUsername;
-        Object principal = authentication.getPrincipal();
+        User currentUser = securityUtils.getCurrentUserOrNull();
+        if (currentUser == null) return false;
 
-        if (principal instanceof UserDetails) {
-            currentUsername = ((UserDetails) principal).getUsername();
-        } else {
-            currentUsername = principal.toString();
-        }
-
-        return plant.getOwner().getEmail().equals(currentUsername);
+        return plant.getOwner().getId().equals(currentUser.getId());
     }
 }
