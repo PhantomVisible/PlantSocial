@@ -1,7 +1,5 @@
 package com.plantsocial.backend.security;
 
-import com.plantsocial.backend.user.Role;
-import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.user.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -9,7 +7,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -75,24 +72,20 @@ public class JwtUserSyncFilter extends OncePerRequestFilter {
         if (givenName == null) givenName = "Plant";
         if (familyName == null) familyName = "Lover";
 
-        User newUser = User.builder()
-                .id(userId)
-                .email(email)
-                .username(username)
-                .fullName(givenName + " " + familyName)
-                .password("OIDC_MANAGED") // Password is managed by Keycloak
-                .role(Role.USER)
-                .enabled(true)
-                .build();
-
         try {
-            userRepository.save(newUser);
-            verifiedUsers.add(userId);
-            log.info("Successfully provisioned new user: {}", username);
-        } catch (DataIntegrityViolationException e) {
-            // Handle race condition if a concurrent thread already provisioned the user
-            log.warn("User already provisioned by concurrent thread: {}", userId);
-            verifiedUsers.add(userId);
+            // Use native INSERT to bypass Spring Data's merge() path which breaks when
+            // the entity has an explicitly set UUID but doesn't yet exist in the DB.
+            // ON CONFLICT DO NOTHING handles any unique-constraint race (id, email, username).
+            int inserted = userRepository.provisionFromJwt(userId, givenName + " " + familyName, email, username);
+            verifiedUsers.add(userId); // cache regardless — user is in DB whether we inserted or not
+            if (inserted > 0) {
+                log.info("Provisioned new user: {} ({})", username, userId);
+            } else {
+                log.debug("User {} already exists, added to cache", userId);
+            }
+        } catch (Exception e) {
+            log.warn("Provisioning failed for {} ({}): {}", username, userId, e.getMessage());
+            // Don't cache — next request will retry via existsById() path
         }
     }
 }

@@ -1,8 +1,10 @@
 package com.plantsocial.backend.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +12,24 @@ import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
+
+    /**
+     * Native INSERT used by JwtUserSyncFilter to provision Keycloak users on first
+     * login. Uses persist() semantics (not merge()) by bypassing Spring Data's
+     * isNew() check. ON CONFLICT DO NOTHING handles concurrent provisioning.
+     */
+    @Modifying(clearAutomatically = true)
+    @Transactional
+    @Query(value = """
+            INSERT INTO users (id, full_name, email, password, role, username, enabled, created_at)
+            VALUES (:id, :fullName, :email, 'OIDC_MANAGED', 'USER', :username, true, NOW())
+            ON CONFLICT DO NOTHING
+            """, nativeQuery = true)
+    int provisionFromJwt(
+            @Param("id") UUID id,
+            @Param("fullName") String fullName,
+            @Param("email") String email,
+            @Param("username") String username);
 
     boolean existsByEmail(String email);
 

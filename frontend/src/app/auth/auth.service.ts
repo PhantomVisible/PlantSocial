@@ -53,6 +53,11 @@ export class AuthService {
         this.oauthService.initCodeFlow();
     }
 
+    /** Sends the user directly to Keycloak's registration page, skipping the login tab. */
+    register(): void {
+        this.oauthService.initCodeFlow(undefined, { kc_action: 'register' });
+    }
+
     /** Logs out and clears the OIDC session on the Keycloak side. */
     logout(): void {
         this.oauthService.logOut();

@@ -129,6 +129,10 @@ export class AuthFormComponent {
 
   redirectToKeycloak(): void {
     this.loading.set(true);
-    this.oauthService.initCodeFlow();
+    if (this.mode === 'register') {
+      this.oauthService.initCodeFlow(undefined, { kc_action: 'register' });
+    } else {
+      this.oauthService.initCodeFlow();
+    }
   }
 }

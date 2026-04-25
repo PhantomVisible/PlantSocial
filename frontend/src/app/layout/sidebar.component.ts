@@ -122,7 +122,7 @@ import { environment } from '../../environments/environment';
             <i class="pi pi-sign-in"></i>
             <span>Log In</span>
           </button>
-          <button class="nav-item nav-item--signup" routerLink="/auth/register">
+          <button class="nav-item nav-item--signup" (click)="authService.register()">
             <i class="pi pi-user-plus"></i>
             <span>Sign Up</span>
           </button>
