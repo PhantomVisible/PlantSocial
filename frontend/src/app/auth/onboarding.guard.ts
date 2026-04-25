@@ -1,7 +1,7 @@
 import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { of } from 'rxjs';
-import { take, switchMap, map } from 'rxjs/operators';
+import { filter, take, switchMap, map } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { OnboardingService } from './onboarding.service';
 
@@ -19,6 +19,7 @@ export const onboardingGuard: CanActivateFn = () => {
   const router = inject(Router);
 
   return auth.authReady$.pipe(
+    filter(isReady => isReady),
     take(1),
     switchMap(() => {
       if (!auth.isAuthenticated()) return of(false);

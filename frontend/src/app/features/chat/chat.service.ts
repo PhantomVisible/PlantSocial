@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap, map, Subject, Subscription } from 'rxjs';
 import { WebSocketService } from '../../core/websocket.service';
 import { AuthService } from '../../auth/auth.service';
+import { NotificationService } from '../notifications/notification.service';
 import { environment } from '../../../environments/environment';
 
 export interface ChatRoom {
@@ -98,10 +99,13 @@ export class ChatService {
     // Track active WS subscriptions by Room ID to avoid duplicates
     private roomSubscriptions = new Map<string, Subscription>();
 
+    private markReadTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
     constructor(
         private http: HttpClient,
         private ws: WebSocketService,
-        private authService: AuthService
+        private authService: AuthService,
+        private notifService: NotificationService
     ) {
         // Automatically manage WebSocket connection based on authentication state
         effect(() => {
@@ -184,6 +188,8 @@ export class ChatService {
             return [...chats, { roomId, displayName, targetProfilePictureUrl, type, minimized: false }];
         });
         this.subscribeToRoom(roomId);
+        // Clear any unread notifications for this room on open
+        this.scheduleMarkRoomRead(roomId);
     }
 
     closeFloatingChat(roomId: string) {
@@ -194,6 +200,11 @@ export class ChatService {
         this.activeFloatingChats.update(chats =>
             chats.map(c => c.roomId === roomId ? { ...c, minimized: !c.minimized } : c)
         );
+        // If just un-minimized, clear any unread notifications
+        const chat = this.activeFloatingChats().find(c => c.roomId === roomId);
+        if (chat && !chat.minimized) {
+            this.scheduleMarkRoomRead(roomId);
+        }
     }
 
     // ─── WebSocket ────────────────────────────────────────────────
@@ -221,7 +232,22 @@ export class ChatService {
         this.leaveCurrentRoom();
         this.roomSubscriptions.forEach(sub => sub.unsubscribe());
         this.roomSubscriptions.clear();
+        this.markReadTimers.forEach(t => clearTimeout(t));
+        this.markReadTimers.clear();
         this.ws.disconnect();
+    }
+
+    /** Debounced: fires markRoomAsRead once per room after 800ms quiet period. */
+    private scheduleMarkRoomRead(roomId: string): void {
+        if (this.markReadTimers.has(roomId)) return;
+        const timer = setTimeout(() => {
+            this.markReadTimers.delete(roomId);
+            this.markRoomAsRead(roomId).subscribe({
+                next: () => this.notifService.markRoomMessagesRead(roomId),
+                error: (err) => console.warn('markRoomAsRead failed (will retry on next message):', err)
+            });
+        }, 800);
+        this.markReadTimers.set(roomId, timer);
     }
 
     joinRoom(roomId: string, currentUserId?: string, room?: ChatRoom): void {
@@ -294,6 +320,15 @@ export class ChatService {
                 this.rooms.update(rooms =>
                     rooms.map(r => r.id === roomId ? { ...r, lastMessage: msg } : r)
                 );
+
+                // 4. Auto-mark read if the user is currently viewing this room
+                const isMainActive = this.activeRoom()?.id === roomId;
+                const isFloatingVisible = this.activeFloatingChats().some(
+                    c => c.roomId === roomId && !c.minimized
+                );
+                if (isMainActive || isFloatingVisible) {
+                    this.scheduleMarkRoomRead(roomId);
+                }
             });
 
         this.roomSubscriptions.set(roomId, sub);
@@ -375,6 +410,10 @@ export class ChatService {
         const formData = new FormData();
         formData.append('file', file);
         return this.http.post<ChatMessage>(`${this.apiUrl}/rooms/${roomId}/media`, formData);
+    }
+
+    markRoomAsRead(roomId: string): Observable<void> {
+        return this.http.put<void>(`${this.apiUrl}/rooms/${roomId}/read`, {});
     }
 
     searchUsers(query: string): Observable<UserSearchResult[]> {

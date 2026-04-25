@@ -115,6 +115,15 @@ public class ChatRestController {
                 roomId, currentUser, file.getOriginalFilename(), messageType, mediaUrl));
     }
 
+    // --- Read State ------------------------------------------------
+
+    @PutMapping("/rooms/{roomId}/read")
+    public ResponseEntity<Void> markRoomAsRead(@PathVariable UUID roomId) {
+        User currentUser = chatService.getCurrentUser();
+        chatService.markRoomAsRead(roomId, currentUser);
+        return ResponseEntity.ok().build();
+    }
+
     // ─── Presence ──────────────────────────────────────────────────
 
     @GetMapping("/online")

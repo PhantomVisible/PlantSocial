@@ -7,6 +7,7 @@ import { ChatService, ChatRoom, ChatMessage, UserSearchResult } from './chat.ser
 import { WebSocketService } from '../../core/websocket.service';
 import { AuthService } from '../../auth/auth.service';
 import { UserService, UserProfile } from '../profile/user.service';
+import { NotificationService } from '../notifications/notification.service';
 
 import { DialogModule } from 'primeng/dialog';
 import { AvatarModule } from 'primeng/avatar';
@@ -895,6 +896,7 @@ export class ChatPageComponent implements OnInit, OnDestroy {
   chatService = inject(ChatService);
   private authService = inject(AuthService);
   private userService = inject(UserService);
+  private notifService = inject(NotificationService);
   private router = inject(Router);
 
   @ViewChild('messagesContainer') messagesContainer!: ElementRef;
@@ -971,17 +973,7 @@ export class ChatPageComponent implements OnInit, OnDestroy {
     this.chatService.getOrCreatePrivateRoom(userId).subscribe({
       next: (room) => {
         console.log('Private room received:', room.id, room.type);
-        this.ngZone.run(() => {
-          // Select the room directly
-          this.activeRoom.set(room);
-          this.chatService.messages.set([]);
-          this.chatService.loadMessages(room.id);
-          this.chatService.joinRoom(room.id, this.currentUserId(), room);
-
-          setTimeout(() => {
-            this.scrollToBottom();
-          }, 800);
-        });
+        this.ngZone.run(() => this.selectRoom(room));
       },
       error: (err) => {
         console.error('Failed to open private chat:', err);
@@ -1001,7 +993,12 @@ export class ChatPageComponent implements OnInit, OnDestroy {
     this.chatService.loadMessages(room.id);
     this.chatService.joinRoom(room.id, this.currentUserId(), room);
 
-    // Scroll to bottom after messages load
+    // Persist read state in DB then update local signal
+    this.chatService.markRoomAsRead(room.id).subscribe({
+      next: () => this.notifService.markRoomMessagesRead(room.id),
+      error: (err) => console.warn('markRoomAsRead failed on selectRoom:', err)
+    });
+
     setTimeout(() => this.scrollToBottom(), 500);
   }
 

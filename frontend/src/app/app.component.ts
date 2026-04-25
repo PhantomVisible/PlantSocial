@@ -2,7 +2,7 @@ import { Component, inject, OnInit, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { OAuthService } from 'angular-oauth2-oidc';
 import { authConfig } from './auth.config';
-import { RouterOutlet, Router, ActivatedRoute, NavigationEnd, RouterLink, ChildrenOutletContexts } from '@angular/router';
+import { RouterOutlet, Router, ActivatedRoute, NavigationEnd, ChildrenOutletContexts } from '@angular/router';
 import { slideInAnimation } from './core/route-animations';
 import { GlobalLoaderComponent } from './shared/global-loader/global-loader.component';
 import { ToastContainerComponent } from './shared/toast-container/toast-container.component';
@@ -47,16 +47,6 @@ import { ShopService } from './features/shop/shop.service';
       *ngIf="gatekeeper.showPrompt()" 
       (close)="gatekeeper.showPrompt.set(false)"
     ></app-auth-prompt-dialog>
-
-    <div class="auth-header" *ngIf="isBrowser()" style="padding: 1rem; display: flex; justify-content: flex-end; align-items: center; gap: 1rem; background: var(--surface-card); border-bottom: 1px solid var(--surface-border);">
-      <ng-container *ngIf="oauthService.hasValidAccessToken(); else loginBtn">
-        <span style="font-weight: 600;">Welcome, {{ identityClaims?.['name'] || identityClaims?.['preferred_username'] || 'User' }}</span>
-        <button (click)="logout()" style="padding: 0.5rem 1rem; cursor: pointer; border-radius: 4px; border: 1px solid #ccc;">Logout</button>
-      </ng-container>
-      <ng-template #loginBtn>
-        <button (click)="login()" style="padding: 0.5rem 1rem; cursor: pointer; border-radius: 4px; border: none; background: var(--primary-color); color: var(--primary-color-text);">Login</button>
-      </ng-template>
-    </div>
 
     <div class="app-layout" [class.app-layout--auth]="isAuthRoute()" [class.app-layout--fullwidth]="isFullWidthRoute()">
       <app-sidebar *ngIf="!isAuthRoute() && !isOnboardingRoute()" class="app-sidebar"></app-sidebar>
@@ -225,18 +215,6 @@ export class AppComponent implements OnInit {
 
   isBrowser() {
     return isPlatformBrowser(this.platformId);
-  }
-
-  login() {
-    this.oauthService.initCodeFlow();
-  }
-
-  logout() {
-    this.oauthService.logOut();
-  }
-
-  get identityClaims() {
-    return this.oauthService.getIdentityClaims() as Record<string, any> | null;
   }
 
   ngOnInit() {

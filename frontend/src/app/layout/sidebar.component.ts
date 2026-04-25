@@ -1,6 +1,6 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule, NavigationEnd } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { AuthPromptDialogComponent } from '../features/auth/auth-prompt-dialog.component';
 import { PlantDoctorService } from '../features/plant-doctor/plant-doctor.service';
@@ -332,7 +332,7 @@ import { environment } from '../../environments/environment';
     }
   `]
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent {
   authService = inject(AuthService);
   notifService = inject(NotificationService);
   plantDoctor = inject(PlantDoctorService);
@@ -356,21 +356,6 @@ export class SidebarComponent implements OnInit {
     ).length;
   });
 
-  ngOnInit() {
-    // When navigating to /chat, mark all MESSAGE notifications as read
-    this.router.events.subscribe(event => {
-      if (event instanceof NavigationEnd && event.url.startsWith('/chat')) {
-        this.markAllMessageNotificationsAsRead();
-      }
-    });
-  }
-
-  private markAllMessageNotificationsAsRead() {
-    const unreadMessages = this.notifService.notificationsList().filter(
-      n => n.type === 'MESSAGE' && !n.isRead
-    );
-    unreadMessages.forEach(n => this.notifService.markAsRead(n.id));
-  }
   private toastTimeout: any;
 
   showComingSoon(name: string) {

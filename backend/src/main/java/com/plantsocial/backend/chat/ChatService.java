@@ -254,6 +254,11 @@ public class ChatService {
         return userRepository.searchByUsernameOrFullName(query, excludeUserId);
     }
 
+    @Transactional
+    public void markRoomAsRead(UUID roomId, User user) {
+        notificationService.markRoomNotificationsRead(roomId, user);
+    }
+
     public User getCurrentUser() {
         return securityUtils.getCurrentUser();
     }

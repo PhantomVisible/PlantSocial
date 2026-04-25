@@ -99,6 +99,23 @@ export class NotificationService {
         });
     }
 
+    /** Called after the backend has already persisted the bulk-read for a chat room. */
+    markRoomMessagesRead(roomId: string): void {
+        let marked = 0;
+        this.notifications.update(list =>
+            list.map(n => {
+                if (n.type === 'MESSAGE' && n.relatedId === roomId && !n.isRead) {
+                    marked++;
+                    return { ...n, isRead: true };
+                }
+                return n;
+            })
+        );
+        if (marked > 0) {
+            this.unreadCountSignal.update(c => Math.max(0, c - marked));
+        }
+    }
+
     private addRealTimeNotification(n: Notification) {
         this.notifications.update(list => [n, ...list.slice(0, 19)]);
         this.unreadCountSignal.update(c => c + 1);

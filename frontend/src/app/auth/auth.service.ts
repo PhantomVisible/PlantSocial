@@ -1,8 +1,10 @@
 import { Injectable, signal, computed, inject, PLATFORM_ID, effect } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { OAuthService } from 'angular-oauth2-oidc';
-import { ReplaySubject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 // ─── Public models (kept for backward compatibility with consumers) ──────────
 
@@ -22,34 +24,39 @@ export interface CurrentUser {
 export class AuthService {
     private oauthService = inject(OAuthService);
     private platformId = inject(PLATFORM_ID);
+    private http = inject(HttpClient);
 
     // ─── Signals ──────────────────────────────────────────────────
     readonly isAuthenticated = signal<boolean>(false);
     readonly currentUser = signal<CurrentUser | null>(null);
 
     // ─── Auth readiness ───────────────────────────────────────────
-    private authReadySubject = new ReplaySubject<boolean>(1);
-    /** Emits once (and replays) after loadDiscoveryDocumentAndTryLogin resolves. */
+    private authReadySubject = new BehaviorSubject<boolean>(false);
+    /** Becomes true (and stays true) after loadDiscoveryDocumentAndTryLogin resolves. */
     readonly authReady$ = this.authReadySubject.asObservable();
 
     constructor() {
-        if (isPlatformBrowser(this.platformId)) {
-            // Sync state once on startup (in case the OIDC session is already valid)
-            this.syncState();
-
-            // Re-sync whenever the OAuthService emits a relevant event
-            this.oauthService.events
-                .pipe(
-                    filter(e =>
-                        e.type === 'token_received' ||
-                        e.type === 'token_refreshed' ||
-                        e.type === 'logout' ||
-                        e.type === 'session_terminated' ||
-                        e.type === 'token_expires'
-                    )
-                )
-                .subscribe(() => this.syncState());
+        if (!isPlatformBrowser(this.platformId)) {
+            // SSR: no OIDC exchange possible — unblock guards immediately
+            this.authReadySubject.next(true);
+            return;
         }
+
+        // Sync state once on startup (in case the OIDC session is already valid)
+        this.syncState();
+
+        // Re-sync whenever the OAuthService emits a relevant event
+        this.oauthService.events
+            .pipe(
+                filter(e =>
+                    e.type === 'token_received' ||
+                    e.type === 'token_refreshed' ||
+                    e.type === 'logout' ||
+                    e.type === 'session_terminated' ||
+                    e.type === 'token_expires'
+                )
+            )
+            .subscribe(() => this.syncState());
     }
 
     // ─── Initialization ───────────────────────────────────────────
@@ -60,17 +67,29 @@ export class AuthService {
      * Guards must wait for authReady$ before making routing decisions.
      */
     async initialize(): Promise<void> {
-        if (!isPlatformBrowser(this.platformId)) {
-            this.authReadySubject.next(false);
-            return;
-        }
         try {
             await this.oauthService.loadDiscoveryDocumentAndTryLogin();
+            this.oauthService.setupAutomaticSilentRefresh();
         } catch {
             // Discovery failed — treat as unauthenticated
         }
         this.syncState();
         this.authReadySubject.next(true);
+
+        // The Keycloak JWT `picture` claim is never populated by our upload flow —
+        // S3 URLs live only in our DB. Reconcile non-blocking so guards aren't delayed.
+        const user = this.currentUser();
+        if (user) {
+            this.http.get<{ profilePictureUrl?: string }>(
+                `${environment.apiUrl}/users/${user.username}`
+            ).subscribe({
+                next: (profile) => {
+                    if (profile.profilePictureUrl) {
+                        this.currentUser.update(u => u ? { ...u, profilePictureUrl: profile.profilePictureUrl } : u);
+                    }
+                }
+            });
+        }
     }
 
     // ─── Public API ───────────────────────────────────────────────

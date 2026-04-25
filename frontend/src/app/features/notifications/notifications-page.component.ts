@@ -27,10 +27,11 @@ interface GroupedNotification {
           <p>No notifications yet.</p>
         </div>
 
-        <div 
-          *ngFor="let group of groupedNotifications()" 
+        <div
+          *ngFor="let group of groupedNotifications()"
           class="notification-item"
           [class.notification-item--unread]="group.hasUnread"
+          (mouseenter)="onNotificationHover(group)"
           (click)="handleGroupClick(group)"
         >
           <div class="avatar-wrapper">
@@ -209,8 +210,15 @@ export class NotificationsPageComponent {
     return Array.from(groupMap.values());
   });
 
+  onNotificationHover(group: GroupedNotification): void {
+    if (!group.hasUnread) return;
+    // Snapshot the ids before optimistic updates cause recompute
+    const ids = [...group.unreadIds];
+    ids.forEach(id => this.notifService.markAsRead(id));
+  }
+
   handleGroupClick(group: GroupedNotification) {
-    // Mark all unread in this group as read
+    // Hover already marks as read; this just navigates (ids may already be empty)
     for (const id of group.unreadIds) {
       this.notifService.markAsRead(id);
     }

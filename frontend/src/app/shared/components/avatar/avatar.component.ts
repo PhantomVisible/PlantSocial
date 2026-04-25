@@ -1,4 +1,4 @@
-import { Component, Input, computed } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -56,13 +56,19 @@ import { CommonModule } from '@angular/common';
     }
   `]
 })
-export class AvatarComponent {
+export class AvatarComponent implements OnChanges {
     @Input() imageUrl: string | undefined | null = null;
     @Input() name: string = '';
     @Input() size: number = 40;
     @Input() hasBorder: boolean = false;
 
     imageError = false;
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes['imageUrl']) {
+            this.imageError = false;
+        }
+    }
 
     containerClass = computed(() => {
         return `avatar-container ${this.hasBorder ? 'has-border' : ''}`;

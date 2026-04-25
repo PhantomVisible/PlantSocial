@@ -63,6 +63,11 @@ public class NotificationService {
         });
     }
 
+    @Transactional
+    public void markRoomNotificationsRead(UUID roomId, User user) {
+        notificationRepository.markRoomMessagesRead(user.getId(), roomId);
+    }
+
     private void sendRealTimeNotification(Notification notification) {
         try {
             String destination = "/topic/notifications/" + notification.getRecipient().getId();

@@ -14,8 +14,6 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                 toast.showError('Server is unreachable. Please try again later.');
             } else if (error.status === 400) {
                 toast.showError(msg || 'Bad Request. Please check your input.');
-            } else if (error.status === 401) {
-                toast.showError(msg || 'Unauthorized or Session Expired.');
             } else if (error.status === 403) {
                 toast.showError('Access denied. You don\'t have permission to do that.');
             } else if (error.status === 409) {
