@@ -12,6 +12,7 @@ import com.plantsocial.backend.chat.repository.ChatRoomRepository;
 import com.plantsocial.backend.exception.BusinessException;
 import com.plantsocial.backend.notification.NotificationService;
 import com.plantsocial.backend.notification.model.NotificationType;
+import com.plantsocial.backend.realtime.CentrifugoPublisherService;
 import com.plantsocial.backend.security.SecurityUtils;
 import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.user.UserRepository;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -39,6 +41,7 @@ public class ChatService {
     private final SimpMessagingTemplate messagingTemplate;
     private final NotificationService notificationService;
     private final SecurityUtils securityUtils;
+    private final CentrifugoPublisherService centrifugoPublisher;
 
     // ─── Room Management ───────────────────────────────────────────
 
@@ -163,8 +166,7 @@ public class ChatService {
 
         ChatMessageDTO dto = mapToMessageDTO(message);
 
-        // Send real-time message to room topic
-        messagingTemplate.convertAndSend("/topic/room/" + roomId, dto);
+        centrifugoPublisher.publish("/topic/room/" + roomId, dto);
 
         // Send notifications to other members
         List<ChatRoomMember> members = chatRoomMemberRepository.findByChatRoomId(roomId);
@@ -236,6 +238,14 @@ public class ChatService {
                 msg.getMessageType().name(),
                 msg.getMediaUrl(),
                 msg.getCreatedAt());
+    }
+
+    public void publishTyping(UUID roomId, User sender) {
+        centrifugoPublisher.publish(
+                "/topic/room/" + roomId + "/typing",
+                Map.of("userId", sender.getId().toString(),
+                        "username", sender.getUsername(),
+                        "fullName", sender.getFullName()));
     }
 
     // ─── User Search ────────────────────────────────────────────────

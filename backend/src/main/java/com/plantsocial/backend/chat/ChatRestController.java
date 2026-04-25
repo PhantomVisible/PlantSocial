@@ -29,6 +29,28 @@ public class ChatRestController {
     private final ChatService chatService;
     private final PresenceService presenceService;
 
+    // ─── Send ──────────────────────────────────────────────────────
+
+    public record RestSendRequest(UUID roomId, String content, String messageType) {}
+
+    @PostMapping("/send")
+    public ResponseEntity<ChatMessageDTO> sendMessageRest(@RequestBody RestSendRequest request) {
+        User currentUser = chatService.getCurrentUser();
+        return ResponseEntity.ok(chatService.sendMessage(
+                request.roomId(),
+                currentUser,
+                request.content(),
+                request.messageType() != null ? request.messageType() : "TEXT",
+                null));
+    }
+
+    @PostMapping("/typing/{roomId}")
+    public ResponseEntity<Void> sendTyping(@PathVariable UUID roomId) {
+        User currentUser = chatService.getCurrentUser();
+        chatService.publishTyping(roomId, currentUser);
+        return ResponseEntity.ok().build();
+    }
+
     // ─── Rooms ─────────────────────────────────────────────────────
 
     @PostMapping("/rooms")

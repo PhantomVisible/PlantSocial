@@ -37,11 +37,6 @@ spring:
           uri: ws://localhost:8000
           predicates:
             - Path=/connection/**
-        - id: chat-service-send
-          uri: http://localhost:8083
-          predicates:
-            - Path=/api/v1/chat/send
-            - Method=POST
         - id: backend_route
           uri: http://localhost:8080
           predicates:
