@@ -3,6 +3,7 @@ package com.plantsocial.backend.chat;
 import com.plantsocial.backend.chat.dto.ChatMessageDTO;
 import com.plantsocial.backend.chat.dto.ChatRoomDTO;
 import com.plantsocial.backend.chat.dto.CreateRoomRequest;
+import com.plantsocial.backend.service.FileStorageService;
 import com.plantsocial.backend.user.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,10 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,6 +25,7 @@ public class ChatRestController {
 
     private final ChatService chatService;
     private final PresenceService presenceService;
+    private final FileStorageService fileStorageService;
 
     // ─── Send ──────────────────────────────────────────────────────
 
@@ -106,41 +104,15 @@ public class ChatRestController {
     @PostMapping(value = "/rooms/{roomId}/media", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ChatMessageDTO> uploadMedia(
             @PathVariable UUID roomId,
-            @RequestParam("file") MultipartFile file) throws IOException {
+            @RequestParam("file") MultipartFile file) {
 
-        try {
-            User currentUser = chatService.getCurrentUser();
+        User currentUser = chatService.getCurrentUser();
+        String mediaUrl = fileStorageService.storeFile(file);
+        String messageType = file.getContentType() != null && file.getContentType().startsWith("image/")
+                ? "IMAGE" : "FILE";
 
-            // Save file
-            String uploadDir = "uploads/chat";
-            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-
-            log.debug("Uploading file to: {}", uploadPath);
-
-            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path filePath = uploadPath.resolve(fileName);
-            Files.copy(file.getInputStream(), filePath);
-
-            String mediaUrl = "/images/chat/" + fileName;
-
-            // Determine type
-            String contentType = file.getContentType();
-            String messageType = "FILE";
-            if (contentType != null && contentType.startsWith("image/")) {
-                messageType = "IMAGE";
-            }
-
-            ChatMessageDTO msg = chatService.sendMessage(
-                    roomId, currentUser, file.getOriginalFilename(), messageType, mediaUrl);
-
-            return ResponseEntity.ok(msg);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Media upload failed: " + e.getMessage());
-        }
+        return ResponseEntity.ok(chatService.sendMessage(
+                roomId, currentUser, file.getOriginalFilename(), messageType, mediaUrl));
     }
 
     // ─── Presence ──────────────────────────────────────────────────

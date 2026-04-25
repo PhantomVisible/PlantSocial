@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy, signal, computed, ViewChild, ElementRef, inject, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, ViewChild, ElementRef, inject, NgZone, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
@@ -926,6 +927,7 @@ export class ChatPageComponent implements OnInit, OnDestroy {
 
   private route = inject(ActivatedRoute);
   private ngZone = inject(NgZone);
+  private destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
     console.log('ChatPageComponent initialized');
@@ -949,8 +951,8 @@ export class ChatPageComponent implements OnInit, OnDestroy {
       this.openPrivateChatWithUser(snapshotUserId);
     }
 
-    // Also subscribe for changes
-    this.route.queryParams.subscribe(params => {
+    // Also subscribe for changes — takeUntilDestroyed ensures cleanup on component destroy
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       const targetUserId = params['userId'];
       console.log('ChatPage queryParams changed:', params, 'targetUserId:', targetUserId);
       // Only trigger if we haven't already opened it via snapshot (or if it changed)

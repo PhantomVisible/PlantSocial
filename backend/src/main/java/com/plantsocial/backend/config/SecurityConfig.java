@@ -37,7 +37,7 @@ public class SecurityConfig {
 
                                 // ── Fully public (no token required) ──────────────────────────────
                                 // Static assets
-                                .requestMatchers("/images/**", "/ws/**").permitAll()
+                                .requestMatchers("/ws/**").permitAll()
 
                                 // Public read-only feeds (the "Reddit model")
                                 .requestMatchers(HttpMethod.GET,

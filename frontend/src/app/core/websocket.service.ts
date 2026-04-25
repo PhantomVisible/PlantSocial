@@ -15,6 +15,7 @@ export class WebSocketService implements OnDestroy {
     private centrifuge: Centrifuge | null = null;
     private connecting = false; // prevents double-init during async token fetch
     private subscriptions = new Map<string, CentrifugeSubscription>();
+    private channelSubjects = new Map<string, Subject<any>>();
     private connectionState$ = new Subject<boolean>();
 
     // ─── Lifecycle ────────────────────────────────────────────────
@@ -57,6 +58,8 @@ export class WebSocketService implements OnDestroy {
     disconnect(): void {
         this.subscriptions.forEach(sub => sub.unsubscribe());
         this.subscriptions.clear();
+        this.channelSubjects.forEach(subject => subject.complete());
+        this.channelSubjects.clear();
         this.centrifuge?.disconnect();
         this.centrifuge = null;
     }
@@ -65,44 +68,40 @@ export class WebSocketService implements OnDestroy {
 
     /**
      * Returns an Observable that emits parsed message data from a Centrifugo channel.
-     * Caller should unsubscribe from the Observable to release the channel subscription.
+     * Idempotent: multiple calls for the same channel share one Centrifugo subscription.
+     * Unsubscribing an Angular subscription does not tear down the Centrifugo channel.
      */
     subscribe<T>(channel: string): Observable<T> {
-        return new Observable<T>(subscriber => {
-            const doSubscribe = () => {
-                if (!this.centrifuge) {
-                    // Centrifuge is still connecting — wait for the connected event then retry
-                    const connSub = this.connectionState$.subscribe(connected => {
-                        if (connected) {
-                            connSub.unsubscribe();
-                            this.attachChannelSubscription(channel, subscriber);
-                        }
-                    });
-                    return;
-                }
-                this.attachChannelSubscription(channel, subscriber);
-            };
-
-            doSubscribe();
-
-            return () => {
-                const sub = this.subscriptions.get(channel);
-                if (sub) {
-                    sub.unsubscribe();
-                    this.subscriptions.delete(channel);
-                }
-            };
-        });
+        if (!this.channelSubjects.has(channel)) {
+            const subject = new Subject<T>();
+            this.channelSubjects.set(channel, subject);
+            this.ensureCentrifugoSubscription<T>(channel, subject);
+        }
+        return (this.channelSubjects.get(channel) as Subject<T>).asObservable();
     }
 
-    private attachChannelSubscription<T>(channel: string, subscriber: any): void {
+    private ensureCentrifugoSubscription<T>(channel: string, subject: Subject<T>): void {
+        if (!this.centrifuge) {
+            // Still connecting — wire up once the connection is ready
+            const connSub = this.connectionState$.subscribe(connected => {
+                if (connected) {
+                    connSub.unsubscribe();
+                    this.attachChannelSubscription<T>(channel, subject);
+                }
+            });
+            return;
+        }
+        this.attachChannelSubscription<T>(channel, subject);
+    }
+
+    private attachChannelSubscription<T>(channel: string, subject: Subject<T>): void {
         if (!this.centrifuge || this.subscriptions.has(channel)) return;
 
         const sub = this.centrifuge.newSubscription(channel);
 
         sub.on('publication', (ctx: PublicationContext) => {
             try {
-                subscriber.next(ctx.data as T);
+                subject.next(ctx.data as T);
             } catch (e) {
                 console.error('Failed to process Centrifugo publication:', e);
             }

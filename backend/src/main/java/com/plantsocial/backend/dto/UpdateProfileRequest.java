@@ -8,5 +8,7 @@ public record UpdateProfileRequest(
 
         @Size(max = 100, message = "Full name too long") String fullName,
 
-        @Size(max = 500, message = "Bio too long") String bio) {
+        @Size(max = 500, message = "Bio too long") String bio,
+
+        @Size(max = 100, message = "Location too long") String location) {
 }

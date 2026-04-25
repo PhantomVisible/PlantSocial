@@ -4,15 +4,13 @@ import com.plantsocial.backend.dto.PostResponse;
 import com.plantsocial.backend.dto.UserProfileDTO;
 import com.plantsocial.backend.model.Post;
 import com.plantsocial.backend.repository.PostRepository;
+import com.plantsocial.backend.security.SecurityUtils;
 import com.plantsocial.backend.service.FeedService;
 import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,6 +26,7 @@ public class UserController {
     private final PostRepository postRepository;
     private final FeedService feedService;
     private final com.plantsocial.backend.service.FileStorageService fileStorageService;
+    private final SecurityUtils securityUtils;
 
     /**
      * Get a user's public profile
@@ -87,7 +86,7 @@ public class UserController {
      */
     @GetMapping("/users/suggestions")
     public ResponseEntity<List<UserProfileDTO>> getSuggestions() {
-        User currentUser = getCurrentUser();
+        User currentUser = securityUtils.getCurrentUser();
         List<User> suggestions = userRepository.findSuggestedUsers(
                 currentUser.getId(),
                 PageRequest.of(0, 3));
@@ -156,7 +155,8 @@ public class UserController {
     }
 
     /**
-     * Update user profile
+     * Update user profile (avatar, cover, username, fullName, bio, location).
+     * Accepts multipart/form-data with a JSON "data" part and optional image parts.
      */
     @PutMapping(value = "/users/profile", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserProfileDTO> updateProfile(
@@ -164,9 +164,9 @@ public class UserController {
             @RequestPart(value = "image", required = false) org.springframework.web.multipart.MultipartFile image,
             @RequestPart(value = "coverImage", required = false) org.springframework.web.multipart.MultipartFile coverImage) {
 
-        User currentUser = getCurrentUser();
+        User currentUser = securityUtils.getCurrentUser();
 
-        // 1. Validate Username
+        // 1. Validate and update username
         if (!currentUser.getHandle().equals(request.username())) {
             if (userRepository.existsByUsername(request.username())) {
                 throw new IllegalArgumentException("Username already taken");
@@ -174,19 +174,19 @@ public class UserController {
             currentUser.setUsername(request.username());
         }
 
-        // 2. Update Text Fields
+        // 2. Update text fields
         currentUser.setFullName(request.fullName());
         currentUser.setBio(request.bio());
-
-        // 3. Handle Image Uploads
-        if (image != null && !image.isEmpty()) {
-            String imageUrl = fileStorageService.storeFile(image);
-            currentUser.setProfilePictureUrl(imageUrl);
+        if (request.location() != null) {
+            currentUser.setLocation(request.location());
         }
 
+        // 3. Handle image uploads — delegate to the active FileStorageService (S3)
+        if (image != null && !image.isEmpty()) {
+            currentUser.setProfilePictureUrl(fileStorageService.storeFile(image));
+        }
         if (coverImage != null && !coverImage.isEmpty()) {
-            String coverUrl = fileStorageService.storeFile(coverImage);
-            currentUser.setCoverPictureUrl(coverUrl);
+            currentUser.setCoverPictureUrl(fileStorageService.storeFile(coverImage));
         }
 
         userRepository.save(currentUser);
@@ -194,9 +194,8 @@ public class UserController {
         long postCount = postRepository.countByAuthorId(currentUser.getId());
         long followerCount = currentUser.getFollowers().size();
         long followingCount = currentUser.getFollowing().size();
-        // User cannot follow themselves, so isFollowing is false
 
-        UserProfileDTO dto = new UserProfileDTO(
+        return ResponseEntity.ok(new UserProfileDTO(
                 currentUser.getId(),
                 currentUser.getFullName(),
                 currentUser.getHandle(),
@@ -208,28 +207,10 @@ public class UserController {
                 postCount,
                 followerCount,
                 followingCount,
-                false);
-
-        return ResponseEntity.ok(dto);
+                false));
     }
 
     private User getCurrentUserSafe() {
-        try {
-            return getCurrentUser();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    private User getCurrentUser() {
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth instanceof JwtAuthenticationToken jwtAuth) {
-            String username = (String) jwtAuth.getTokenAttributes().get("preferred_username");
-            if (username != null) {
-                return userRepository.findByUsername(username)
-                        .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
-            }
-        }
-        throw new UsernameNotFoundException("Not authenticated");
+        return securityUtils.getCurrentUserOrNull();
     }
 }

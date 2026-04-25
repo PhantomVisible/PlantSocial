@@ -7,10 +7,20 @@ import { LoginComponent } from './auth/login/login.component';
 import { RegisterComponent } from './auth/register/register.component';
 import { authGuard } from './auth/auth.guard';
 import { guestGuard } from './auth/guest.guard';
+import { onboardingGuard } from './auth/onboarding.guard';
 
 export const routes: Routes = [
-    { path: '', component: FeedComponent, data: { animation: 'FeedPage' } },
-    { path: 'feed', component: FeedComponent, data: { animation: 'FeedPage' } },
+    // Onboarding — must be before the feed routes so it's not caught by the wildcard
+    {
+        path: 'onboarding',
+        loadComponent: () => import('./features/onboarding/onboarding-wizard.component').then(m => m.OnboardingWizardComponent),
+        canActivate: [authGuard],
+        data: { animation: 'OnboardingPage' }
+    },
+
+    // Feed routes protected by onboarding check
+    { path: '', component: FeedComponent, canActivate: [onboardingGuard], data: { animation: 'FeedPage' } },
+    { path: 'feed', component: FeedComponent, canActivate: [onboardingGuard], data: { animation: 'FeedPage' } },
     { path: 'explore', loadComponent: () => import('./features/explore/explore.component').then(m => m.ExploreComponent), data: { animation: 'ExplorePage' } },
     { path: 'post/:id', loadComponent: () => import('./features/feed/post-detail.component').then(m => m.PostDetailComponent), data: { animation: 'PostPage' } },
     { path: 'auth/login', component: LoginComponent, canActivate: [guestGuard], data: { animation: 'LoginPage' } },
@@ -20,7 +30,7 @@ export const routes: Routes = [
     { path: 'profile/:username', component: UserProfileComponent, data: { animation: 'ProfilePage' } },
     { path: 'chat', component: ChatPageComponent, canActivate: [authGuard], data: { animation: 'ChatPage' } },
     { path: 'notifications', component: NotificationsPageComponent, canActivate: [authGuard], data: { animation: 'NotificationsPage' } },
-    { path: 'greenhouse', loadComponent: () => import('./components/greenhouse/greenhouse.component').then(m => m.GreenhouseComponent), canActivate: [authGuard], data: { animation: 'GreenhousePage' } },
+    { path: 'greenhouse', loadComponent: () => import('./components/greenhouse/greenhouse.component').then(m => m.GreenhouseComponent), canActivate: [authGuard, onboardingGuard], data: { animation: 'GreenhousePage' } },
 
     // Shop Routes
     { path: 'shop', loadComponent: () => import('./features/shop/shop-page.component').then(m => m.ShopPageComponent) },

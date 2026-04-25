@@ -59,7 +59,7 @@ import { ShopService } from './features/shop/shop.service';
     </div>
 
     <div class="app-layout" [class.app-layout--auth]="isAuthRoute()" [class.app-layout--fullwidth]="isFullWidthRoute()">
-      <app-sidebar *ngIf="!isAuthRoute()" class="app-sidebar"></app-sidebar>
+      <app-sidebar *ngIf="!isAuthRoute() && !isOnboardingRoute()" class="app-sidebar"></app-sidebar>
       <main class="app-main" [class.app-main--full]="isFullWidthRoute() || isAuthRoute()"
             style="position: relative; overflow: hidden;">
         <div [@routeAnimations]="getRouteAnimationData()"
@@ -81,7 +81,7 @@ import { ShopService } from './features/shop/shop.service';
       </aside>
     </div>
     <app-bottom-nav *ngIf="shouldShowBottomNav()"></app-bottom-nav>
-    <app-floating-chat-container *ngIf="authService.currentUser() && !isChatRoute()"></app-floating-chat-container>
+    <app-floating-chat-container *ngIf="authService.currentUser() && !isChatRoute() && !isOnboardingRoute()"></app-floating-chat-container>
     
     <app-plant-doctor-dialog 
       *ngIf="plantDoctor.isOpen()" 
@@ -211,6 +211,7 @@ export class AppComponent implements OnInit {
   isPlantSelected = signal(false);
   isFullWidthRoute = signal(false);
   isAuthRoute = signal(false);
+  isOnboardingRoute = signal(false);
   isExploreRoute = signal(false);
   isChatRoute = signal(false);
   shouldShowBottomNav = signal(true);
@@ -218,7 +219,7 @@ export class AppComponent implements OnInit {
   constructor() {
     if (this.isBrowser()) {
       this.oauthService.configure(authConfig);
-      this.oauthService.loadDiscoveryDocumentAndTryLogin();
+      this.authService.initialize();
     }
   }
 
@@ -257,22 +258,25 @@ export class AppComponent implements OnInit {
     const url = this.router.url;
     this.isPlantSelected.set(url.includes('plant='));
     this.isAuthRoute.set(url.startsWith('/auth'));
+    this.isOnboardingRoute.set(url.startsWith('/onboarding'));
     this.isExploreRoute.set(url.startsWith('/explore'));
     this.isChatRoute.set(url.startsWith('/chat'));
 
-    // Updated to include marketplace in full width
+    // Updated to include marketplace and onboarding in full width
     this.isFullWidthRoute.set(
       url.startsWith('/chat') ||
       url.startsWith('/notifications') ||
       url.startsWith('/shop') ||
       url.startsWith('/marketplace') ||
-      url.startsWith('/auth')
+      url.startsWith('/auth') ||
+      url.startsWith('/onboarding')
     );
 
     this.shouldShowBottomNav.set(
       !url.startsWith('/auth') &&
       !url.startsWith('/shop') &&
-      !url.startsWith('/marketplace')
+      !url.startsWith('/marketplace') &&
+      !url.startsWith('/onboarding')
     );
   }
 
