@@ -4,12 +4,12 @@ import com.plantsocial.backend.notification.dto.NotificationDTO;
 import com.plantsocial.backend.notification.model.Notification;
 import com.plantsocial.backend.notification.model.NotificationType;
 import com.plantsocial.backend.notification.repository.NotificationRepository;
+import com.plantsocial.backend.realtime.CentrifugoPublisherService;
 import com.plantsocial.backend.user.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +21,7 @@ import java.util.UUID;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final CentrifugoPublisherService centrifugoPublisher;
 
     @Transactional
     public void createNotification(User recipient, User sender, NotificationType type, String content, UUID relatedId) {
@@ -65,17 +65,14 @@ public class NotificationService {
 
     @Transactional
     public void markRoomNotificationsRead(UUID roomId, User user) {
-        notificationRepository.markRoomMessagesRead(user.getId(), roomId);
+        int updated = notificationRepository.markRoomMessagesRead(user.getId(), roomId);
+        log.info("Marked {} notifications as read for room {} / user {}", updated, roomId, user.getId());
     }
 
     private void sendRealTimeNotification(Notification notification) {
-        try {
-            String destination = "/topic/notifications/" + notification.getRecipient().getId();
-            log.info("Sending WebSocket notification to {}", destination);
-            messagingTemplate.convertAndSend(destination, mapToDTO(notification));
-        } catch (Exception e) {
-            log.error("Failed to send WebSocket notification: {}", e.getMessage(), e);
-        }
+        String channel = "/topic/notifications/" + notification.getRecipient().getId();
+        log.info("Publishing real-time notification to Centrifugo channel {}", channel);
+        centrifugoPublisher.publish(channel, mapToDTO(notification));
     }
 
     private NotificationDTO mapToDTO(Notification n) {

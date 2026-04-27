@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -16,7 +17,8 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
 
     long countByRecipientAndIsReadFalse(User recipient);
 
-    @Modifying
+    @Transactional
+    @Modifying(clearAutomatically = true)
     @Query("UPDATE Notification n SET n.isRead = true " +
            "WHERE n.recipient.id = :userId AND n.relatedId = :roomId " +
            "AND n.type = com.plantsocial.backend.notification.model.NotificationType.MESSAGE " +

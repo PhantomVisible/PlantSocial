@@ -13,5 +13,6 @@ public record ChatMessageDTO(
                 String content,
                 String messageType,
                 String mediaUrl,
-                LocalDateTime createdAt) {
+                LocalDateTime createdAt,
+                boolean isRead) {
 }

@@ -183,10 +183,10 @@ public class UserController {
 
         // 3. Handle image uploads — delegate to the active FileStorageService (S3)
         if (image != null && !image.isEmpty()) {
-            currentUser.setProfilePictureUrl(fileStorageService.storeFile(image));
+            currentUser.setProfilePictureUrl(fileStorageService.storeFile(image, currentUser.getId(), "profile"));
         }
         if (coverImage != null && !coverImage.isEmpty()) {
-            currentUser.setCoverPictureUrl(fileStorageService.storeFile(coverImage));
+            currentUser.setCoverPictureUrl(fileStorageService.storeFile(coverImage, currentUser.getId(), "cover"));
         }
 
         userRepository.save(currentUser);

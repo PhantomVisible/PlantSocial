@@ -27,7 +27,8 @@ public class MarketplaceController {
     @PostMapping(value = "/upload", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadImage(
             @RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
-        String fileUrl = fileStorageService.storeFile(file);
+        UUID userId = securityUtils.getCurrentUser().getId();
+        String fileUrl = fileStorageService.storeFile(file, userId, "marketplace");
         return ResponseEntity.ok(fileUrl);
     }
 

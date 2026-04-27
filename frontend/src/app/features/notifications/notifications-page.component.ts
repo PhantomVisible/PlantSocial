@@ -31,6 +31,7 @@ interface GroupedNotification {
           *ngFor="let group of groupedNotifications()"
           class="notification-item"
           [class.notification-item--unread]="group.hasUnread"
+          [class.notification-item--read]="!group.hasUnread"
           (mouseenter)="onNotificationHover(group)"
           (click)="handleGroupClick(group)"
         >
@@ -112,6 +113,16 @@ interface GroupedNotification {
     }
     .notification-item--unread:hover {
       background: var(--trellis-green-light);
+    }
+    .notification-item--read {
+      opacity: 0.65;
+    }
+    .notification-item--read .user-name {
+      font-weight: 400;
+    }
+    .notification-item--read:hover {
+      opacity: 1;
+      background: rgba(0,0,0,0.02);
     }
 
     .avatar-wrapper {

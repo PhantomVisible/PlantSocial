@@ -41,6 +41,9 @@ public class ChatMessage {
     @Column(length = 500)
     private String mediaUrl;
 
+    @Builder.Default
+    private Boolean isRead = false;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

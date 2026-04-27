@@ -13,6 +13,7 @@ export interface ChatRoom {
     members: ChatMember[];
     lastMessage: ChatMessage | null;
     createdAt: string;
+    unreadCount?: number;
 }
 
 export interface ChatMember {
@@ -34,6 +35,7 @@ export interface ChatMessage {
     messageType: 'TEXT' | 'IMAGE' | 'FILE';
     mediaUrl: string | null;
     createdAt: string;
+    isRead?: boolean;
 }
 
 export interface OnlineUser {
@@ -240,11 +242,15 @@ export class ChatService {
     /** Debounced: fires markRoomAsRead once per room after 800ms quiet period. */
     private scheduleMarkRoomRead(roomId: string): void {
         if (this.markReadTimers.has(roomId)) return;
+        // Optimistic: clear both the notification bell and the chat sidebar badge immediately
+        this.notifService.markRoomMessagesRead(roomId);
+        this.rooms.update(rooms =>
+            rooms.map(r => r.id === roomId ? { ...r, unreadCount: 0 } : r)
+        );
         const timer = setTimeout(() => {
             this.markReadTimers.delete(roomId);
             this.markRoomAsRead(roomId).subscribe({
-                next: () => this.notifService.markRoomMessagesRead(roomId),
-                error: (err) => console.warn('markRoomAsRead failed (will retry on next message):', err)
+                error: (err) => console.error(`markRoomAsRead HTTP failed for room ${roomId} — unread count may be stale on next refresh:`, err)
             });
         }, 800);
         this.markReadTimers.set(roomId, timer);
@@ -280,54 +286,62 @@ export class ChatService {
         }
 
         console.log(`ChatService: Subscribing to room ${roomId} (WS)`);
-        const sub = this.ws.subscribe<ChatMessage>(`/topic/room/${roomId}`)
+        const sub = this.ws.subscribe<any>(`/topic/room/${roomId}`)
             .subscribe(msg => {
+                // Discard control events (e.g. messages_read) — they are not chat messages
+                if (msg?.type === 'messages_read') return;
+
+                const chatMsg = msg as ChatMessage;
+                const isOwn = chatMsg.senderId === this.authService.currentUser()?.id;
+
                 // 1. Emit to global stream
-                this.messageReceived$.next(msg);
+                this.messageReceived$.next(chatMsg);
 
                 // 2. Update MAIN view if it matches activeRoom
                 if (this.activeRoom()?.id === roomId) {
                     this.messages.update(msgs => {
                         // Avoid duplicates: check by ID
-                        if (msgs.some(m => m.id === msg.id)) return msgs;
+                        if (msgs.some(m => m.id === chatMsg.id)) return msgs;
 
-                        // Fallback: Check for temp message (optimistic UI) match using content & sender
-                        // This handles the case where we added a temp message, and now the real one arrives
-                        // with a different ID but same content.
-                        const isOwn = msg.senderId === this.authService.currentUser()?.id;
+                        // Replace a matching optimistic temp message if present
                         if (isOwn) {
                             const oneMinuteAgo = Date.now() - 60000;
-                            // Find a recent temp message with same content
                             const tempMatchIndex = msgs.findIndex(m =>
                                 m.id.startsWith('temp-') &&
-                                m.content === msg.content &&
+                                m.content === chatMsg.content &&
                                 new Date(m.createdAt).getTime() > oneMinuteAgo
                             );
 
                             if (tempMatchIndex !== -1) {
-                                // Replace temp message with real one
                                 const newMsgs = [...msgs];
-                                newMsgs[tempMatchIndex] = msg;
+                                newMsgs[tempMatchIndex] = chatMsg;
                                 return newMsgs;
                             }
                         }
 
-                        return [...msgs, msg];
+                        return [...msgs, chatMsg];
                     });
                 }
 
                 // 3. Update room list preview
                 this.rooms.update(rooms =>
-                    rooms.map(r => r.id === roomId ? { ...r, lastMessage: msg } : r)
+                    rooms.map(r => r.id === roomId ? { ...r, lastMessage: chatMsg } : r)
                 );
 
-                // 4. Auto-mark read if the user is currently viewing this room
+                // 4. Update unread badge or auto-mark read depending on visibility
                 const isMainActive = this.activeRoom()?.id === roomId;
                 const isFloatingVisible = this.activeFloatingChats().some(
                     c => c.roomId === roomId && !c.minimized
                 );
                 if (isMainActive || isFloatingVisible) {
                     this.scheduleMarkRoomRead(roomId);
+                } else if (!isOwn) {
+                    // Room is in the background — increment the sidebar unread badge
+                    this.rooms.update(rooms =>
+                        rooms.map(r => r.id === roomId
+                            ? { ...r, unreadCount: (r.unreadCount || 0) + 1 }
+                            : r)
+                    );
                 }
             });
 

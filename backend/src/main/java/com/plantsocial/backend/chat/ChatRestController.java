@@ -107,7 +107,7 @@ public class ChatRestController {
             @RequestParam("file") MultipartFile file) {
 
         User currentUser = chatService.getCurrentUser();
-        String mediaUrl = fileStorageService.storeFile(file);
+        String mediaUrl = fileStorageService.storeFile(file, currentUser.getId(), "chat");
         String messageType = file.getContentType() != null && file.getContentType().startsWith("image/")
                 ? "IMAGE" : "FILE";
 

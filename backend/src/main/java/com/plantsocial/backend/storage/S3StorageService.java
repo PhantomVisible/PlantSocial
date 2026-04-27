@@ -67,14 +67,25 @@ public class S3StorageService implements FileStorageService {
     }
 
     /**
-     * Uploads a file to MinIO under the given folder prefix and returns its public URL.
+     * Uploads a file to MinIO under users/{userId}/{folder}/ and returns its public URL.
+     * The object key is: users/{userId}/{folder}/{randomUUID}{extension}
      */
-    public String uploadFile(MultipartFile file, String folder) {
+    @Override
+    public String storeFile(MultipartFile file, java.util.UUID userId, String folder) {
         validateImageFile(file);
+        String key = "users/" + userId + "/" + folder + "/" + UUID.randomUUID() + getExtension(file.getOriginalFilename());
+        return putObject(file, key);
+    }
 
-        String extension = getExtension(file.getOriginalFilename());
-        String key = folder + "/" + UUID.randomUUID() + extension;
+    /** Legacy overload — stores under the generic media/ prefix. */
+    @Override
+    public String storeFile(MultipartFile file) {
+        validateImageFile(file);
+        String key = "media/" + UUID.randomUUID() + getExtension(file.getOriginalFilename());
+        return putObject(file, key);
+    }
 
+    private String putObject(MultipartFile file, String key) {
         try {
             s3.putObject(
                     PutObjectRequest.builder()
@@ -87,17 +98,7 @@ public class S3StorageService implements FileStorageService {
         } catch (IOException e) {
             throw new RuntimeException("Failed to upload file to S3: " + e.getMessage(), e);
         }
-
         return endpoint + "/" + bucketName + "/" + key;
-    }
-
-    /**
-     * Convenience overload — stores under the default "media" folder.
-     * Satisfies the {@link FileStorageService} interface used by existing callers.
-     */
-    @Override
-    public String storeFile(MultipartFile file) {
-        return uploadFile(file, "media");
     }
 
     private void validateImageFile(MultipartFile file) {

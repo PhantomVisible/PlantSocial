@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,7 +37,6 @@ public class ChatService {
     private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
-    private final SimpMessagingTemplate messagingTemplate;
     private final NotificationService notificationService;
     private final SecurityUtils securityUtils;
     private final CentrifugoPublisherService centrifugoPublisher;
@@ -217,13 +215,19 @@ public class ChatService {
                 .map(this::mapToMessageDTO)
                 .orElse(null);
 
+        User currentUser = securityUtils.getCurrentUserOrNull();
+        long unreadCount = currentUser != null
+                ? chatMessageRepository.countUnreadMessages(room.getId(), currentUser.getId())
+                : 0L;
+
         return new ChatRoomDTO(
                 room.getId(),
                 room.getName(),
                 room.getType().name(),
                 memberInfos,
                 lastMessage,
-                room.getCreatedAt());
+                room.getCreatedAt(),
+                unreadCount);
     }
 
     private ChatMessageDTO mapToMessageDTO(ChatMessage msg) {
@@ -237,7 +241,8 @@ public class ChatService {
                 msg.getContent(),
                 msg.getMessageType().name(),
                 msg.getMediaUrl(),
-                msg.getCreatedAt());
+                msg.getCreatedAt(),
+                Boolean.TRUE.equals(msg.getIsRead()));
     }
 
     public void publishTyping(UUID roomId, User sender) {
@@ -256,7 +261,17 @@ public class ChatService {
 
     @Transactional
     public void markRoomAsRead(UUID roomId, User user) {
+        int msgsUpdated = chatMessageRepository.markMessagesReadInRoom(roomId, user.getId());
+        log.info("Marked {} ChatMessages as read for room {} / user {}", msgsUpdated, roomId, user.getId());
         notificationService.markRoomNotificationsRead(roomId, user);
+        try {
+            centrifugoPublisher.publish(
+                    "/topic/room/" + roomId,
+                    Map.of("type", "messages_read", "userId", user.getId().toString()));
+        } catch (Exception e) {
+            // Never let a Centrifugo failure roll back the DB transaction
+            log.warn("Centrifugo broadcast failed for messages_read on room {}: {}", roomId, e.getMessage());
+        }
     }
 
     public User getCurrentUser() {

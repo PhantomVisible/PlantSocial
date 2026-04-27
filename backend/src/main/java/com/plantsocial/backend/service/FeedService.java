@@ -90,7 +90,7 @@ public class FeedService {
 
         String imageUrl = null;
         if (file != null && !file.isEmpty()) {
-            imageUrl = fileStorageService.storeFile(file);
+            imageUrl = fileStorageService.storeFile(file, user.getId(), "posts");
         }
 
         Plant plant = null;

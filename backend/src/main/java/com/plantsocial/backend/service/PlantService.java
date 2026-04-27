@@ -38,7 +38,7 @@ public class PlantService {
 
         String imageUrl = null;
         if (image != null && !image.isEmpty()) {
-            imageUrl = fileStorageService.storeFile(image);
+            imageUrl = fileStorageService.storeFile(image, user.getId(), "plants");
         }
 
         PlantStatus plantStatus = PlantStatus.VEGETATIVE;
@@ -105,7 +105,7 @@ public class PlantService {
         }
 
         if (image != null && !image.isEmpty()) {
-            String imageUrl = fileStorageService.storeFile(image);
+            String imageUrl = fileStorageService.storeFile(image, plant.getOwner().getId(), "plants");
             plant.setImageUrl(imageUrl);
         }
 
@@ -153,7 +153,7 @@ public class PlantService {
 
         String imageUrl = null;
         if (image != null && !image.isEmpty()) {
-            imageUrl = fileStorageService.storeFile(image);
+            imageUrl = fileStorageService.storeFile(image, plant.getOwner().getId(), "plants");
         }
 
         PlantLog log = PlantLog.builder()
@@ -187,7 +187,7 @@ public class PlantService {
         }
 
         if (image != null && !image.isEmpty()) {
-            String imageUrl = fileStorageService.storeFile(image);
+            String imageUrl = fileStorageService.storeFile(image, currentUser.getId(), "plants");
             plant.setImageUrl(imageUrl);
         }
 

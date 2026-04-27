@@ -27,10 +27,11 @@ export class NotificationService {
     private toast = inject(ToastService);
 
     private notifications = signal<Notification[]>([]);
-    private unreadCountSignal = signal<number>(0);
 
     public notificationsList = computed(() => this.notifications());
-    public unreadCount = computed(() => this.unreadCountSignal());
+    public unreadCount = computed(() =>
+        this.notifications().filter(n => !n.isRead).length
+    );
 
     private apiUrl = environment.apiUrl + '/notifications';
 
@@ -51,16 +52,10 @@ export class NotificationService {
     }
 
     private initializeForUser(user: any) {
-        // 1. Load initial unread count
-        this.http.get<number>(`${this.apiUrl}/unread-count`).subscribe(count => {
-            this.unreadCountSignal.set(count);
-        });
-
-        // 2. Load latest notifications
+        // 1. Load latest notifications (unreadCount is derived from this array)
         this.loadNotifications();
 
-        // 3. Subscribe to real-time notifications (Observable pattern)
-        // Ensure we don't have duplicate subscriptions
+        // 2. Subscribe to real-time notifications
         this.cleanupSubscription();
 
         this.notificationSubscription = this.ws.subscribe<Notification>(`/topic/notifications/${user.id}`).subscribe(notification => {
@@ -81,7 +76,6 @@ export class NotificationService {
     private cleanup() {
         this.cleanupSubscription();
         this.notifications.set([]);
-        this.unreadCountSignal.set(0);
     }
 
     loadNotifications() {
@@ -95,32 +89,25 @@ export class NotificationService {
             this.notifications.update(list =>
                 list.map(n => n.id === id ? { ...n, isRead: true } : n)
             );
-            this.unreadCountSignal.update(c => Math.max(0, c - 1));
+            // unreadCount is computed from the array — no separate signal to update
         });
     }
 
     /** Called after the backend has already persisted the bulk-read for a chat room. */
     markRoomMessagesRead(roomId: string): void {
-        let marked = 0;
         this.notifications.update(list =>
-            list.map(n => {
-                if (n.type === 'MESSAGE' && n.relatedId === roomId && !n.isRead) {
-                    marked++;
-                    return { ...n, isRead: true };
-                }
-                return n;
-            })
+            list.map(n =>
+                n.type === 'MESSAGE' && n.relatedId === roomId && !n.isRead
+                    ? { ...n, isRead: true }
+                    : n
+            )
         );
-        if (marked > 0) {
-            this.unreadCountSignal.update(c => Math.max(0, c - marked));
-        }
+        // unreadCount is computed from the array — no separate signal to update
     }
 
     private addRealTimeNotification(n: Notification) {
         this.notifications.update(list => [n, ...list.slice(0, 19)]);
-        this.unreadCountSignal.update(c => c + 1);
-
-        // Show toast
+        // unreadCount is computed from the array — no separate signal to update
         this.toast.showInfo(n.content);
     }
 }

@@ -71,7 +71,7 @@ import { environment } from '../../../environments/environment';
                     } @else if (room.lastMessage.messageType === 'FILE') {
                       📎 File
                     } @else {
-                      {{ room.lastMessage.content | slice:0:40 }}{{ (room.lastMessage.content.length || 0) > 40 ? '...' : '' }}
+                      {{ room.lastMessage.content | slice:0:40 }}{{ (room.lastMessage.content?.length || 0) > 40 ? '...' : '' }}
                     }
                   </div>
                   <div class="room-last-msg" *ngIf="!room.lastMessage">
@@ -82,6 +82,9 @@ import { environment } from '../../../environments/environment';
                   <span class="room-time" *ngIf="room.lastMessage">
                     {{ formatTime(room.lastMessage.createdAt) }}
                   </span>
+                  @if ((room.unreadCount || 0) > 0) {
+                    <span class="unread-badge">{{ room.unreadCount }}</span>
+                  }
                   <span class="room-type-badge" *ngIf="room.type === 'GROUP'">Group</span>
                 </div>
               </div>
@@ -404,6 +407,21 @@ import { environment } from '../../../environments/environment';
       background: #e8f5e9;
       color: #2e7d32;
       font-weight: 600;
+    }
+
+    .unread-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 9px;
+      background: #4caf50;
+      color: white;
+      font-size: 0.68rem;
+      font-weight: 700;
+      line-height: 1;
     }
 
     /* ─── Chat Main ───────────────────────────────────────────── */
@@ -993,10 +1011,14 @@ export class ChatPageComponent implements OnInit, OnDestroy {
     this.chatService.loadMessages(room.id);
     this.chatService.joinRoom(room.id, this.currentUserId(), room);
 
-    // Persist read state in DB then update local signal
+    // Optimistic: clear notification bell and sidebar unread badge immediately
+    this.notifService.markRoomMessagesRead(room.id);
+    this.chatService.rooms.update(rooms =>
+      rooms.map(r => r.id === room.id ? { ...r, unreadCount: 0 } : r)
+    );
+    // Then persist to DB; log explicitly if it fails so the failure is never silent
     this.chatService.markRoomAsRead(room.id).subscribe({
-      next: () => this.notifService.markRoomMessagesRead(room.id),
-      error: (err) => console.warn('markRoomAsRead failed on selectRoom:', err)
+      error: (err) => console.error(`markRoomAsRead HTTP failed for room ${room.id} — unread count may be stale on next refresh:`, err)
     });
 
     setTimeout(() => this.scrollToBottom(), 500);

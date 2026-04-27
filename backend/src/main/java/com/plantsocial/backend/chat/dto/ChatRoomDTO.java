@@ -10,7 +10,8 @@ public record ChatRoomDTO(
                 String type,
                 List<MemberInfo> members,
                 ChatMessageDTO lastMessage,
-                LocalDateTime createdAt) {
+                LocalDateTime createdAt,
+                long unreadCount) {
         public record MemberInfo(
                         UUID userId,
                         String username,
