@@ -81,7 +81,3 @@ Brand Fidelity: UI components must adhere to the Xyla dark-mode/green-gradient p
 Idempotency in Real-time: WebSocket subscriptions must be checked for existence before subscribing to prevent duplicate Centrifugo Error: Subscription already exists crashes.
 
 No Legacy Auth: Do not implement manual JWT parsing, localStorage token hacks, or custom login forms. All auth must redirect to the Keycloak Identity Provider using the standard OAuth2/OIDC flow.
-
-```
-
-```

@@ -1,17 +1,19 @@
 {
+  "v3_use_offset": true,
   "engine": "redis",
   "redis_address": "redis://plantsocial_redis:6379",
   "token_hmac_secret_key": "xyla-centrifugo-hmac-secret-local-dev-key",
   "allowed_origins": ["*"],
   "api_key": "plantsocial-internal-secret-key",
   "admin": true,
-  "admin_password": "admin",
-  "admin_secret": "admin_secret",
-  "allow_subscribe_for_client": true,
+  "admin_password": "${CENTRIFUGO_ADMIN_PASSWORD}",
+  "admin_secret": "${CENTRIFUGO_ADMIN_SECRET}",
+  "allow_anonymous": true,
   "namespaces": [
     {
       "name": "public",
       "allow_subscribe_for_anonymous": true,
+      "allow_publish_for_anonymous": false,
       "allow_subscribe_for_client": true,
       "allow_publish_for_client": false
     }

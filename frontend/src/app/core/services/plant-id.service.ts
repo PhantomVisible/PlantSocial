@@ -3,14 +3,15 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
-export interface PlantNetSpecies {
-    scientificNameWithoutAuthor: string;
-    commonNames: string[];
+export interface PlantIdSuggestion {
+    name: string;
+    probability: number;
 }
 
-export interface PlantNetResult {
-    score: number;
-    species: PlantNetSpecies;
+export interface PlantIdentificationDTO {
+    topMatch: string | null;
+    confidence: number;
+    suggestions: PlantIdSuggestion[];
 }
 
 @Injectable({
@@ -18,13 +19,12 @@ export interface PlantNetResult {
 })
 export class PlantIdService {
     private http = inject(HttpClient);
-    private apiUrl = environment.apiUrl; // Hardcoded to fix build error
+    private apiUrl = environment.apiUrl;
 
-    verify(file: File): Observable<PlantNetResult[]> {
+    verify(file: File): Observable<PlantIdentificationDTO> {
         const formData = new FormData();
         formData.append('file', file);
 
-        // Call the backend proxy endpoint
-        return this.http.post<PlantNetResult[]>(`${this.apiUrl}/plant-id/verify`, formData);
+        return this.http.post<PlantIdentificationDTO>(`${this.apiUrl}/plant-id/verify`, formData);
     }
 }

@@ -2,8 +2,8 @@ import { Component, Input, Output, EventEmitter, signal, OnInit, inject } from '
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PlantData } from './plant.service';
-import { PlantIdService, PlantNetResult } from '../../core/services/plant-id.service';
-import confetti from 'canvas-confetti';
+import { PlantIdService, PlantIdentificationDTO } from '../../core/services/plant-id.service';
+import { PlantDoctorService } from '../plant-doctor/plant-doctor.service';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -149,8 +149,8 @@ import { environment } from '../../../environments/environment';
            <div class="conflict-content">
              <h3>Wait a sec! 🤔</h3>
              <p>
-               We think this looks like a <strong>{{ suggestedPlant()?.species?.commonNames?.[0] || suggestedPlant()?.species?.scientificNameWithoutAuthor }}</strong> 
-               ({{ (suggestedPlant()?.score || 0) * 100 | number:'1.0-0' }}% match).
+               We think this looks like a <strong>{{ suggestedPlant()?.topMatch }}</strong>
+               ({{ (suggestedPlant()?.confidence || 0) * 100 | number:'1.0-0' }}% match).
              </p>
              <p class="sub-text">
                You entered <strong>{{ species }}</strong>. Which one should we use?
@@ -167,12 +167,38 @@ import { environment } from '../../../environments/environment';
            </div>
         </div>
 
-        <!-- Celebration Overlay -->
-        <div class="achievement-overlay" *ngIf="showCelebrationOverlay()">
-          <div class="achievement-card">
-            <div class="achievement-icon">✅</div>
-            <h3 class="achievement-title">Species Verified!</h3>
-            <p class="achievement-subtitle">{{ species }} confirmed by Xyla</p>
+        <!-- Identification Bloom Overlay -->
+        <div class="bloom-overlay" *ngIf="showCelebrationOverlay()">
+          <div class="bloom-card">
+            <div class="bloom-anim-wrap">
+              <div class="bloom-ring bloom-ring--1"></div>
+              <div class="bloom-ring bloom-ring--2"></div>
+              <svg class="bloom-leaf" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="40" cy="40" r="36" fill="rgba(76,175,80,0.15)"/>
+                <path d="M40 14 C 64 14, 70 40, 40 66 C 10 40, 16 14, 40 14 Z" fill="#4CAF50"/>
+                <path d="M40 14 V 66" stroke="rgba(255,255,255,0.55)" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M40 34 L 54 24 M40 46 L 56 37 M40 56 L 52 49" stroke="rgba(255,255,255,0.45)" stroke-width="2" stroke-linecap="round"/>
+                <path d="M40 34 L 26 26 M40 46 L 24 38" stroke="rgba(255,255,255,0.45)" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+
+            <h3 class="bloom-name">{{ identificationResult()?.topMatch }}</h3>
+            <span class="bloom-confidence">
+              {{ (identificationResult()?.confidence || 0) * 100 | number:'1.0-0' }}% Match
+            </span>
+            <p class="bloom-caption">Species identified by Xyla</p>
+
+            <div class="bloom-actions">
+              <button class="btn btn--bloom-share" (click)="shareToFeed()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                  <polyline points="16 6 12 2 8 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <line x1="12" y1="2" x2="12" y2="15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                </svg>
+                Share as Post
+              </button>
+              <button class="btn btn--bloom-save" (click)="savePlant()">Save to Garden</button>
+            </div>
           </div>
         </div>
       </div>
@@ -409,79 +435,143 @@ import { environment } from '../../../environments/environment';
       width: 100%;
     }
 
-    /* === Strava-Style Celebration Overlay === */
-    .achievement-overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
+    /* === Bloom Identification Overlay === */
+    .bloom-overlay {
+      position: absolute;
+      inset: 0;
       background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      z-index: 10000;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+      z-index: 20;
+      border-radius: var(--trellis-radius-lg);
+      padding: 20px;
       animation: fade-in 0.2s ease;
     }
 
-    @keyframes strava-pop {
-      0%   { transform: scale(0.5); opacity: 0; }
-      60%  { transform: scale(1.15); opacity: 1; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    .achievement-card {
-      position: relative;
-      overflow: hidden;
+    .bloom-card {
       background: var(--surface-card, #1e1e1e);
       border-radius: 20px;
-      padding: 40px 48px;
+      padding: 32px 28px;
       text-align: center;
-      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255,255,255,0.08);
-      animation: strava-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-      max-width: 360px;
-      width: 85%;
+      width: 100%;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06);
+      animation: bloom-card-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
 
-    @keyframes sweep {
-      0%   { left: -100%; }
-      100% { left: 200%; }
+    @keyframes bloom-card-pop {
+      0%   { transform: scale(0.82); opacity: 0; }
+      100% { transform: scale(1);    opacity: 1; }
     }
 
-    .achievement-card::after {
-      content: '';
+    .bloom-anim-wrap {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bloom-ring {
       position: absolute;
-      top: 0; left: -100%;
-      width: 50%; height: 100%;
-      background: linear-gradient(
-        to right,
-        rgba(255,255,255,0) 0%,
-        rgba(255,255,255,0.4) 50%,
-        rgba(255,255,255,0) 100%
-      );
-      transform: skewX(-45deg);
-      animation: sweep 1.5s ease-in-out 0.6s forwards;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid rgba(76, 175, 80, 0.5);
+      animation: bloom-pulse 2s ease-out infinite;
+    }
+    .bloom-ring--2 { animation-delay: 0.75s; }
+
+    @keyframes bloom-pulse {
+      0%   { transform: scale(0.7); opacity: 0.8; }
+      100% { transform: scale(2.2); opacity: 0;   }
     }
 
-    .achievement-icon {
-      font-size: 3.5rem;
-      margin-bottom: 12px;
-      filter: drop-shadow(0 4px 12px rgba(76, 175, 80, 0.4));
+    .bloom-leaf {
+      width: 80px;
+      height: 80px;
+      position: relative;
+      z-index: 1;
+      animation: bloom-grow 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     }
 
-    .achievement-title {
-      margin: 0 0 8px;
-      font-size: 1.4rem;
+    @keyframes bloom-grow {
+      0%   { transform: scale(0) rotate(-20deg); opacity: 0; }
+      70%  { transform: scale(1.12) rotate(4deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0deg);    opacity: 1; }
+    }
+
+    .bloom-name {
+      margin: 0 0 10px;
+      font-size: 1.2rem;
       font-weight: 800;
       color: var(--trellis-text, #fff);
       letter-spacing: -0.02em;
     }
 
-    .achievement-subtitle {
-      margin: 0;
-      font-size: 0.92rem;
+    .bloom-confidence {
+      display: inline-block;
+      background: rgba(76, 175, 80, 0.18);
+      color: #4CAF50;
+      border: 1px solid rgba(76, 175, 80, 0.4);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      margin-bottom: 8px;
+    }
+
+    .bloom-caption {
+      margin: 0 0 22px;
+      font-size: 0.83rem;
       color: var(--trellis-text-secondary, #aaa);
-      font-weight: 500;
+    }
+
+    .bloom-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn--bloom-share {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      background: var(--trellis-green, #388E3C);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 11px 20px;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      width: 100%;
+    }
+    .btn--bloom-share:hover { background: var(--trellis-green-dark, #2E7D32); }
+
+    .btn--bloom-save {
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--trellis-text-secondary, #aaa);
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      padding: 10px 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      width: 100%;
+    }
+    .btn--bloom-save:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: var(--trellis-text, #fff);
     }
   `]
 })
@@ -491,11 +581,12 @@ export class AddPlantDialogComponent implements OnInit {
   @Output() save = new EventEmitter<{ id?: string; nickname: string; species: string; status: string; plantedDate: string; isVerified: boolean; image?: File }>();
 
   plantIdService = inject(PlantIdService);
+  private plantDoctorService = inject(PlantDoctorService);
 
   nickname = '';
   species = '';
   status = 'VEGETATIVE';
-  plantedDate = new Date().toISOString().split('T')[0]; // Default to today
+  plantedDate = new Date().toISOString().split('T')[0];
   selectedFile: File | null = null;
   previewUrl = signal<string | null>(null);
 
@@ -503,8 +594,9 @@ export class AddPlantDialogComponent implements OnInit {
   verifying = signal<boolean>(false);
   showConflict = signal<boolean>(false);
   showErrorDialog = signal<boolean>(false);
-  suggestedPlant = signal<PlantNetResult | null>(null);
+  suggestedPlant = signal<PlantIdentificationDTO | null>(null);
   showCelebrationOverlay = signal<boolean>(false);
+  identificationResult = signal<PlantIdentificationDTO | null>(null);
 
   ngOnInit() {
     if (this.plantToEdit) {
@@ -547,9 +639,9 @@ export class AddPlantDialogComponent implements OnInit {
       const fileToVerify: File = this.selectedFile;
 
       this.plantIdService.verify(fileToVerify).subscribe({
-        next: (results: PlantNetResult[]) => {
+        next: (result: PlantIdentificationDTO) => {
           this.verifying.set(false);
-          this.checkIdentification(results);
+          this.checkIdentification(result);
         },
         error: (err: any) => {
           console.error('Plant ID failed', err);
@@ -562,87 +654,60 @@ export class AddPlantDialogComponent implements OnInit {
     }
   }
 
-  checkIdentification(results: PlantNetResult[]) {
-    // console.log('PlantNet Results:', results); // Debug log
-
-    if (!results || results.length === 0) {
+  checkIdentification(result: PlantIdentificationDTO) {
+    if (!result || !result.topMatch) {
       this.emitSave();
       return;
     }
 
-    const bestMatch = results[0];
-
-    // Log low scores but don't block
-    if (bestMatch.score < 0.05) {
-      console.warn('Low confidence score:', bestMatch.score, bestMatch.species.scientificNameWithoutAuthor);
+    if (result.confidence < 0.05) {
+      console.warn('Low confidence score:', result.confidence, result.topMatch);
     }
 
     const userSpecies = this.species.trim().toLowerCase();
-    const scientific = (bestMatch.species.scientificNameWithoutAuthor || '').toLowerCase();
-    const commonNames = bestMatch.species.commonNames || [];
-    const common = commonNames.map(n => n.toLowerCase());
-
-    // console.log('Comparing:', { user: userSpecies, scientific, common });
-
-    const isMatch = scientific.includes(userSpecies) ||
-      userSpecies.includes(scientific) ||
-      common.some(c => c.includes(userSpecies) || userSpecies.includes(c));
+    const suggested = result.topMatch.toLowerCase();
+    const isMatch = suggested.includes(userSpecies) || userSpecies.includes(suggested);
 
     if (isMatch) {
-      // Trigger premium celebration overlay
+      this.identificationResult.set(result);
       this.showCelebrationOverlay.set(true);
-      confetti({
-        particleCount: 120,
-        spread: 80,
-        origin: { y: 0.6 },
-        colors: ['#FFD700', '#FFFFFF', '#4CAF50'],
-        disableForReducedMotion: true,
-        zIndex: 10001
-      });
-      // Auto-dismiss after 4 seconds, then emit save
-      setTimeout(() => {
-        this.showCelebrationOverlay.set(false);
-        this.emitSave(true);
-      }, 4000);
     } else {
-      // console.log('Conflict detected!');
-      this.suggestedPlant.set(bestMatch);
+      this.suggestedPlant.set(result);
       this.showConflict.set(true);
     }
   }
 
   resolveConflict(useSuggested: boolean) {
-    if (useSuggested) {
-      const suggested = this.suggestedPlant();
-      if (suggested) {
-        // Prefer common name if available, else scientific
-        const name = suggested.species.commonNames && suggested.species.commonNames.length > 0
-          ? suggested.species.commonNames[0]
-          : suggested.species.scientificNameWithoutAuthor;
-
-        this.species = name;
-      }
+    const suggested = this.suggestedPlant();
+    if (useSuggested && suggested?.topMatch) {
+      this.species = suggested.topMatch;
     }
     this.showConflict.set(false);
 
-    if (useSuggested) {
-      // Trigger the same premium celebration for accepting the AI suggestion
+    if (useSuggested && suggested) {
+      this.identificationResult.set(suggested);
       this.showCelebrationOverlay.set(true);
-      confetti({
-        particleCount: 120,
-        spread: 80,
-        origin: { y: 0.6 },
-        colors: ['#FFD700', '#FFFFFF', '#4CAF50'],
-        disableForReducedMotion: true,
-        zIndex: 10001
-      });
-      setTimeout(() => {
-        this.showCelebrationOverlay.set(false);
-        this.emitSave(true);
-      }, 4000);
     } else {
       this.emitSave(false);
     }
+  }
+
+  shareToFeed() {
+    const result = this.identificationResult();
+    if (!result) return;
+    const pct = Math.round((result.confidence || 0) * 100);
+    this.plantDoctorService.shareDiagnosis({
+      content: `Just identified this as ${result.topMatch} — ${pct}% confidence by Xyla! 🌿`,
+      imageBlob: this.selectedFile || undefined,
+      plantTag: result.topMatch || undefined
+    });
+    this.showCelebrationOverlay.set(false);
+    this.close.emit();
+  }
+
+  savePlant() {
+    this.showCelebrationOverlay.set(false);
+    this.emitSave(true);
   }
 
   skipAndSave() {

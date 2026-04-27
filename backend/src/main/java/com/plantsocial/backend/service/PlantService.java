@@ -1,16 +1,18 @@
 package com.plantsocial.backend.service;
 
+import com.plantsocial.backend.dto.LogResponse;
+import com.plantsocial.backend.dto.PlantIdentificationDTO;
 import com.plantsocial.backend.dto.PlantResponse;
 import com.plantsocial.backend.model.Plant;
+import com.plantsocial.backend.model.PlantLog;
 import com.plantsocial.backend.model.PlantStatus;
+import com.plantsocial.backend.repository.PlantLogRepository;
 import com.plantsocial.backend.repository.PlantRepository;
 import com.plantsocial.backend.security.SecurityUtils;
 import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.user.UserRepository;
-import com.plantsocial.backend.model.PlantLog;
-import com.plantsocial.backend.repository.PlantLogRepository;
-import com.plantsocial.backend.dto.LogResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class PlantService {
 
@@ -30,11 +33,23 @@ public class PlantService {
     private final PlantLogRepository plantLogRepository;
     private final FileStorageService fileStorageService;
     private final SecurityUtils securityUtils;
+    private final PlantIdIntegrationService plantIdIntegrationService;
 
     @Transactional
     public PlantResponse addPlant(String nickname, String species, String status, java.time.LocalDate plantedDate,
             boolean isVerified, MultipartFile image) {
         User user = getCurrentUser();
+
+        // Auto-identify species via Plant.id when image is provided and species is not supplied
+        String resolvedSpecies = (species != null && !species.isBlank()) ? species : null;
+        if (resolvedSpecies == null && image != null && !image.isEmpty()) {
+            PlantIdentificationDTO identification = plantIdIntegrationService.identifyPlant(image);
+            if (identification.topMatch() != null) {
+                resolvedSpecies = identification.topMatch();
+                log.info("Plant.id auto-identified species '{}' with confidence {}", resolvedSpecies,
+                        String.format("%.1f%%", identification.confidence() * 100));
+            }
+        }
 
         String imageUrl = null;
         if (image != null && !image.isEmpty()) {
@@ -55,7 +70,7 @@ public class PlantService {
         Plant plant = Plant.builder()
                 .owner(user)
                 .nickname(nickname)
-                .species(species)
+                .species(resolvedSpecies)
                 .imageUrl(imageUrl)
                 .status(plantStatus)
                 .plantedDate(pDate)
