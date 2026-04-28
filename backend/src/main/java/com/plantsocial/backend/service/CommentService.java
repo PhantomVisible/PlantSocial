@@ -3,16 +3,19 @@ package com.plantsocial.backend.service;
 import com.plantsocial.backend.dto.CommentRequest;
 import com.plantsocial.backend.dto.CommentResponse;
 import com.plantsocial.backend.model.Comment;
+import com.plantsocial.backend.model.CommentLike;
+import com.plantsocial.backend.model.CommentReport;
 import com.plantsocial.backend.notification.model.NotificationType;
 import com.plantsocial.backend.notification.NotificationService;
 import com.plantsocial.backend.model.Post;
+import com.plantsocial.backend.repository.CommentLikeRepository;
 import com.plantsocial.backend.repository.CommentRepository;
+import com.plantsocial.backend.repository.CommentReportRepository;
 import com.plantsocial.backend.repository.PostRepository;
 import com.plantsocial.backend.security.SecurityUtils;
 import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,30 +32,25 @@ public class CommentService {
     private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final SecurityUtils securityUtils;
+    private final CommentLikeRepository commentLikeRepository;
+    private final CommentReportRepository commentReportRepository;
 
-    /**
-     * Get top-level comments for a post (parentComment IS NULL)
-     */
     public List<CommentResponse> getTopLevelComments(UUID postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
-        List<Comment> comments = commentRepository.findByPostAndParentCommentIsNullOrderByCreatedAtAsc(post);
-        return comments.stream().map(this::mapToResponse).collect(Collectors.toList());
+        User viewer = securityUtils.getCurrentUserOrNull();
+        return commentRepository.findByPostAndParentCommentIsNullOrderByCreatedAtAsc(post)
+                .stream().map(c -> mapToResponse(c, viewer)).collect(Collectors.toList());
     }
 
-    /**
-     * Get replies to a specific comment
-     */
     public List<CommentResponse> getReplies(UUID commentId) {
         Comment parent = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
-        List<Comment> replies = commentRepository.findByParentCommentOrderByCreatedAtAsc(parent);
-        return replies.stream().map(this::mapToResponse).collect(Collectors.toList());
+        User viewer = securityUtils.getCurrentUserOrNull();
+        return commentRepository.findByParentCommentOrderByCreatedAtAsc(parent)
+                .stream().map(c -> mapToResponse(c, viewer)).collect(Collectors.toList());
     }
 
-    /**
-     * Add a top-level comment to a post
-     */
     @Transactional
     public CommentResponse addComment(UUID postId, CommentRequest request) {
         User user = getCurrentUser();
@@ -67,7 +65,6 @@ public class CommentService {
                 .build();
         Comment saved = commentRepository.save(comment);
 
-        // Notify post author
         notificationService.createNotification(
                 post.getAuthor(),
                 user,
@@ -75,12 +72,9 @@ public class CommentService {
                 user.getFullName() + " commented on your post",
                 post.getId());
 
-        return mapToResponse(saved);
+        return mapToResponse(saved, user);
     }
 
-    /**
-     * Reply to a specific comment
-     */
     @Transactional
     public CommentResponse addReply(UUID parentCommentId, CommentRequest request) {
         User user = getCurrentUser();
@@ -95,7 +89,6 @@ public class CommentService {
                 .build();
         Comment saved = commentRepository.save(reply);
 
-        // Notify parent comment author
         notificationService.createNotification(
                 parent.getAuthor(),
                 user,
@@ -103,18 +96,56 @@ public class CommentService {
                 user.getFullName() + " replied to your comment",
                 parent.getPost().getId());
 
-        return mapToResponse(saved);
+        return mapToResponse(saved, user);
     }
 
-    /**
-     * Get total comment count for a post
-     */
+    @Transactional
+    public CommentResponse likeComment(UUID commentId) {
+        User user = getCurrentUser();
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+
+        if (!commentLikeRepository.existsByCommentAndUser(comment, user)) {
+            commentLikeRepository.save(CommentLike.builder().comment(comment).user(user).build());
+        }
+        return mapToResponse(comment, user);
+    }
+
+    @Transactional
+    public CommentResponse unlikeComment(UUID commentId) {
+        User user = getCurrentUser();
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+
+        commentLikeRepository.deleteByCommentAndUser(comment, user);
+        return mapToResponse(comment, user);
+    }
+
+    @Transactional
+    public void reportComment(UUID commentId, String reason) {
+        User reporter = getCurrentUser();
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+
+        if (commentReportRepository.existsByReporterIdAndCommentId(reporter.getId(), commentId)) {
+            throw new IllegalArgumentException("You have already reported this comment");
+        }
+
+        commentReportRepository.save(CommentReport.builder()
+                .reporter(reporter)
+                .comment(comment)
+                .reason(reason)
+                .build());
+    }
+
     public long getCommentCount(Post post) {
         return commentRepository.countByPost(post);
     }
 
-    private CommentResponse mapToResponse(Comment comment) {
+    private CommentResponse mapToResponse(Comment comment, User viewer) {
         long replyCount = commentRepository.countByParentComment(comment);
+        long likeCount = commentLikeRepository.countByComment(comment);
+        boolean liked = viewer != null && commentLikeRepository.existsByCommentAndUser(comment, viewer);
         return new CommentResponse(
                 comment.getId(),
                 comment.getContent(),
@@ -122,7 +153,10 @@ public class CommentService {
                 comment.getAuthor().getId(),
                 comment.getCreatedAt(),
                 replyCount,
-                comment.getAuthor().getProfilePictureUrl());
+                comment.getAuthor().getProfilePictureUrl(),
+                comment.getAuthor().getSubscriptionTier() != null ? comment.getAuthor().getSubscriptionTier().name() : null,
+                likeCount,
+                liked);
     }
 
     private User getCurrentUser() {

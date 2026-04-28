@@ -19,12 +19,13 @@ import { ToastService } from '../../core/toast.service';
 
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { EditProfileDialogComponent } from './edit-profile-dialog.component';
+import { ProBadgeComponent } from '../../shared/components/pro-badge/pro-badge.component';
 import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-user-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule, PostCardComponent, GardenGridComponent, AddPlantDialogComponent, PlantDetailsDialogComponent, EditProfileDialogComponent, PostSkeletonComponent],
+  imports: [CommonModule, RouterModule, PostCardComponent, GardenGridComponent, AddPlantDialogComponent, PlantDetailsDialogComponent, EditProfileDialogComponent, PostSkeletonComponent, ProBadgeComponent],
   providers: [DialogService],
   template: `
     <div class="profile-page">
@@ -137,7 +138,10 @@ import { environment } from '../../../environments/environment';
 
           <!-- Info -->
           <div class="hero__info">
-            <h1 class="hero__name">{{ profile()!.fullName }}</h1>
+            <h1 class="hero__name">
+              {{ profile()!.fullName }}
+              <app-pro-badge *ngIf="profile()!.subscriptionTier === 'PRO'"></app-pro-badge>
+            </h1>
             <p class="hero__handle">&#64;{{ profile()!.username }}</p>
             <p *ngIf="profile()!.bio" class="hero__bio">{{ profile()!.bio }}</p>
             <div class="hero__meta">

@@ -1,9 +1,17 @@
 <div class="marketplace-container">
     <div class="header">
         <h1>Marketplace</h1>
-        <button class="create-btn" (click)="createListing()">
-            <i class="pi pi-plus"></i> List Your Plant Product
-        </button>
+        <div class="actions">
+            <button class="pro-btn" *ngIf="!isAlreadyPro" (click)="openProModal()">
+                <i class="pi pi-crown"></i> Become Pro
+            </button>
+            <span class="pro-badge-active" *ngIf="isAlreadyPro">
+                <i class="pi pi-crown"></i> Pro
+            </span>
+            <button class="create-btn" (click)="createListing()">
+                <i class="pi pi-plus"></i> List Your Plant Product
+            </button>
+        </div>
     </div>
 
     <div *ngIf="loading()" class="loading">
@@ -27,7 +35,7 @@
                 <h3>{{ item.title }}</h3>
                 <div class="seller-row">
                     <span class="seller">&#64;{{ item.userHandle }}</span>
-                    <span class="verified-badge"><i class="pi pi-check-circle"></i></span>
+                    <app-pro-badge *ngIf="item.userSubscriptionTier === 'PRO'"></app-pro-badge>
                 </div>
                 <div class="meta-row">
                     <span class="duration"><i class="pi pi-calendar"></i> {{ item.durationDays }} days</span>
@@ -36,3 +44,8 @@
         </div>
     </div>
 </div>
+
+<app-pro-upgrade-modal
+    *ngIf="showProModal()"
+    (closed)="showProModal.set(false)">
+</app-pro-upgrade-modal>

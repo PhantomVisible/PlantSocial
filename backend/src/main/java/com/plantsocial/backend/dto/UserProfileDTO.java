@@ -1,5 +1,7 @@
 package com.plantsocial.backend.dto;
 
+import com.plantsocial.backend.user.SubscriptionTier;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -15,5 +17,6 @@ public record UserProfileDTO(
         long postCount,
         long followerCount,
         long followingCount,
-        boolean isFollowing) {
+        boolean isFollowing,
+        SubscriptionTier subscriptionTier) {
 }

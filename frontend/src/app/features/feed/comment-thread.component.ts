@@ -5,12 +5,13 @@ import { CommentService, CommentData } from './comment.service';
 import { AuthService } from '../../auth/auth.service';
 import { AuthGatekeeperService } from '../../auth/auth-gatekeeper.service';
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
+import { ProBadgeComponent } from '../../shared/components/pro-badge/pro-badge.component';
 import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-comment-thread',
   standalone: true,
-  imports: [CommonModule, FormsModule, AvatarComponent],
+  imports: [CommonModule, FormsModule, AvatarComponent, ProBadgeComponent],
   template: `
     <div class="thread">
       <!-- New comment input -->
@@ -55,14 +56,24 @@ import { environment } from '../../../environments/environment';
           <div class="comment__body">
             <div class="comment__header">
               <span class="comment__author">{{ comment.authorName }}</span>
+              <app-pro-badge *ngIf="comment.authorSubscriptionTier === 'PRO'"></app-pro-badge>
               <span class="comment__time">{{ formatTime(comment.createdAt) }}</span>
             </div>
             <p class="comment__text">{{ comment.content }}</p>
             <div class="comment__actions">
-              <button
-                class="comment__action-btn"
-                (click)="toggleReplyInput(comment)"
-              >
+              <button class="comment__action-btn comment__action-btn--like"
+                [class.liked]="comment.likedByCurrentUser"
+                (click)="toggleLike(comment)">
+                <i class="pi" [ngClass]="comment.likedByCurrentUser ? 'pi-heart-fill' : 'pi-heart'"></i>
+                <span *ngIf="comment.likeCount > 0">{{ comment.likeCount }}</span>
+              </button>
+              <button class="comment__action-btn comment__action-btn--report"
+                *ngIf="authService.currentUser()"
+                (click)="openReport(comment)"
+                title="Report comment">
+                <i class="pi pi-flag"></i>
+              </button>
+              <button class="comment__action-btn" (click)="toggleReplyInput(comment)">
                 <i class="pi pi-corner-down-right"></i> Reply
               </button>
               <span *ngIf="comment.replyCount > 0 && !comment._repliesLoaded" class="comment__view-replies">
@@ -75,6 +86,20 @@ import { environment } from '../../../environments/environment';
                   <i class="pi pi-chevron-up"></i> Hide replies
                 </button>
               </span>
+            </div>
+
+            <!-- Inline Report Dialog -->
+            <div *ngIf="reportingCommentId() === comment.id" class="comment__report-dialog" (click)="$event.stopPropagation()">
+              <p class="report-title">Report this comment</p>
+              <select class="report-select" [ngModel]="reportReason()" (ngModelChange)="reportReason.set($event)">
+                <option *ngFor="let r of reportReasons" [value]="r.value">{{ r.label }}</option>
+              </select>
+              <div class="report-actions">
+                <button class="report-submit-btn" (click)="submitReport(comment)" [disabled]="isReporting()">
+                  {{ isReporting() ? 'Submitting...' : 'Submit' }}
+                </button>
+                <button class="report-cancel-btn" (click)="reportingCommentId.set(null)">Cancel</button>
+              </div>
             </div>
 
             <!-- Inline Reply Input -->
@@ -110,6 +135,7 @@ import { environment } from '../../../environments/environment';
                 <div class="comment__body">
                   <div class="comment__header">
                     <span class="comment__author">{{ reply.authorName }}</span>
+                    <app-pro-badge *ngIf="reply.authorSubscriptionTier === 'PRO'"></app-pro-badge>
                     <span class="comment__time">{{ formatTime(reply.createdAt) }}</span>
                   </div>
                   <p class="comment__text">{{ reply.content }}</p>
@@ -263,6 +289,71 @@ import { environment } from '../../../environments/environment';
       color: var(--trellis-green-dark);
     }
 
+    .comment__action-btn--like {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      &.liked { color: #e53e3e; }
+      &.liked:hover { color: #c53030; }
+      .pi-heart-fill { color: #e53e3e; }
+    }
+
+    .comment__action-btn--report {
+      color: var(--trellis-text-hint);
+      &:hover { color: #e53e3e; }
+    }
+
+    .comment__report-dialog {
+      margin-top: 8px;
+      background: var(--surface-card);
+      border: 1px solid var(--trellis-border-light);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .report-title {
+        margin: 0;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--trellis-text);
+      }
+      .report-select {
+        border: 1px solid var(--trellis-border-light);
+        border-radius: 6px;
+        padding: 6px 8px;
+        font-size: 0.82rem;
+        font-family: 'Inter', sans-serif;
+        background: var(--surface-ground);
+        color: var(--trellis-text);
+        outline: none;
+      }
+      .report-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+      .report-submit-btn {
+        background: #e53e3e;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 5px 12px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        &:disabled { opacity: 0.6; cursor: not-allowed; }
+      }
+      .report-cancel-btn {
+        background: none;
+        border: none;
+        font-size: 0.78rem;
+        color: var(--trellis-text-hint);
+        cursor: pointer;
+      }
+    }
+
     /* ---- Reply Input Inline ---- */
     .comment__reply-compose {
       margin-top: 8px;
@@ -357,6 +448,18 @@ export class CommentThreadComponent {
   comments = signal<CommentDataUI[]>([]);
   loading = signal(false);
   newCommentText = '';
+
+  reportingCommentId = signal<string | null>(null);
+  reportReason = signal<string>('SPAM');
+  isReporting = signal(false);
+
+  reportReasons = [
+    { value: 'SPAM', label: 'Spam' },
+    { value: 'HATE_SPEECH', label: 'Hate speech' },
+    { value: 'HARASSMENT', label: 'Harassment' },
+    { value: 'MISINFORMATION', label: 'Misinformation' },
+    { value: 'OTHER', label: 'Other' },
+  ];
 
   resolveImageUrl(url: string | null): string {
     if (!url) return '';
@@ -455,6 +558,57 @@ export class CommentThreadComponent {
           this.comments.update(c => [...c]);
         }
       });
+    });
+  }
+
+  isOwnComment(comment: CommentDataUI): boolean {
+    return comment.authorId === this.authService.currentUser()?.id;
+  }
+
+  toggleLike(comment: CommentDataUI) {
+    this.gatekeeper.run(() => {
+      const wasLiked = comment.likedByCurrentUser;
+      // optimistic update
+      comment.likedByCurrentUser = !wasLiked;
+      comment.likeCount += wasLiked ? -1 : 1;
+      this.comments.update(c => [...c]);
+
+      const req$ = wasLiked
+        ? this.commentService.unlikeComment(comment.id)
+        : this.commentService.likeComment(comment.id);
+
+      req$.subscribe({
+        next: (updated) => {
+          comment.likeCount = updated.likeCount;
+          comment.likedByCurrentUser = updated.likedByCurrentUser;
+          this.comments.update(c => [...c]);
+        },
+        error: () => {
+          // revert on failure
+          comment.likedByCurrentUser = wasLiked;
+          comment.likeCount += wasLiked ? 1 : -1;
+          this.comments.update(c => [...c]);
+        }
+      });
+    });
+  }
+
+  openReport(comment: CommentDataUI) {
+    this.gatekeeper.run(() => {
+      this.reportReason.set('SPAM');
+      this.reportingCommentId.set(comment.id);
+    });
+  }
+
+  submitReport(comment: CommentDataUI) {
+    if (this.isReporting()) return;
+    this.isReporting.set(true);
+    this.commentService.reportComment(comment.id, this.reportReason()).subscribe({
+      next: () => {
+        this.reportingCommentId.set(null);
+        this.isReporting.set(false);
+      },
+      error: () => this.isReporting.set(false)
     });
   }
 

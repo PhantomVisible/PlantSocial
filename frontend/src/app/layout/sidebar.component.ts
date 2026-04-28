@@ -6,6 +6,7 @@ import { AuthPromptDialogComponent } from '../features/auth/auth-prompt-dialog.c
 import { PlantDoctorService } from '../features/plant-doctor/plant-doctor.service';
 
 import { AvatarComponent } from '../shared/components/avatar/avatar.component';
+import { ProBadgeComponent } from '../shared/components/pro-badge/pro-badge.component';
 import { NotificationService } from '../features/notifications/notification.service';
 import { ShopService } from '../features/shop/shop.service';
 import { ThemeService } from '../shared/theme.service';
@@ -16,7 +17,7 @@ import { environment } from '../../environments/environment';
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule, AuthPromptDialogComponent, AvatarComponent, InputSwitchModule, FormsModule],
+  imports: [CommonModule, RouterModule, AuthPromptDialogComponent, AvatarComponent, InputSwitchModule, FormsModule, ProBadgeComponent],
   template: `
     <nav class="sidebar">
       <!-- Logo -->
@@ -112,7 +113,10 @@ import { environment } from '../../environments/environment';
             </app-avatar>
             
             <div class="user-info">
-              <span class="user-name">{{ user()!.fullName }}</span>
+              <span class="user-name">
+                {{ user()!.fullName }}
+                <app-pro-badge *ngIf="user()!.subscriptionTier === 'PRO'"></app-pro-badge>
+              </span>
               <span class="user-email">{{ user()!.email }}</span>
             </div>
           </div>

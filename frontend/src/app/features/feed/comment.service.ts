@@ -10,6 +10,9 @@ export interface CommentData {
     createdAt: string;
     replyCount: number;
     authorProfilePictureUrl?: string;
+    authorSubscriptionTier?: string;
+    likeCount: number;
+    likedByCurrentUser: boolean;
 }
 
 @Injectable({
@@ -33,5 +36,17 @@ export class CommentService {
 
     addReply(commentId: string, content: string): Observable<CommentData> {
         return this.http.post<CommentData>(`${this.baseUrl}/comments/${commentId}/replies`, { content });
+    }
+
+    likeComment(commentId: string): Observable<CommentData> {
+        return this.http.post<CommentData>(`${this.baseUrl}/comments/${commentId}/like`, {});
+    }
+
+    unlikeComment(commentId: string): Observable<CommentData> {
+        return this.http.delete<CommentData>(`${this.baseUrl}/comments/${commentId}/like`);
+    }
+
+    reportComment(commentId: string, reason: string): Observable<void> {
+        return this.http.post<void>(`${this.baseUrl}/comments/${commentId}/report`, { reason });
     }
 }

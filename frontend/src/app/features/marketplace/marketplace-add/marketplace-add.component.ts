@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -8,6 +8,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { SliderModule } from 'primeng/slider';
 import { MarketplaceService, ListingRequest } from '../marketplace.service';
+import { AuthService } from '../../../auth/auth.service';
 
 import { trigger, style, animate, transition } from '@angular/animations';
 import { environment } from '../../../../environments/environment';
@@ -19,6 +20,7 @@ import { environment } from '../../../../environments/environment';
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
+        RouterLink,
         DialogModule,
         ButtonModule,
         InputTextModule,
@@ -51,7 +53,8 @@ export class MarketplaceAddComponent implements OnInit {
         private fb: FormBuilder,
         private marketplaceService: MarketplaceService,
         private router: Router,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private authService: AuthService
     ) {
         this.listingForm = this.fb.group({
             productUrl: ['', [Validators.pattern(/https?:\/\/.+/)]], // Removed required initially
@@ -68,16 +71,24 @@ export class MarketplaceAddComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.clampDuration();
         this.route.paramMap.subscribe(params => {
             const id = params.get('id');
             if (id) {
                 this.isEditMode = true;
                 this.listingId = id;
-                this.creationMode = 'manual'; // Force manual mode for editing
+                this.creationMode = 'manual';
                 this.updateValidators();
                 this.fetchListingForEdit(id);
             }
         });
+    }
+
+    private clampDuration() {
+        const ctrl = this.listingForm.get('durationDays');
+        if (ctrl && ctrl.value > this.maxDuration) {
+            ctrl.setValue(this.maxDuration);
+        }
     }
 
     fetchListingForEdit(id: string) {
@@ -149,6 +160,14 @@ export class MarketplaceAddComponent implements OnInit {
         this.additionalImages.removeAt(index);
     }
 
+    get isPro(): boolean {
+        return this.authService.currentUser()?.subscriptionTier === 'PRO';
+    }
+
+    get maxDuration(): number {
+        return this.isPro ? 14 : 7;
+    }
+
     get totalCost(): number {
         const days = this.listingForm.get('durationDays')?.value || 0;
         return days * 5;
@@ -191,12 +210,9 @@ export class MarketplaceAddComponent implements OnInit {
 
     payAndList() {
         if (this.listingForm.invalid) return;
-
         if (this.isEditMode && this.listingId) {
             this.updateExistingListing();
         } else {
-            this.showPaymentModal = true;
-            this.paymentStatus = 'processing';
             this.createListing(true);
         }
     }

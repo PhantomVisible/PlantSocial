@@ -21,6 +21,7 @@ export interface Post {
   originalPost?: Post; // Recursively defined
   repostCount: number;
   isRepostedByCurrentUser: boolean;
+  authorSubscriptionTier?: string;
 }
 
 export interface CommentRequest {

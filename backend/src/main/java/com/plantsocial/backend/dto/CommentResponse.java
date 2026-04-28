@@ -10,5 +10,8 @@ public record CommentResponse(
                 UUID authorId,
                 LocalDateTime createdAt,
                 long replyCount,
-                String authorProfilePictureUrl) {
+                String authorProfilePictureUrl,
+                String authorSubscriptionTier,
+                long likeCount,
+                boolean likedByCurrentUser) {
 }

@@ -22,7 +22,40 @@
     .actions {
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 12px;
+    }
+
+    .pro-btn {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+        padding: 10px 18px;
+        border-radius: 24px;
+        border: none;
+        cursor: pointer;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 0.95rem;
+        transition: opacity 0.2s, transform 0.1s;
+
+        &:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+    }
+
+    .pro-badge-active {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: linear-gradient(135deg, #f59e0b22, #d9770622);
+        color: #b45309;
+        border: 1.5px solid #f59e0b88;
+        padding: 8px 16px;
+        border-radius: 24px;
+        font-weight: 700;
+        font-size: 0.9rem;
     }
 
     .tabs {

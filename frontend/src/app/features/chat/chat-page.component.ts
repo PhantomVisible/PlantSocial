@@ -71,7 +71,7 @@ import { environment } from '../../../environments/environment';
                     } @else if (room.lastMessage.messageType === 'FILE') {
                       📎 File
                     } @else {
-                      {{ room.lastMessage.content | slice:0:40 }}{{ (room.lastMessage.content?.length || 0) > 40 ? '...' : '' }}
+                      {{ room.lastMessage.content | slice:0:40 }}{{ (room.lastMessage.content.length || 0) > 40 ? '...' : '' }}
                     }
                   </div>
                   <div class="room-last-msg" *ngIf="!room.lastMessage">

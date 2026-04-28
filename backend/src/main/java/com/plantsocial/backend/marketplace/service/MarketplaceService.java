@@ -1,6 +1,8 @@
 package com.plantsocial.backend.marketplace.service;
 
 import com.plantsocial.backend.exception.BusinessException;
+import com.plantsocial.backend.exception.MarketplaceLimitExceededException;
+import com.plantsocial.backend.user.SubscriptionTier;
 import com.plantsocial.backend.marketplace.dto.ListingRequest;
 import com.plantsocial.backend.marketplace.dto.ListingResponse;
 import com.plantsocial.backend.marketplace.model.ListingStatus;
@@ -33,6 +35,14 @@ public class MarketplaceService {
     public ListingResponse createListing(ListingRequest request, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new BusinessException("USER_NOT_FOUND", "User not found"));
+
+        if (user.getSubscriptionTier() == SubscriptionTier.FREE) {
+            LocalDateTime cutoff = LocalDateTime.now().minusDays(7);
+            int recentCount = listingRepository.countByUser_IdAndCreatedAtAfter(user.getId(), cutoff);
+            if (recentCount >= 1) {
+                throw new MarketplaceLimitExceededException();
+            }
+        }
 
         MarketplaceListing listing = MarketplaceListing.builder()
                 .user(user)

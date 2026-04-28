@@ -62,4 +62,8 @@ export class UserService {
     getMutualConnections(userId: string): Observable<UserProfile[]> {
         return this.http.get<UserProfile[]>(`${this.baseUrl}/users/${userId}/mutuals`);
     }
+
+    upgradeToProTest(): Observable<void> {
+        return this.http.post<void>(`${this.baseUrl}/users/me/upgrade-test`, {});
+    }
 }

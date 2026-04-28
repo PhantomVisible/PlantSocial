@@ -23,7 +23,10 @@ public record ListingResponse(
         BigDecimal totalCost,
         ListingStatus status,
         LocalDateTime expiryDate,
-        LocalDateTime createdAt) {
+        LocalDateTime createdAt,
+        boolean isPromoted,
+        Integer clickCount,
+        String userSubscriptionTier) {
     public static ListingResponse fromEntity(MarketplaceListing listing) {
         return new ListingResponse(
                 listing.getId(),
@@ -41,6 +44,9 @@ public record ListingResponse(
                 listing.getPricePerDay().multiply(BigDecimal.valueOf(listing.getDurationDays())),
                 listing.getStatus(),
                 listing.getExpiryDate(),
-                listing.getCreatedAt());
+                listing.getCreatedAt(),
+                listing.isPromoted(),
+                listing.getClickCount(),
+                listing.getUser().getSubscriptionTier() != null ? listing.getUser().getSubscriptionTier().name() : null);
     }
 }

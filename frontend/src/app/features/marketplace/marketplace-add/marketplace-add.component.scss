@@ -545,7 +545,24 @@ $shadow-lg: 0 16px 48px rgba(27, 94, 32, 0.08);
                     font-weight: 800;
                     color: $primary;
                     letter-spacing: -2px;
+
+                    &.free {
+                        color: #16a34a;
+                        font-size: 2rem;
+                        letter-spacing: -1px;
+                    }
                 }
+            }
+
+            .duration-hint {
+                margin-top: 8px;
+                font-size: 0.78rem;
+                color: #888;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+
+                a { color: #d97706; font-weight: 600; text-decoration: none; &:hover { text-decoration: underline; } }
             }
         }
 

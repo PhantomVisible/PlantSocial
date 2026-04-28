@@ -192,7 +192,8 @@ public class FeedService {
                 post.getAuthor().getProfilePictureUrl(),
                 post.getRepostOf() != null ? mapToPostResponse(post.getRepostOf(), currentUser) : null,
                 repostCount,
-                isRepostedByCurrentUser);
+                isRepostedByCurrentUser,
+                post.getAuthor().getSubscriptionTier() != null ? post.getAuthor().getSubscriptionTier().name() : null);
     }
 
     @Transactional

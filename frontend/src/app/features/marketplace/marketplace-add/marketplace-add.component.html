@@ -5,7 +5,7 @@
         </button>
         <div class="header-content">
             <h2>{{ isEditMode ? 'Edit Your Listing' : 'List Your Product' }}</h2>
-            <p>{{ isEditMode ? 'Update your product details' : 'Share your product with the community' }}</p>
+            <p>{{ isEditMode ? 'Update your product details' : 'Free to list — visible to the whole community' }}</p>
         </div>
     </div>
 
@@ -117,25 +117,30 @@
                     <div class="duration-control">
                         <div class="slider-header">
                             <label>Duration</label>
-                            <span class="badge">{{ listingForm.get('durationDays')?.value }} Days</span>
+                            <span class="badge">{{ listingForm.get('durationDays')?.value }} / {{ maxDuration }} Days</span>
                         </div>
-                        <p-slider formControlName="durationDays" [min]="1" [max]="30"></p-slider>
+                        <p-slider formControlName="durationDays" [min]="1" [max]="maxDuration"></p-slider>
+                        <p class="duration-hint" *ngIf="!isPro">
+                            <i class="pi pi-lock"></i> Free plan: up to 7 days.
+                            <a routerLink="/marketplace" fragment="pro">Upgrade to Pro</a> for 14 days.
+                        </p>
                     </div>
 
-                    <div class="cost-summary" *ngIf="listingForm.get('productPrice')?.value">
+                    <div class="cost-summary free-listing" *ngIf="listingForm.get('productPrice')?.value">
                         <span>Product Value</span>
                         <span class="price">{{ listingForm.get('productPrice')?.value | currency:'USD' }}</span>
                     </div>
 
-                    <div class="cost-summary">
+                    <div class="cost-summary free-listing">
                         <span>Listing Fee</span>
-                        <span class="price">{{ totalCost | currency:'USD' }}</span>
+                        <span class="price free">Free</span>
                     </div>
                 </div>
 
                 <div class="actions">
                     <button class="btn-primary" (click)="payAndList()" [disabled]="listingForm.invalid || isSubmitting">
-                        {{ isEditMode ? 'Save Changes' : 'Pay & Activate' }}
+                        <i class="pi pi-spin pi-spinner" *ngIf="isSubmitting"></i>
+                        {{ isEditMode ? 'Save Changes' : (isSubmitting ? 'Publishing...' : 'List for Free') }}
                     </button>
                     <button class="btn-secondary" *ngIf="!isEditMode" (click)="saveDraft()" [disabled]="isSubmitting">
                         Save Draft
@@ -146,46 +151,3 @@
 
     </div>
 </div>
-
-<!-- Payment Simulation Modal -->
-<p-dialog [(visible)]="showPaymentModal" [modal]="true" [closable]="false" [showHeader]="false"
-    styleClass="payment-dialog">
-    <div class="payment-simulation-modal" [ngClass]="paymentStatus">
-        <div class="simulation-content">
-            <!-- Animation Wrapper -->
-            <div class="payment-animation-container">
-                <!-- Card Element -->
-                <div class="credit-card" [class.success]="paymentStatus === 'success'">
-                    <div class="card-chip"></div>
-                    <div class="card-lines">
-                        <div class="line"></div>
-                        <div class="line short"></div>
-                    </div>
-                    <!-- Scanning line -->
-                    <div class="scanner-line" *ngIf="paymentStatus === 'processing'"></div>
-                </div>
-
-                <!-- Success icon (Checkmark) -->
-                <div class="success-icon-wrapper" *ngIf="paymentStatus === 'success'">
-                    <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                        <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none" />
-                        <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
-                    </svg>
-                </div>
-            </div>
-
-            <!-- Text Content -->
-            <div class="status-text-content">
-                <ng-container *ngIf="paymentStatus === 'processing'">
-                    <h3>Processing Payment</h3>
-                    <p>Securing transaction...</p>
-                </ng-container>
-
-                <ng-container *ngIf="paymentStatus === 'success'">
-                    <h3 class="success-text">Payment Successful!</h3>
-                    <p>Your listing is now active.</p>
-                </ng-container>
-            </div>
-        </div>
-    </div>
-</p-dialog>

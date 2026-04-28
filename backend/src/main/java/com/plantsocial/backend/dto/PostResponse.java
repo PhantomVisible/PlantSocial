@@ -21,5 +21,6 @@ public record PostResponse(
         String authorProfilePictureUrl,
         PostResponse originalPost,
         long repostCount,
-        boolean isRepostedByCurrentUser) {
+        boolean isRepostedByCurrentUser,
+        String authorSubscriptionTier) {
 }

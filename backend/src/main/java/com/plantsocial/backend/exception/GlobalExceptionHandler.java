@@ -47,6 +47,14 @@ public class GlobalExceptionHandler {
                                 .body(new ErrorResponse(400, message));
         }
 
+        // Marketplace free-tier rate limit
+        @ExceptionHandler(MarketplaceLimitExceededException.class)
+        public ResponseEntity<ErrorResponse> handleMarketplaceLimit(MarketplaceLimitExceededException ex) {
+                return ResponseEntity
+                                .status(HttpStatus.FORBIDDEN)
+                                .body(new ErrorResponse(403, ex.getMessage()));
+        }
+
         // Chat / business logic errors
         @ExceptionHandler(BusinessException.class)
         public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex) {

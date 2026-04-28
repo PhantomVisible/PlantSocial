@@ -64,6 +64,16 @@ public class MarketplaceListing {
 
     private LocalDateTime expiryDate;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean isPromoted = false;
+
+    private LocalDateTime promotedUntil;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer clickCount = 0;
+
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

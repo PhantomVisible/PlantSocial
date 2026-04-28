@@ -13,6 +13,7 @@ import { Post } from './feed.service'; // Use shared interface
 import { ReportService } from '../../core/services/report.service'; // Add this
 
 import { AvatarComponent } from '../../shared/components/avatar/avatar.component';
+import { ProBadgeComponent } from '../../shared/components/pro-badge/pro-badge.component';
 
 import { HoverCardComponent } from '../../shared/components/hover-card/hover-card.component';
 import { LinkifyPipe } from '../../shared/pipes/linkify.pipe';
@@ -21,7 +22,7 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-post-card',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, CommentThreadComponent, PlantDetailsDialogComponent, AvatarComponent, HoverCardComponent, LinkifyPipe],
+  imports: [CommonModule, FormsModule, RouterModule, CommentThreadComponent, PlantDetailsDialogComponent, AvatarComponent, HoverCardComponent, LinkifyPipe, ProBadgeComponent],
   template: `
     <article class="post-card" [class.repost-card]="!!post.originalPost" *ngIf="!postHidden()">
       
@@ -49,6 +50,7 @@ import { environment } from '../../../environments/environment';
         </div>
         <div class="post-card__meta">
           <a (click)="visitProfile(displayPost.authorUsername)" class="post-card__author">{{ displayPost.authorName }}</a>
+          <app-pro-badge *ngIf="displayPost.authorSubscriptionTier === 'PRO'"></app-pro-badge>
           <span class="post-card__dot">·</span>
           <a [routerLink]="['/post', displayPost.id]" class="post-card__time" title="View post">{{ formatTime(displayPost.createdAt) }}</a>
           

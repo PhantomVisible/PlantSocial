@@ -1,0 +1,39 @@
+<div class="modal-overlay" (click)="close()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+            <div class="pro-badge">PRO</div>
+            <button class="close-btn" (click)="close()" [disabled]="isUpgrading">×</button>
+        </div>
+
+        <div class="modal-body">
+            <h2>Level Up Your Plant Business</h2>
+            <p class="subtitle">Everything you need to sell more, faster.</p>
+
+            <ul class="benefits">
+                <li>
+                    <span class="benefit-icon">🌱</span>
+                    <span><strong>Unlimited Listings</strong> — Post as many plants as you want.</span>
+                </li>
+                <li>
+                    <span class="benefit-icon">🛡️</span>
+                    <span><strong>Verified Shop Badge</strong> — Build trust with buyers.</span>
+                </li>
+                <li>
+                    <span class="benefit-icon">📊</span>
+                    <span><strong>Advanced Analytics</strong> — Track your clicks and views.</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="modal-footer">
+            <button class="upgrade-btn" (click)="upgrade()" [disabled]="isUpgrading">
+                <i class="pi pi-spin pi-spinner" *ngIf="isUpgrading"></i>
+                <i class="pi pi-crown" *ngIf="!isUpgrading"></i>
+                {{ isUpgrading ? 'Upgrading...' : '$2.99 / month to become Pro' }}
+            </button>
+            <button class="cancel-link" (click)="close()" [disabled]="isUpgrading">Maybe later</button>
+        </div>
+
+    </div>
+</div>

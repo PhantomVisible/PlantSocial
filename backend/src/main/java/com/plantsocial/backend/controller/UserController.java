@@ -6,6 +6,7 @@ import com.plantsocial.backend.model.Post;
 import com.plantsocial.backend.repository.PostRepository;
 import com.plantsocial.backend.security.SecurityUtils;
 import com.plantsocial.backend.service.FeedService;
+import com.plantsocial.backend.user.SubscriptionTier;
 import com.plantsocial.backend.user.User;
 import com.plantsocial.backend.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -76,7 +77,8 @@ public class UserController {
                 postCount,
                 followerCount,
                 followingCount,
-                isFollowing);
+                isFollowing,
+                user.getSubscriptionTier());
         return ResponseEntity.ok(dto);
     }
 
@@ -103,7 +105,8 @@ public class UserController {
                 postRepository.countByAuthorId(u.getId()),
                 (long) u.getFollowers().size(),
                 (long) u.getFollowing().size(),
-                false // current user doesn't follow them (that's the point)
+                false, // current user doesn't follow them (that's the point)
+                u.getSubscriptionTier()
         )).collect(Collectors.toList());
 
         return ResponseEntity.ok(result);
@@ -131,7 +134,8 @@ public class UserController {
                 postRepository.countByAuthorId(u.getId()),
                 (long) u.getFollowers().size(),
                 (long) u.getFollowing().size(),
-                true // Since they are mutuals, the current user MUST be following them
+                true, // Since they are mutuals, the current user MUST be following them
+                u.getSubscriptionTier()
         )).collect(Collectors.toList());
 
         return ResponseEntity.ok(result);
@@ -207,7 +211,16 @@ public class UserController {
                 postCount,
                 followerCount,
                 followingCount,
-                false));
+                false,
+                currentUser.getSubscriptionTier()));
+    }
+
+    @PostMapping("/users/me/upgrade-test")
+    public ResponseEntity<Void> upgradeToProTest() {
+        User currentUser = securityUtils.getCurrentUser();
+        currentUser.setSubscriptionTier(SubscriptionTier.PRO);
+        userRepository.save(currentUser);
+        return ResponseEntity.ok().build();
     }
 
     private User getCurrentUserSafe() {

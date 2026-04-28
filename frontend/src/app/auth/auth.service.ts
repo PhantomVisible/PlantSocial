@@ -14,6 +14,7 @@ export interface CurrentUser {
     username: string;
     fullName: string;
     profilePictureUrl?: string;
+    subscriptionTier?: 'FREE' | 'PRO';
 }
 
 // ─── Service ──────────────────────────────────────────────────────────────────
@@ -80,13 +81,17 @@ export class AuthService {
         // S3 URLs live only in our DB. Reconcile non-blocking so guards aren't delayed.
         const user = this.currentUser();
         if (user) {
-            this.http.get<{ profilePictureUrl?: string }>(
+            this.http.get<{ profilePictureUrl?: string; subscriptionTier?: string }>(
                 `${environment.apiUrl}/users/${user.username}`
             ).subscribe({
                 next: (profile) => {
-                    if (profile.profilePictureUrl) {
-                        this.currentUser.update(u => u ? { ...u, profilePictureUrl: profile.profilePictureUrl } : u);
-                    }
+                    this.currentUser.update(u => {
+                        if (!u) return u;
+                        const patch: Partial<CurrentUser> = {};
+                        if (profile.profilePictureUrl) patch.profilePictureUrl = profile.profilePictureUrl;
+                        if (profile.subscriptionTier) patch.subscriptionTier = profile.subscriptionTier as 'FREE' | 'PRO';
+                        return { ...u, ...patch };
+                    });
                 }
             });
         }

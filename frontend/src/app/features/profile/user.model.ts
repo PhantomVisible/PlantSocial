@@ -11,6 +11,7 @@ export interface UserProfile {
     followerCount: number;
     followingCount: number;
     isFollowing: boolean;
+    subscriptionTier?: 'FREE' | 'PRO';
 }
 
 export interface UserHoverCard {

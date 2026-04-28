@@ -30,6 +30,9 @@ export interface ListingResponse {
     status: 'PENDING_PAYMENT' | 'ACTIVE' | 'EXPIRED' | 'REJECTED';
     expiryDate: string;
     createdAt: string;
+    isPromoted?: boolean;
+    clickCount?: number;
+    userSubscriptionTier?: string;
 }
 
 export interface ProductPreviewDTO {

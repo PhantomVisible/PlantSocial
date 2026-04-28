@@ -53,4 +53,22 @@ public class CommentController {
             @Valid @RequestBody CommentRequest request) {
         return ResponseEntity.ok(commentService.addReply(commentId, request));
     }
+
+    @PostMapping("/comments/{commentId}/like")
+    public ResponseEntity<CommentResponse> likeComment(@PathVariable UUID commentId) {
+        return ResponseEntity.ok(commentService.likeComment(commentId));
+    }
+
+    @DeleteMapping("/comments/{commentId}/like")
+    public ResponseEntity<CommentResponse> unlikeComment(@PathVariable UUID commentId) {
+        return ResponseEntity.ok(commentService.unlikeComment(commentId));
+    }
+
+    @PostMapping("/comments/{commentId}/report")
+    public ResponseEntity<Void> reportComment(
+            @PathVariable UUID commentId,
+            @RequestBody java.util.Map<String, String> body) {
+        commentService.reportComment(commentId, body.getOrDefault("reason", "OTHER"));
+        return ResponseEntity.ok().build();
+    }
 }
