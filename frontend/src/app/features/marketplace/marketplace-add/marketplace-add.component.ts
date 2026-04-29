@@ -63,6 +63,7 @@ export class MarketplaceAddComponent implements OnInit {
             imageUrl: ['', Validators.required],
             description: [''],
             productPrice: [null],
+            currency: ['USD'],
             additionalImages: this.fb.array([])
         });
 
@@ -96,25 +97,27 @@ export class MarketplaceAddComponent implements OnInit {
         this.marketplaceService.getListingById(id).subscribe({
             next: (listing) => {
                 this.previewData = { manual: true }; // Setup dummy preview to show form
+                const allImages = listing.imageUrls?.length ? listing.imageUrls
+                    : [listing.imageUrl, ...(listing.additionalImages ?? [])].filter(Boolean);
+
                 this.listingForm.patchValue({
                     title: listing.title,
                     description: listing.description || '',
-                    imageUrl: listing.imageUrl,
+                    imageUrl: allImages[0] ?? listing.imageUrl,
                     productPrice: listing.productPrice,
+                    currency: listing.currency ?? 'USD',
                     productUrl: listing.productUrl,
                     durationDays: listing.durationDays
                 });
 
                 // Keep the URL control disabled during edit
                 this.listingForm.get('productUrl')?.disable();
-                this.listingForm.get('durationDays')?.disable(); // Prevent changing duration
+                this.listingForm.get('durationDays')?.disable();
 
-                // Handle additional images if any exist
-                if (listing.additionalImages) {
-                    listing.additionalImages.forEach(img => {
-                        this.additionalImages.push(this.fb.control(img, Validators.required));
-                    });
-                }
+                // Populate additional images (index 1+)
+                allImages.slice(1).forEach((img: string) => {
+                    this.additionalImages.push(this.fb.control(img, Validators.required));
+                });
                 this.isFetchingPreview = false;
             },
             error: (err) => {
@@ -160,6 +163,15 @@ export class MarketplaceAddComponent implements OnInit {
         this.additionalImages.removeAt(index);
     }
 
+    readonly currencySymbols: Record<string, string> = {
+        USD: '$', EUR: '€', GBP: '£', JPY: '¥', CAD: 'C$', AUD: 'A$', CHF: '₣', CNY: '¥', KRW: '₩', INR: '₹'
+    };
+
+    get currencySymbol(): string {
+        const code = this.listingForm.get('currency')?.value ?? 'USD';
+        return this.currencySymbols[code] ?? code;
+    }
+
     get isPro(): boolean {
         return this.authService.currentUser()?.subscriptionTier === 'PRO';
     }
@@ -187,9 +199,14 @@ export class MarketplaceAddComponent implements OnInit {
                 this.previewData = data;
                 this.listingForm.patchValue({
                     title: data.title,
-                    imageUrl: data.imageUrl,
+                    imageUrl: data.imageUrls?.[0] ?? '',
                     description: data.description || '',
                     productPrice: data.productPrice || null
+                });
+                // Populate additional images (index 1+)
+                this.additionalImages.clear();
+                (data.imageUrls ?? []).slice(1, 5).forEach((img: string) => {
+                    this.additionalImages.push(this.fb.control(img, Validators.required));
                 });
                 this.isFetchingPreview = false;
             },
@@ -221,14 +238,15 @@ export class MarketplaceAddComponent implements OnInit {
         if (!this.listingId) return;
         this.isSubmitting = true;
         const formVal = this.listingForm.getRawValue();
+        const extras: string[] = (formVal.additionalImages as string[]).filter(Boolean);
 
         const request: ListingRequest = {
             productUrl: formVal.productUrl,
             title: formVal.title,
-            imageUrl: formVal.imageUrl,
+            imageUrls: [formVal.imageUrl, ...extras].filter(Boolean),
             description: formVal.description,
             productPrice: formVal.productPrice,
-            additionalImages: formVal.additionalImages,
+            currency: formVal.currency ?? 'USD',
             durationDays: formVal.durationDays
         };
 
@@ -248,14 +266,14 @@ export class MarketplaceAddComponent implements OnInit {
     private createListing(processPayment: boolean) {
         this.isSubmitting = true;
         const formVal = this.listingForm.value;
+        const extras: string[] = (formVal.additionalImages as string[]).filter(Boolean);
 
         const request: ListingRequest = {
             productUrl: formVal.productUrl,
             title: formVal.title,
-            imageUrl: formVal.imageUrl,
+            imageUrls: [formVal.imageUrl, ...extras].filter(Boolean),
             description: formVal.description,
             productPrice: formVal.productPrice,
-            additionalImages: formVal.additionalImages,
             durationDays: formVal.durationDays
         };
 

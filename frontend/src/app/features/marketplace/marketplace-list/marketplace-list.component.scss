@@ -4,6 +4,54 @@
     margin: 0 auto;
 }
 
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface-card);
+    border: 1.5px solid var(--surface-border);
+    border-radius: 14px;
+    padding: 10px 16px;
+    margin-bottom: 28px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus-within {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.08);
+    }
+
+    i.pi-search {
+        color: var(--text-color-secondary);
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    input {
+        flex: 1;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: 1rem;
+        color: var(--text-color);
+        font-family: inherit;
+
+        &::placeholder { color: var(--text-color-secondary); }
+    }
+
+    .clear-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text-color-secondary);
+        padding: 0 2px;
+        display: flex;
+        align-items: center;
+        transition: color 0.15s;
+
+        &:hover { color: var(--text-color); }
+    }
+}
+
 .header {
     display: flex;
     justify-content: space-between;
@@ -84,6 +132,26 @@
                 color: var(--primary-color);
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             }
+        }
+    }
+
+    .seller-hub-btn {
+        background: linear-gradient(135deg, #f59e0b22, #d9770622);
+        color: #b45309;
+        border: 1.5px solid #f59e0b88;
+        padding: 10px 18px;
+        border-radius: 24px;
+        cursor: pointer;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 0.95rem;
+        transition: background 0.2s, transform 0.1s;
+
+        &:hover {
+            background: linear-gradient(135deg, #f59e0b44, #d9770644);
+            transform: translateY(-1px);
         }
     }
 

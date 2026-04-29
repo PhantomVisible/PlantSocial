@@ -78,4 +78,9 @@ public class MarketplaceController {
             @Valid @RequestBody ListingRequest request) {
         return ResponseEntity.ok(marketplaceService.updateListing(id, request, securityUtils.getCurrentUser().getEmail()));
     }
+
+    @PostMapping("/listings/{id}/boost/free")
+    public ResponseEntity<ListingResponse> applyFreeBoost(@PathVariable UUID id) {
+        return ResponseEntity.ok(marketplaceService.applyFreeBoost(id, securityUtils.getCurrentUser().getEmail()));
+    }
 }

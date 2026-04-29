@@ -4,22 +4,26 @@
             <i class="pi pi-arrow-left"></i> Back to Marketplace
         </a>
         <h1>List Your Plant Product</h1>
-        <p>Share your plant products with the community. $5.00/day visibility fee.</p>
+        <p>Share your plant products with the community. Listing is <strong>100% Free</strong>.</p>
     </div>
 
     <div class="form-card">
         <form [formGroup]="listingForm" (ngSubmit)="onSubmit()">
 
+            <!-- Product URL + Autofill -->
             <div class="form-group">
                 <label for="productUrl">Product URL (Amazon, eBay, etc.)</label>
                 <div class="input-group-row">
-                    <input type="url" id="productUrl" formControlName="productUrl" placeholder="Paste link here..."
-                        class="form-input">
+                    <input type="url" id="productUrl" formControlName="productUrl"
+                        placeholder="Paste link here…" class="form-input">
                     <button type="button" (click)="fetchPreview()"
-                        [disabled]="listingForm.get('productUrl')?.invalid || isFetchingPreview" class="preview-btn">
-                        <i class="pi" [class.pi-spin]="isFetchingPreview" [class.pi-spinner]="isFetchingPreview"
+                        [disabled]="listingForm.get('productUrl')?.invalid || isFetchingPreview"
+                        class="preview-btn">
+                        <i class="pi"
+                            [class.pi-spin]="isFetchingPreview"
+                            [class.pi-spinner]="isFetchingPreview"
                             [class.pi-bolt]="!isFetchingPreview"></i>
-                        {{ isFetchingPreview ? 'Fetching' : 'Auto-Fill' }}
+                        {{ isFetchingPreview ? 'Fetching…' : 'Auto-Fill' }}
                     </button>
                 </div>
                 <small *ngIf="listingForm.get('productUrl')?.invalid && listingForm.get('productUrl')?.touched">
@@ -27,40 +31,109 @@
                 </small>
             </div>
 
+            <!-- Partial-fetch warning banner -->
+            @if (fetchWarning()) {
+            <div class="fetch-warning">
+                <i class="pi pi-exclamation-triangle"></i>
+                <span>{{ fetchWarning() }}</span>
+            </div>
+            }
+
+            <!-- Title -->
             <div class="form-group">
                 <label for="title">Title</label>
-                <input type="text" id="title" formControlName="title" placeholder="e.g. Variegated Monstera Cutting"
-                    class="form-input">
+                <input type="text" id="title" formControlName="title"
+                    placeholder="e.g. Variegated Monstera Cutting" class="form-input">
+                <small *ngIf="listingForm.get('title')?.invalid && listingForm.get('title')?.touched">
+                    Title is required
+                </small>
             </div>
 
+            <!-- Image Gallery Preview -->
+            <!-- Hidden file input shared by both the empty state and "add more" button -->
+            <input type="file" #imageFileInput accept="image/*" multiple style="display:none"
+                (change)="onImageFilesSelected($event)">
+
+            @if (hasImages) {
             <div class="form-group">
-                <label for="imageUrl">Image URL</label>
-                <div class="input-with-preview">
-                    <input type="url" id="imageUrl" formControlName="imageUrl" placeholder="https://..."
-                        class="form-input">
-                    <button type="button" (click)="fillMockData()" class="mock-btn" title="Fill Mock Data">
-                        <i class="pi pi-bolt"></i> Auto-fill (Demo)
-                    </button>
+                <label>
+                    Product Images <span class="image-count">({{ imageUrls().length }} of 5)</span>
+                </label>
+                <div class="gallery-preview">
+                    <div class="main-image-wrap">
+                        <img [src]="selectedImage" alt="Main product image" class="main-image">
+                    </div>
+                    @if (imageUrls().length > 1) {
+                    <div class="thumbnails-row">
+                        @for (img of imageUrls() | slice:0:5; track img; let i = $index) {
+                        <div class="thumb" [class.active]="selectedImageIndex() === i"
+                            (click)="selectImage(i)">
+                            <img [src]="img" alt="Product image {{ i + 1 }}">
+                        </div>
+                        }
+                    </div>
+                    }
+                </div>
+                @if (imageUrls().length < 5) {
+                <button type="button" class="add-image-btn" (click)="imageFileInput.click()"
+                    [disabled]="isUploadingImage">
+                    <i class="pi" [class.pi-plus]="!isUploadingImage"
+                        [class.pi-spin]="isUploadingImage"
+                        [class.pi-spinner]="isUploadingImage"></i>
+                    {{ isUploadingImage ? 'Uploading…' : 'Add More Photos' }}
+                </button>
+                }
+            </div>
+            } @else {
+            <div class="form-group">
+                <div class="no-image-hint" (click)="imageFileInput.click()"
+                    [class.uploading]="isUploadingImage">
+                    @if (isUploadingImage) {
+                        <i class="pi pi-spin pi-spinner"></i>
+                        <span>Uploading…</span>
+                    } @else {
+                        <i class="pi pi-cloud-upload"></i>
+                        <span>Tap to upload photos, or paste a link above and Auto-Fill</span>
+                    }
+                </div>
+            </div>
+            }
+
+            <!-- Price + Currency -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="price">Seller Price (optional)</label>
+                    <input type="number" id="price" formControlName="price"
+                        min="0" step="0.01" placeholder="e.g. 29.99" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="currency">Currency</label>
+                    <select id="currency" formControlName="currency" class="form-input">
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="CAD">CAD</option>
+                        <option value="AUD">AUD</option>
+                    </select>
                 </div>
             </div>
 
+            <!-- Duration slider -->
             <div class="form-group">
-                <label for="durationDays">Duration (Days)</label>
-                <select id="durationDays" formControlName="durationDays" class="form-input">
-                    <option [value]="1">1 Day ($5.00)</option>
-                    <option [value]="3">3 Days ($15.00)</option>
-                    <option [value]="7">7 Days ($35.00)</option>
-                    <option [value]="14">14 Days ($70.00)</option>
-                    <option [value]="30">30 Days ($150.00)</option>
-                </select>
-                <p class="cost-preview">
-                    Total Cost: <strong>{{ (listingForm.get('durationDays')?.value || 0) * 5 | currency:'USD'
-                        }}</strong>
+                <label for="durationDays">
+                    Duration: <strong>{{ listingForm.get('durationDays')?.value }}
+                        day{{ listingForm.get('durationDays')?.value === 1 ? '' : 's' }}</strong>
+                    <span class="tier-limit">(max {{ maxDuration }} days)</span>
+                </label>
+                <input type="range" id="durationDays" formControlName="durationDays"
+                    min="1" [max]="maxDuration" class="form-range">
+                <p class="listing-fee">
+                    Listing Fee: <strong class="fee-free">Free</strong>
                 </p>
             </div>
 
-            <button type="submit" [disabled]="listingForm.invalid || isSubmitting" class="submit-btn">
-                {{ isSubmitting ? 'Creating...' : 'Continue to Payment' }}
+            <button type="submit" [disabled]="!isFormValid || isSubmitting" class="submit-btn">
+                {{ isSubmitting ? 'Publishing…' : 'Publish Listing' }}
             </button>
 
         </form>

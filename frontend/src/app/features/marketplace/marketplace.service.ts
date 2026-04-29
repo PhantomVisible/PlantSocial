@@ -5,11 +5,12 @@ import { Observable, tap, map } from 'rxjs';
 
 export interface ListingRequest {
     productUrl: string;
-    imageUrl: string;
+    imageUrls: string[];
     title: string;
     description?: string;
     productPrice?: number;
-    additionalImages?: string[];
+    originalPrice?: number;
+    currency?: string;
     durationDays: number;
 }
 
@@ -31,16 +32,22 @@ export interface ListingResponse {
     expiryDate: string;
     createdAt: string;
     isPromoted?: boolean;
+    freeBoostUsed?: boolean;
+    promotedUntil?: string;
     clickCount?: number;
     userSubscriptionTier?: string;
+    imageUrls?: string[];
+    originalPrice?: number;
+    currency?: string;
 }
 
 export interface ProductPreviewDTO {
     title: string;
-    imageUrl: string;
+    imageUrls: string[];
     description?: string;
     url: string;
     productPrice?: number;
+    currency?: string;
 }
 
 @Injectable({
@@ -90,6 +97,10 @@ export class MarketplaceService {
         return this.http.post(`${this.apiUrl}/upload`, formData, { responseType: 'text' }).pipe(
             map((url: string) => url.replace(/^"|"$/g, ''))
         );
+    }
+
+    activateFreeBoost(id: string): Observable<ListingResponse> {
+        return this.http.post<ListingResponse>(`${this.apiUrl}/listings/${id}/boost/free`, {});
     }
 
     deleteListing(id: string): Observable<void> {

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { MarketplaceService, ListingResponse } from '../marketplace.service';
@@ -19,7 +19,14 @@ export class MarketplaceListComponent implements OnInit {
   listings = signal<ListingResponse[]>([]);
   loading = signal<boolean>(true);
   showProModal = signal<boolean>(false);
+  searchQuery = signal('');
   viewMode: 'market' | 'my-listings' = 'market';
+
+  filteredListings = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    if (!q) return this.listings();
+    return this.listings().filter(l => l.title.toLowerCase().includes(q));
+  });
 
   private marketplaceService = inject(MarketplaceService);
   private router = inject(Router);
@@ -49,7 +56,7 @@ export class MarketplaceListComponent implements OnInit {
 
   createListing() {
     this.gatekeeper.run(() => {
-      this.router.navigate(['/marketplace/add']);
+      this.router.navigate(['/marketplace/create']);
     });
   }
 

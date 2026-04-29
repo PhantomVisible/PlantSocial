@@ -1,7 +1,6 @@
 package com.plantsocial.backend.marketplace.service;
 
 import com.plantsocial.backend.exception.BusinessException;
-import com.plantsocial.backend.exception.MarketplaceLimitExceededException;
 import com.plantsocial.backend.user.SubscriptionTier;
 import com.plantsocial.backend.marketplace.dto.ListingRequest;
 import com.plantsocial.backend.marketplace.dto.ListingResponse;
@@ -36,24 +35,40 @@ public class MarketplaceService {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new BusinessException("USER_NOT_FOUND", "User not found"));
 
-        if (user.getSubscriptionTier() == SubscriptionTier.FREE) {
-            LocalDateTime cutoff = LocalDateTime.now().minusDays(7);
-            int recentCount = listingRepository.countByUser_IdAndCreatedAtAfter(user.getId(), cutoff);
-            if (recentCount >= 1) {
-                throw new MarketplaceLimitExceededException();
-            }
+        int maxDuration = user.getSubscriptionTier() == SubscriptionTier.PRO ? 14 : 7;
+        if (request.durationDays() > maxDuration) {
+            throw new BusinessException("DURATION_LIMIT_EXCEEDED",
+                    "Duration cannot exceed " + maxDuration + " days for your subscription tier");
         }
+
+        boolean duplicateExists = listingRepository.existsByUser_IdAndStatusAndTitleIgnoreCase(
+                user.getId(), ListingStatus.ACTIVE, request.title());
+        if (!duplicateExists && request.productUrl() != null) {
+            duplicateExists = listingRepository.existsByUser_IdAndStatusAndProductUrl(
+                    user.getId(), ListingStatus.ACTIVE, request.productUrl());
+        }
+        if (duplicateExists) {
+            throw new BusinessException("DUPLICATE_LISTING",
+                    "You already have an active listing for this product. Please wait for it to expire or delete it before reposting.");
+        }
+
+        String primaryImage = (request.imageUrls() != null && !request.imageUrls().isEmpty())
+                ? request.imageUrls().get(0) : null;
 
         MarketplaceListing listing = MarketplaceListing.builder()
                 .user(user)
                 .productUrl(request.productUrl())
-                .imageUrl(request.imageUrl())
+                .imageUrl(primaryImage)
+                .imageUrls(request.imageUrls() != null ? request.imageUrls() : List.of())
                 .title(request.title())
                 .description(request.description())
                 .productPrice(request.productPrice())
-                .pricePerDay(PRICE_PER_DAY)
+                .originalPrice(request.originalPrice())
+                .currency(request.currency())
+                .pricePerDay(BigDecimal.ZERO)
                 .durationDays(request.durationDays())
-                .status(ListingStatus.PENDING_PAYMENT)
+                .status(ListingStatus.ACTIVE)
+                .expiryDate(LocalDateTime.now().plusDays(request.durationDays()))
                 .build();
 
         MarketplaceListing savedListing = listingRepository.save(listing);
@@ -125,15 +140,43 @@ public class MarketplaceService {
 
         listing.setTitle(request.title());
         listing.setDescription(request.description());
-        listing.setImageUrl(request.imageUrl());
         listing.setProductPrice(request.productPrice());
+        if (request.currency() != null) listing.setCurrency(request.currency());
 
-        if (request.additionalImages() != null) {
-            listing.setAdditionalImages(request.additionalImages());
+        if (request.imageUrls() != null && !request.imageUrls().isEmpty()) {
+            listing.setImageUrl(request.imageUrls().get(0));
+            listing.setImageUrls(request.imageUrls());
         }
 
         MarketplaceListing updatedListing = listingRepository.save(listing);
         return ListingResponse.fromEntity(updatedListing);
+    }
+
+    @Transactional
+    public ListingResponse applyFreeBoost(UUID listingId, String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new BusinessException("USER_NOT_FOUND", "User not found"));
+
+        MarketplaceListing listing = listingRepository.findById(listingId)
+                .orElseThrow(() -> new BusinessException("LISTING_NOT_FOUND", "Listing not found"));
+
+        if (!listing.getUser().getEmail().equals(userEmail)) {
+            throw new BusinessException("ACCESS_DENIED", "You are not authorized to boost this listing");
+        }
+
+        if (user.getSubscriptionTier() != SubscriptionTier.PRO) {
+            throw new BusinessException("PRO_REQUIRED", "Free boosts are available to PRO subscribers only");
+        }
+
+        if (listing.isFreeBoostUsed()) {
+            throw new BusinessException("BOOST_ALREADY_USED", "The free boost for this listing has already been used");
+        }
+
+        listing.setPromoted(true);
+        listing.setPromotedUntil(LocalDateTime.now().plusHours(24));
+        listing.setFreeBoostUsed(true);
+
+        return ListingResponse.fromEntity(listingRepository.save(listing));
     }
 
     @org.springframework.scheduling.annotation.Scheduled(cron = "0 0 * * * *")

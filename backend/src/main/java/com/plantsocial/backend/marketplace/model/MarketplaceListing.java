@@ -37,20 +37,26 @@ public class MarketplaceListing {
     @Column(nullable = false, length = 2048)
     private String imageUrl;
 
+    @Builder.Default
+    @ElementCollection
+    @CollectionTable(name = "marketplace_listing_images", joinColumns = @JoinColumn(name = "listing_id"))
+    @Column(name = "image_url", length = 2048)
+    private java.util.List<String> imageUrls = new java.util.ArrayList<>();
+
     @Column(nullable = false)
     private String title;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Builder.Default
-    @ElementCollection
-    @CollectionTable(name = "marketplace_listing_images", joinColumns = @JoinColumn(name = "listing_id"))
-    @Column(name = "image_url")
-    private java.util.List<String> additionalImages = new java.util.ArrayList<>();
-
     @Column(precision = 10, scale = 2)
     private BigDecimal productPrice;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal originalPrice;
+
+    @Column(length = 10)
+    private String currency;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal pricePerDay; // Fixed at 5.00
@@ -67,6 +73,10 @@ public class MarketplaceListing {
     @Builder.Default
     @Column(nullable = false)
     private boolean isPromoted = false;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean freeBoostUsed = false;
 
     private LocalDateTime promotedUntil;
 

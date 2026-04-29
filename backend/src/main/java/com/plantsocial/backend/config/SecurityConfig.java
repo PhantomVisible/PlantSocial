@@ -48,8 +48,7 @@ public class SecurityConfig {
                                         "/api/v1/comments/**",
                                         "/api/v1/plants/**",
                                         "/api/v1/shop/products/**",
-                                        "/api/v1/marketplace/listings/**",
-                                        "/api/v1/marketplace/listing/**"
+                                        "/api/v1/marketplace/listings/**"
                                 ).permitAll()
 
                                 // Internal system notifications (posted by other services)

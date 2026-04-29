@@ -60,11 +60,6 @@
                         <span class="value md">{{ item.productPrice | currency:'USD' }}</span>
                     </div>
 
-                    <div class="detail-row" *ngIf="isOwner()">
-                        <span class="label">Listing Fee</span>
-                        <span class="value lg">{{ (item.durationDays * 5) | currency:'USD' }}</span>
-                    </div>
-
                     <div *ngIf="item.expiryDate" class="detail-row expiry">
                         <span class="label">Expires</span>
                         <div class="expiry-value">

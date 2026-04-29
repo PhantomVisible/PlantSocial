@@ -63,6 +63,26 @@
                         placeholder="Tell us about the condition, etc..." class="custom-textarea"></textarea>
                 </div>
 
+                <div class="field-group">
+                    <label>Product Price (optional)</label>
+                    <div class="price-row">
+                        <select formControlName="currency" class="currency-select">
+                            <option value="USD">$ USD</option>
+                            <option value="EUR">€ EUR</option>
+                            <option value="GBP">£ GBP</option>
+                            <option value="JPY">¥ JPY</option>
+                            <option value="CAD">C$ CAD</option>
+                            <option value="AUD">A$ AUD</option>
+                            <option value="CHF">₣ CHF</option>
+                            <option value="CNY">¥ CNY</option>
+                            <option value="KRW">₩ KRW</option>
+                            <option value="INR">₹ INR</option>
+                        </select>
+                        <input type="number" pInputText formControlName="productPrice"
+                            min="0" step="0.01" placeholder="e.g. 29.99" class="price-input">
+                    </div>
+                </div>
+
                 <!-- Gallery -->
                 <div class="field-group gallery-group">
                     <div class="group-header">
@@ -128,7 +148,7 @@
 
                     <div class="cost-summary free-listing" *ngIf="listingForm.get('productPrice')?.value">
                         <span>Product Value</span>
-                        <span class="price">{{ listingForm.get('productPrice')?.value | currency:'USD' }}</span>
+                        <span class="price">{{ currencySymbol }}{{ listingForm.get('productPrice')?.value | number:'1.2-2' }}</span>
                     </div>
 
                     <div class="cost-summary free-listing">

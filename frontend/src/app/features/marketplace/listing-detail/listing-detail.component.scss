@@ -131,7 +131,6 @@ $red: #d32f2f;
 
 // Description Section
 .description-section {
-    padding: 0 16px;
 
     h3 {
         font-size: 1.25rem;
@@ -208,12 +207,7 @@ $red: #d32f2f;
         font-weight: 800;
         color: $text;
         margin: 0 0 24px;
-        // Truncate long titles
-        display: -webkit-box;
-        -webkit-line-clamp: 4;
-        line-clamp: 4;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
+        text-wrap: balance;
     }
 
     .seller-info {

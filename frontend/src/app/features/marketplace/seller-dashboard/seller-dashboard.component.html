@@ -1,0 +1,119 @@
+<div class="dashboard-container">
+
+    <div class="dashboard-header">
+        <div>
+            <h1>Seller Dashboard</h1>
+            <p class="subtitle">Manage your listings and track performance</p>
+        </div>
+        <a routerLink="/marketplace/create" class="new-listing-btn">
+            <i class="pi pi-plus"></i> New Listing
+        </a>
+    </div>
+
+    @if (errorMessage()) {
+    <div class="error-banner">
+        <i class="pi pi-exclamation-triangle"></i> {{ errorMessage() }}
+    </div>
+    }
+
+    @if (isLoading()) {
+    <div class="loading-state">
+        <i class="pi pi-spin pi-spinner"></i>
+        <span>Loading your listings…</span>
+    </div>
+    } @else {
+
+    <div class="stats-row">
+        <div class="stat-card">
+            <span class="stat-value">{{ listings().length }}</span>
+            <span class="stat-label">Total Listings</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-value">{{ activeCount }}</span>
+            <span class="stat-label">Active</span>
+        </div>
+        <div class="stat-card highlight">
+            <i class="pi pi-eye stat-icon"></i>
+            <span class="stat-value">{{ totalClicks }}</span>
+            <span class="stat-label">Total Clicks</span>
+        </div>
+    </div>
+
+    @if (listings().length === 0) {
+    <div class="empty-state">
+        <i class="pi pi-shopping-bag"></i>
+        <p>You haven't listed anything yet.</p>
+        <a routerLink="/marketplace/create" class="new-listing-btn">Create your first listing</a>
+    </div>
+    } @else {
+
+    <div class="listings-grid">
+        @for (listing of listings(); track listing.id) {
+        <div class="listing-card" [class.expired]="listing.status === 'EXPIRED'">
+
+            <div class="listing-image-wrap">
+                <img [src]="listing.imageUrl" [alt]="listing.title" class="listing-image">
+                <span class="status-badge" [class]="'status-' + listing.status.toLowerCase()">
+                    {{ listing.status }}
+                </span>
+                @if (listing.isPromoted) {
+                <span class="promoted-badge"><i class="pi pi-bolt"></i> Boosted</span>
+                }
+            </div>
+
+            <div class="listing-body">
+                <h3 class="listing-title" [title]="listing.title">{{ listing.title }}</h3>
+
+                <div class="analytics-row">
+                    <i class="pi pi-chart-bar"></i>
+                    <span class="click-count">{{ listing.clickCount ?? 0 }} clicks</span>
+                    <span class="duration-info">· {{ listing.durationDays }}d listing</span>
+                </div>
+
+                @if (listing.expiryDate) {
+                <p class="expiry-info">
+                    {{ listing.status === 'EXPIRED' ? 'Expired' : 'Expires' }}
+                    {{ listing.expiryDate | date:'mediumDate' }}
+                </p>
+                }
+
+                <div class="action-row">
+                    <!-- State A: Currently Boosted -->
+                    @if (listing.isPromoted) {
+                    <button class="boost-btn boost-active" disabled>
+                        <i class="pi pi-bolt"></i>
+                        Boost Active
+                        @if (listing.promotedUntil) {
+                        <span class="boost-until">(ends {{ listing.promotedUntil | date:'shortDate' }})</span>
+                        }
+                    </button>
+                    } @else if (!listing.freeBoostUsed) {
+                    <button class="boost-btn boost-free"
+                        [disabled]="boostingId() === listing.id"
+                        (click)="activateFreeBoost(listing)">
+                        @if (boostingId() === listing.id) {
+                        <i class="pi pi-spin pi-spinner"></i> Activating…
+                        } @else {
+                        <i class="pi pi-bolt"></i> Activate Free 24h Boost
+                        }
+                    </button>
+                    } @else {
+                    <button class="boost-btn boost-paid" disabled>
+                        <i class="pi pi-bolt"></i> Boost Listing ($2/day)
+                    </button>
+                    }
+
+                    <a [routerLink]="['/marketplace/listing', listing.id]" class="view-btn">
+                        <i class="pi pi-external-link"></i>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+        }
+    </div>
+
+    }
+    }
+
+</div>
